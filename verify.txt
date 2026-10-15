@@ -1,0 +1,11 @@
+python on PATH: True
+
+Caption     : Microsoft Windows Server 2025 Datacenter
+Version     : 10.0.26100
+BuildNumber : 26100
+
+
+install exit: 0
+exe exists: True
+selftest exit: 0
+uninstall exit: 0; removed: True
