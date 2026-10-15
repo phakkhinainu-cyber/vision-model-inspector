@@ -1,0 +1,30 @@
+{
+  "gradcam": {
+    "method": "Grad-CAM (Selvaraju et al. 2017) on pre-NMS class score",
+    "target_scalar": "sigmoid class score, class 0, anchor 6183",
+    "matched_anchor_index": 6183,
+    "matched_level": "P5",
+    "match_iou": 0.999999817455338,
+    "pre_nms_score": 0.8933640718460083,
+    "reported_confidence": 0.8933640718460083,
+    "score_difference": 0.0,
+    "feature_map_shape": [
+      1,
+      256,
+      15,
+      20
+    ],
+    "device": "cpu",
+    "elapsed_ms": 409.7174999999993
+  },
+  "export_files": [
+    "ตัวอย่างการส่งออก\\ภาพ04_20261015-110622_yolov8n\\original.png",
+    "ตัวอย่างการส่งออก\\ภาพ04_20261015-110622_yolov8n\\detections.png",
+    "ตัวอย่างการส่งออก\\ภาพ04_20261015-110622_yolov8n\\gradcam_heatmap.png",
+    "ตัวอย่างการส่งออก\\ภาพ04_20261015-110622_yolov8n\\gradcam_overlay.png",
+    "ตัวอย่างการส่งออก\\ภาพ04_20261015-110622_yolov8n\\comparison.png",
+    "ตัวอย่างการส่งออก\\ภาพ04_20261015-110622_yolov8n\\detections.csv",
+    "ตัวอย่างการส่งออก\\ภาพ04_20261015-110622_yolov8n\\metadata.json"
+  ],
+  "onnx_detections": 3
+}

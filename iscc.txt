@@ -1,0 +1,5 @@
+
+
+Error in D:\a\vision-model-inspector\vision-model-inspector\packaging\installer.iss: Out of memory.
+Compile aborted.
+Preprocessing

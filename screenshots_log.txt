@@ -1,0 +1,11 @@
+saved ci_results/screenshots\00_start.png
+saved ci_results/screenshots\02_gradcam_running.png
+saved ci_results/screenshots\01_main.png
+saved ci_results/screenshots\07_main_1366x768.png
+saved ci_results/screenshots\03_class_manager.png
+saved ci_results/screenshots\04_model_info.png
+saved ci_results/screenshots\05_camera_dialog.png
+saved ci_results/screenshots\05b_camera_rtsp.png
+saved ci_results/screenshots\05c_camera_manual.png
+saved ci_results/screenshots\06_export_dialog.png
+saved ci_results/screenshots\08_onnx_model.png
