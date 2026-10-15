@@ -562,24 +562,23 @@ class DetailPanel(QWidget):
         lay.addWidget(self.thumb)
         from PySide6.QtWidgets import QGridLayout
         grid = QGridLayout()
-        grid.setHorizontalSpacing(12)
-        grid.setVerticalSpacing(4)
+        grid.setHorizontalSpacing(14)
+        grid.setVerticalSpacing(0)
         self.vals = {}
-        keys = ("ประเภท", "ความมั่นใจ", "รหัสคลาส", "กรอบ (x, y, w, h)", "ขนาดภาพ", "โมเดล")
-        for i, key in enumerate(keys):
-            r, c = (i, 0) if i < 3 else (i - 3, 2)
+        keys = ("ประเภท", "รหัสคลาส", "ความมั่นใจ", "กรอบ (x, y, w, h)", "ขนาดภาพ", "โมเดล")
+        for r, key in enumerate(keys):
             v = QLabel("-")
             v.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            v.setMinimumWidth(10)
             v.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
             if key in ("ประเภท", "ความมั่นใจ"):
                 v.setStyleSheet("font-weight:600;")
             self.vals[key] = v
             k = QLabel(key + ":")
             k.setObjectName("Hint")
-            grid.addWidget(k, r, c)
-            grid.addWidget(v, r, c + 1)
+            grid.addWidget(k, r, 0)
+            grid.addWidget(v, r, 1)
         grid.setColumnStretch(1, 1)
-        grid.setColumnStretch(3, 1)
         lay.addLayout(grid, 1)
 
     def clear(self, msg="เลือกวัตถุจากตารางหรือคลิกกรอบบนภาพ"):
