@@ -78,7 +78,8 @@ def demo_video():
     img = cv2.imread(os.path.join(IMAGES, "bus.jpg"))
     h, w = img.shape[:2]
     W, H = 960, 720
-    canvas = cv2.resize(img, (int(w * H / h * 1.25), int(H * 1.25)))
+    sc = max(W / w, H / h) * 1.25
+    canvas = cv2.resize(img, (int(w * sc), int(h * sc)))
     vw = cv2.VideoWriter(out, cv2.VideoWriter_fourcc(*"MJPG"), 25, (W, H))
     if not vw.isOpened():
         raise RuntimeError("cannot create demo video")
@@ -87,7 +88,9 @@ def demo_video():
         t = 0.5 - 0.5 * np.cos(2 * np.pi * i / n)
         x = int(t * (canvas.shape[1] - W))
         y = int(t * (canvas.shape[0] - H) * 0.5)
-        vw.write(canvas[y:y + H, x:x + W])
+        frame = canvas[y:y + H, x:x + W]
+        assert frame.shape[:2] == (H, W), frame.shape
+        vw.write(frame)
     vw.release()
     cap = cv2.VideoCapture(out)
     ok, _ = cap.read()

@@ -53,7 +53,8 @@ jobs:
             curl.exe -sSL --retry 3 -o "test_assets/models/$m" "$env:ASSETS_URL/$m"
           }
           Get-FileHash test_assets/models/* -Algorithm SHA256 | Format-Table -AutoSize | Out-File -Encoding utf8 ci_results/model_hashes.txt
-          python tools/make_test_assets.py
+          python tools/make_test_assets.py *> ci_results/make_assets.txt
+          if ($LASTEXITCODE -ne 0) { Get-Content ci_results/make_assets.txt -Tail 40; exit 1 }
 
       - name: Run tests
         id: tests
@@ -168,15 +169,18 @@ jobs:
           $tag = "v$env:APP_VERSION-build.${{ github.run_number }}"
           gh release create $tag (Get-ChildItem Output\*.exe).FullName --prerelease --title "Vision Model Inspector $env:APP_VERSION (CPU) build ${{ github.run_number }}" --notes "Windows x64 CPU installer built by CI from ${{ github.sha }}. See docs/TEST_REPORT_TH.md."
 
-      - name: Fail if tests failed
-        if: steps.tests.outputs.pytest_exit != '0'
-        run: |
-          Write-Host "pytest exit code ${{ steps.tests.outputs.pytest_exit }}"
-          exit 1
+  tests-gate:
+    needs: build
+    if: always() && needs.build.result != 'cancelled'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "pytest exit code: '${{ needs.build.outputs.pytest_exit }}'"
+          test "${{ needs.build.outputs.pytest_exit }}" = "0"
 
   verify-installer:
     needs: build
-    if: always() && needs.build.result != 'cancelled'
+    if: needs.build.result == 'success'
     strategy:
       fail-fast: false
       matrix:
