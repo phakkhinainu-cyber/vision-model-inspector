@@ -1,0 +1,11 @@
+onedir size MB: 942
+
+Name                                        Length
+----                                        ------
+VisionModelInspector-0.1.0-cpu-setup.exe 246025841
+
+
+Algorithm : SHA256
+Hash      : 2A6AC5C7B05186055EC4CC9CC2759D905CEE6DA57451A0F0A66A09E7FE4CD82F
+Path      : D:\a\vision-model-inspector\vision-model-inspector\Output\VisionModelInspector-0.1.0-cpu-setup.exe
+

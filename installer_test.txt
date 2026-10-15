@@ -1,0 +1,7 @@
+install exit: 0
+python on PATH after strip: False
+installed selftest exit: 0
+start menu shortcut: True
+manual installed: True
+notices installed: True
+uninstall exit: 0; exe removed: True

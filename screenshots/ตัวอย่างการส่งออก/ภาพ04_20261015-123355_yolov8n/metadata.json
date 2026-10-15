@@ -1,0 +1,638 @@
+{
+  "app": {
+    "name": "Vision Model Inspector",
+    "version": "0.1.0"
+  },
+  "exported_at": "2026-10-15T12:34:07.191643+00:00",
+  "snapshot": {
+    "index": 4,
+    "frame_id": 69,
+    "timestamp": "2026-10-15T12:33:55.461317+00:00",
+    "source": "demo.avi",
+    "image_size": [
+      960,
+      720
+    ]
+  },
+  "model": {
+    "name": "yolov8n.pt",
+    "path": "D:\\a\\vision-model-inspector\\vision-model-inspector\\test_assets\\models\\yolov8n.pt",
+    "sha256": "f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36",
+    "adapter": "ultralytics-pt",
+    "file_format": ".pt"
+  },
+  "device": "cpu",
+  "inference": {
+    "settings": {
+      "conf": 0.25,
+      "iou": 0.45,
+      "imgsz": 640,
+      "max_det": 300,
+      "device": "auto"
+    },
+    "inference_ms": 89.11910000006174
+  },
+  "class_mapping": {
+    "source": "model",
+    "classes": [
+      {
+        "class_id": 0,
+        "original_name": "person",
+        "display_name": "คน",
+        "visible": true
+      },
+      {
+        "class_id": 1,
+        "original_name": "bicycle",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 2,
+        "original_name": "car",
+        "display_name": "รถยนต์",
+        "visible": true
+      },
+      {
+        "class_id": 3,
+        "original_name": "motorcycle",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 4,
+        "original_name": "airplane",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 5,
+        "original_name": "bus",
+        "display_name": "รถบัส",
+        "visible": true
+      },
+      {
+        "class_id": 6,
+        "original_name": "train",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 7,
+        "original_name": "truck",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 8,
+        "original_name": "boat",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 9,
+        "original_name": "traffic light",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 10,
+        "original_name": "fire hydrant",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 11,
+        "original_name": "stop sign",
+        "display_name": "ป้ายหยุด",
+        "visible": true
+      },
+      {
+        "class_id": 12,
+        "original_name": "parking meter",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 13,
+        "original_name": "bench",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 14,
+        "original_name": "bird",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 15,
+        "original_name": "cat",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 16,
+        "original_name": "dog",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 17,
+        "original_name": "horse",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 18,
+        "original_name": "sheep",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 19,
+        "original_name": "cow",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 20,
+        "original_name": "elephant",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 21,
+        "original_name": "bear",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 22,
+        "original_name": "zebra",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 23,
+        "original_name": "giraffe",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 24,
+        "original_name": "backpack",
+        "display_name": "เป้",
+        "visible": true
+      },
+      {
+        "class_id": 25,
+        "original_name": "umbrella",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 26,
+        "original_name": "handbag",
+        "display_name": "กระเป๋าถือ",
+        "visible": true
+      },
+      {
+        "class_id": 27,
+        "original_name": "tie",
+        "display_name": "เนกไท",
+        "visible": true
+      },
+      {
+        "class_id": 28,
+        "original_name": "suitcase",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 29,
+        "original_name": "frisbee",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 30,
+        "original_name": "skis",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 31,
+        "original_name": "snowboard",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 32,
+        "original_name": "sports ball",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 33,
+        "original_name": "kite",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 34,
+        "original_name": "baseball bat",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 35,
+        "original_name": "baseball glove",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 36,
+        "original_name": "skateboard",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 37,
+        "original_name": "surfboard",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 38,
+        "original_name": "tennis racket",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 39,
+        "original_name": "bottle",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 40,
+        "original_name": "wine glass",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 41,
+        "original_name": "cup",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 42,
+        "original_name": "fork",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 43,
+        "original_name": "knife",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 44,
+        "original_name": "spoon",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 45,
+        "original_name": "bowl",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 46,
+        "original_name": "banana",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 47,
+        "original_name": "apple",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 48,
+        "original_name": "sandwich",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 49,
+        "original_name": "orange",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 50,
+        "original_name": "broccoli",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 51,
+        "original_name": "carrot",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 52,
+        "original_name": "hot dog",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 53,
+        "original_name": "pizza",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 54,
+        "original_name": "donut",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 55,
+        "original_name": "cake",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 56,
+        "original_name": "chair",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 57,
+        "original_name": "couch",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 58,
+        "original_name": "potted plant",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 59,
+        "original_name": "bed",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 60,
+        "original_name": "dining table",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 61,
+        "original_name": "toilet",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 62,
+        "original_name": "tv",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 63,
+        "original_name": "laptop",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 64,
+        "original_name": "mouse",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 65,
+        "original_name": "remote",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 66,
+        "original_name": "keyboard",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 67,
+        "original_name": "cell phone",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 68,
+        "original_name": "microwave",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 69,
+        "original_name": "oven",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 70,
+        "original_name": "toaster",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 71,
+        "original_name": "sink",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 72,
+        "original_name": "refrigerator",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 73,
+        "original_name": "book",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 74,
+        "original_name": "clock",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 75,
+        "original_name": "vase",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 76,
+        "original_name": "scissors",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 77,
+        "original_name": "teddy bear",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 78,
+        "original_name": "hair drier",
+        "display_name": "",
+        "visible": true
+      },
+      {
+        "class_id": 79,
+        "original_name": "toothbrush",
+        "display_name": "",
+        "visible": true
+      }
+    ]
+  },
+  "display_filter_applied_to_export": false,
+  "detections": [
+    {
+      "det_id": 0,
+      "class_id": 0,
+      "confidence": 0.8916231393814087,
+      "box_xyxy": [
+        94.86003112792969,
+        171.7608184814453,
+        277.4913024902344,
+        718.9603271484375
+      ],
+      "class_name": "person"
+    },
+    {
+      "det_id": 1,
+      "class_id": 5,
+      "confidence": 0.8798900842666626,
+      "box_xyxy": [
+        11.38201904296875,
+        1.9932861328125,
+        955.3355712890625,
+        711.3353271484375
+      ],
+      "class_name": "bus"
+    },
+    {
+      "det_id": 2,
+      "class_id": 0,
+      "confidence": 0.8258042335510254,
+      "box_xyxy": [
+        831.3860473632812,
+        146.600830078125,
+        959.8059692382812,
+        718.1515502929688
+      ],
+      "class_name": "person"
+    },
+    {
+      "det_id": 3,
+      "class_id": 0,
+      "confidence": 0.8047740459442139,
+      "box_xyxy": [
+        0.0,
+        266.17779541015625,
+        61.407005310058594,
+        717.9727783203125
+      ],
+      "class_name": "person"
+    }
+  ],
+  "dependencies": {
+    "python": "3.12.10",
+    "platform": "Windows-2022Server-10.0.20348-SP0",
+    "machine": "AMD64",
+    "numpy": "2.5.2",
+    "opencv-python": "4.14.0.94",
+    "onnxruntime": "1.31.0",
+    "torch": "2.8.0+cpu",
+    "torchvision": "0.23.0+cpu",
+    "ultralytics": "8.3.253",
+    "PySide6": "6.9.3",
+    "PyYAML": "6.0.3",
+    "opencv": "4.14.0"
+  },
+  "note": "ค่าความมั่นใจคือ score ของโมเดล ไม่ใช่ค่าความแม่นยำ (accuracy) ที่ประเมินจากชุดข้อมูลจริง",
+  "gradcam": {
+    "target": {
+      "det_id": 0,
+      "class_id": 0,
+      "confidence": 0.8916231393814087,
+      "box_xyxy": [
+        94.86003112792969,
+        171.7608184814453,
+        277.4913024902344,
+        718.9603271484375
+      ]
+    },
+    "layer_key": "auto",
+    "layer": "layer 21 (C2f)",
+    "overlay_opacity": 0.5,
+    "colormap": "JET",
+    "method": "Grad-CAM (Selvaraju et al. 2017) on pre-NMS class score",
+    "method_key": "gradcam",
+    "target_scalar": "sigmoid class score, class 0, anchor 6183",
+    "matched_anchor_index": 6183,
+    "matched_level": "P5",
+    "match_iou": 0.999999721465635,
+    "pre_nms_score": 0.8916231989860535,
+    "reported_confidence": 0.8916231393814087,
+    "score_difference": 5.960464477539063e-08,
+    "feature_map_shape": [
+      1,
+      256,
+      15,
+      20
+    ],
+    "letterbox": {
+      "gain": 0.6666666666666666,
+      "pad_left": 0,
+      "pad_top": 0,
+      "out_size": [
+        640,
+        480
+      ],
+      "orig_size": [
+        960,
+        720
+      ],
+      "auto_min_rect": true,
+      "stride": 32,
+      "pad_value": 114,
+      "interpolation": "INTER_LINEAR"
+    },
+    "device": "cpu",
+    "elapsed_ms": 308.7929000000713,
+    "disclaimer": "Grad-CAM วิเคราะห์ภาพที่เลือก ไม่ใช่ภาพสด และแผนที่สีไม่ใช่ค่าความแม่นยำ"
+  }
+}
