@@ -1,0 +1,224 @@
+name: windows-build-test
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["docs/**/*.md", "README.md"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONUTF8: "1"
+  PYTHONIOENCODING: "utf-8"
+  APP_VERSION: "0.1.0"
+  ASSETS_URL: https://github.com/ultralytics/assets/releases/download/v8.3.0
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 150
+    defaults:
+      run:
+        shell: pwsh
+    outputs:
+      pytest_exit: ${{ steps.tests.outputs.pytest_exit }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies (CPU)
+        run: |
+          New-Item -ItemType Directory -Force ci_results | Out-Null
+          python -m pip install --upgrade pip
+          pip install --index-url https://download.pytorch.org/whl/cpu "torch>=2.3,<2.9" "torchvision>=0.18,<0.24"
+          pip install -r requirements/runtime.in -r requirements/dev.in
+          pip freeze --exclude-editable | Out-File -Encoding utf8 ci_results/lock-windows-cpu.txt
+          python -c "import torch, ultralytics, PySide6, onnxruntime, cv2; print('torch', torch.__version__, 'ultralytics', ultralytics.__version__, 'PySide6', PySide6.__version__, 'ort', onnxruntime.__version__, 'cv2', cv2.__version__)" | Tee-Object ci_results/versions.txt
+          systeminfo | Select-String "OS Name","OS Version","Total Physical Memory","Processor" | Out-File -Encoding utf8 ci_results/runner_system.txt
+          Get-CimInstance Win32_Processor | Select-Object Name,NumberOfCores,NumberOfLogicalProcessors | Format-List | Out-File -Append -Encoding utf8 ci_results/runner_system.txt
+
+      - name: Fonts, icon, models, test assets
+        run: |
+          python tools/fetch_fonts.py
+          python tools/make_icon.py
+          if (-not (Test-Path LICENSE)) { curl.exe -sSL --retry 3 -o LICENSE https://www.gnu.org/licenses/agpl-3.0.txt }
+          Copy-Item LICENSE ci_results/LICENSE.txt
+          New-Item -ItemType Directory -Force test_assets/models | Out-Null
+          foreach ($m in "yolov8n.pt","yolo11n.pt","yolov8n-cls.pt") {
+            curl.exe -sSL --retry 3 -o "test_assets/models/$m" "$env:ASSETS_URL/$m"
+          }
+          Get-FileHash test_assets/models/* -Algorithm SHA256 | Format-Table -AutoSize | Out-File -Encoding utf8 ci_results/model_hashes.txt
+          python tools/make_test_assets.py
+
+      - name: Run tests
+        id: tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          python -m pytest -v -rA --junitxml ci_results/junit.xml *> ci_results/pytest.txt
+          $code = $LASTEXITCODE
+          Get-Content ci_results/pytest.txt -Tail 80
+          "pytest_exit=$code" >> $env:GITHUB_OUTPUT
+          exit 0
+
+      - name: Screenshots of the real application
+        run: |
+          python tools/screenshots.py ci_results/screenshots *> ci_results/screenshots_log.txt
+          if ($LASTEXITCODE -ne 0) {
+            Get-Content ci_results/screenshots_log.txt -Tail 40
+            Write-Host "native platform failed, retrying offscreen"
+            $env:QT_QPA_PLATFORM = "offscreen"
+            python tools/screenshots.py ci_results/screenshots *> ci_results/screenshots_log_offscreen.txt
+          }
+          Get-ChildItem ci_results/screenshots
+
+      - name: Third-party notices
+        run: |
+          pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --with-urls --output-file THIRD_PARTY_NOTICES.txt
+          Add-Content THIRD_PARTY_NOTICES.txt "`n`nIBM Plex Sans Thai — SIL Open Font License 1.1`n"
+          Get-Content src/vmi/resources/fonts/OFL.txt | Add-Content THIRD_PARTY_NOTICES.txt
+          pip-licenses --from=mixed --format=markdown --with-urls | Out-File -Encoding utf8 ci_results/licenses.md
+          Copy-Item THIRD_PARTY_NOTICES.txt ci_results/
+
+      - name: PyInstaller (onedir)
+        run: |
+          pyinstaller --noconfirm --clean packaging/vmi.spec *> ci_results/pyinstaller.txt
+          if ($LASTEXITCODE -ne 0) { Get-Content ci_results/pyinstaller.txt -Tail 60; exit 1 }
+          $size = (Get-ChildItem dist/VisionModelInspector -Recurse | Measure-Object Length -Sum).Sum / 1MB
+          "onedir size MB: {0:N0}" -f $size | Tee-Object ci_results/sizes.txt
+
+      - name: Self-test frozen build (Thai paths)
+        run: |
+          $dir = "C:\ทดสอบ โมเดล"
+          New-Item -ItemType Directory -Force $dir | Out-Null
+          Copy-Item test_assets/models/yolov8n.pt "$dir\yolov8n.pt"
+          Copy-Item test_assets/models/yolov8n.onnx "$dir\yolov8n.onnx"
+          Copy-Item test_assets/images/bus.jpg "$dir\ภาพ รถบัส.jpg"
+          $exe = "dist\VisionModelInspector\VisionModelInspector.exe"
+          $p = Start-Process $exe -ArgumentList @("--selftest","--model","`"$dir\yolov8n.pt`"","--image","`"$dir\ภาพ รถบัส.jpg`"","--out","`"$pwd\ci_results\selftest_frozen_pt.json`"","--screenshot","`"$pwd\ci_results\selftest_frozen.png`"") -Wait -PassThru
+          "frozen pt exit: $($p.ExitCode)" | Tee-Object -Append ci_results/selftest_summary.txt
+          $p2 = Start-Process $exe -ArgumentList @("--selftest","--model","`"$dir\yolov8n.onnx`"","--image","`"$dir\ภาพ รถบัส.jpg`"","--out","`"$pwd\ci_results\selftest_frozen_onnx.json`"") -Wait -PassThru
+          "frozen onnx exit: $($p2.ExitCode)" | Tee-Object -Append ci_results/selftest_summary.txt
+          if ($p.ExitCode -ne 0 -or $p2.ExitCode -ne 0) { Get-Content ci_results/selftest_frozen_pt.json; exit 1 }
+
+      - name: Inno Setup installer
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress | Out-Null }
+          & $iscc /Qp "/DAppVersion=$env:APP_VERSION" packaging\installer.iss *> ci_results/iscc.txt
+          if ($LASTEXITCODE -ne 0) { Get-Content ci_results/iscc.txt -Tail 40; exit 1 }
+          Get-ChildItem Output | Format-Table Name,Length -AutoSize | Out-File -Append -Encoding utf8 ci_results/sizes.txt
+          Get-FileHash Output\*.exe -Algorithm SHA256 | Format-List | Out-File -Append -Encoding utf8 ci_results/sizes.txt
+
+      - name: Install silently + self-test without Python on PATH + uninstall
+        run: |
+          $setup = (Get-ChildItem Output\*.exe)[0].FullName
+          $p = Start-Process $setup -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/CURRENTUSER','/DIR="C:\VMI Installed"','/LOG="C:\vmi-install.log"' -Wait -PassThru
+          "install exit: $($p.ExitCode)" | Tee-Object ci_results/installer_test.txt
+          $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notmatch 'Python|pip' }) -join ';'
+          Remove-Item Env:PYTHONPATH -ErrorAction SilentlyContinue
+          Remove-Item Env:PYTHONHOME -ErrorAction SilentlyContinue
+          "python on PATH after strip: $((Get-Command python -ErrorAction SilentlyContinue) -ne $null)" | Tee-Object -Append ci_results/installer_test.txt
+          $exe = "C:\VMI Installed\VisionModelInspector.exe"
+          $q = Start-Process $exe -ArgumentList @("--selftest","--model","`"C:\ทดสอบ โมเดล\yolov8n.pt`"","--image","`"C:\ทดสอบ โมเดล\ภาพ รถบัส.jpg`"","--out","`"$pwd\ci_results\selftest_installed.json`"") -Wait -PassThru
+          "installed selftest exit: $($q.ExitCode)" | Tee-Object -Append ci_results/installer_test.txt
+          $lnk = Test-Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Vision Model Inspector\Vision Model Inspector.lnk"
+          "start menu shortcut: $lnk" | Tee-Object -Append ci_results/installer_test.txt
+          $u = Start-Process "C:\VMI Installed\unins000.exe" -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Wait -PassThru
+          Start-Sleep -Seconds 3
+          "uninstall exit: $($u.ExitCode); exe removed: $(-not (Test-Path $exe))" | Tee-Object -Append ci_results/installer_test.txt
+          Copy-Item C:\vmi-install.log ci_results/ -ErrorAction SilentlyContinue
+          if ($p.ExitCode -ne 0 -or $q.ExitCode -ne 0) { exit 1 }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer
+          path: Output/*.exe
+          retention-days: 30
+          compression-level: 0
+
+      - name: Publish results branch
+        if: always()
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          $dst = "$env:RUNNER_TEMP\results"
+          New-Item -ItemType Directory -Force $dst | Out-Null
+          Copy-Item -Recurse ci_results\* $dst
+          New-Item -ItemType Directory -Force "$dst\fonts" | Out-Null
+          Copy-Item src\vmi\resources\fonts\* "$dst\fonts\" -ErrorAction SilentlyContinue
+          Copy-Item packaging\app.png $dst -ErrorAction SilentlyContinue
+          Set-Location $dst
+          git init -q -b results
+          git config user.name "ci"
+          git config user.email "ci@users.noreply.github.com"
+          git add -A
+          git commit -q -m "CI results run ${{ github.run_number }} (${{ github.sha }})"
+          git push -q -f "https://x-access-token:$env:TOKEN@github.com/${{ github.repository }}.git" "HEAD:refs/heads/ci-results/run-${{ github.run_number }}"
+
+      - name: Release installer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "v$env:APP_VERSION-build.${{ github.run_number }}"
+          gh release create $tag (Get-ChildItem Output\*.exe).FullName --prerelease --title "Vision Model Inspector $env:APP_VERSION (CPU) build ${{ github.run_number }}" --notes "Windows x64 CPU installer built by CI from ${{ github.sha }}. See docs/TEST_REPORT_TH.md."
+
+      - name: Fail if tests failed
+        if: steps.tests.outputs.pytest_exit != '0'
+        run: |
+          Write-Host "pytest exit code ${{ steps.tests.outputs.pytest_exit }}"
+          exit 1
+
+  verify-installer:
+    needs: build
+    if: always() && needs.build.result != 'cancelled'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, windows-2025]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: installer
+          path: inst
+      - name: Install, self-test (no Python on PATH), uninstall
+        run: |
+          New-Item -ItemType Directory -Force res | Out-Null
+          $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notmatch 'Python|pip' }) -join ';'
+          "python on PATH: $((Get-Command python -ErrorAction SilentlyContinue) -ne $null)" | Tee-Object res/verify.txt
+          (Get-CimInstance Win32_OperatingSystem | Select-Object Caption,Version,BuildNumber | Format-List | Out-String) | Tee-Object -Append res/verify.txt
+          New-Item -ItemType Directory -Force "C:\data" | Out-Null
+          curl.exe -sSL --retry 3 -o C:\data\yolo11n.pt "$env:ASSETS_URL/yolo11n.pt"
+          curl.exe -sSL --retry 3 -o C:\data\bus.jpg "https://raw.githubusercontent.com/ultralytics/ultralytics/main/ultralytics/assets/bus.jpg"
+          $setup = (Get-ChildItem inst\*.exe)[0].FullName
+          $p = Start-Process $setup -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/CURRENTUSER' -Wait -PassThru
+          "install exit: $($p.ExitCode)" | Tee-Object -Append res/verify.txt
+          $exe = "$env:LOCALAPPDATA\Programs\Vision Model Inspector\VisionModelInspector.exe"
+          "exe exists: $(Test-Path $exe)" | Tee-Object -Append res/verify.txt
+          $q = Start-Process $exe -ArgumentList @("--selftest","--model","C:\data\yolo11n.pt","--image","C:\data\bus.jpg","--out","`"$pwd\res\selftest.json`"","--screenshot","`"$pwd\res\selftest.png`"") -Wait -PassThru
+          "selftest exit: $($q.ExitCode)" | Tee-Object -Append res/verify.txt
+          $u = Start-Process "$env:LOCALAPPDATA\Programs\Vision Model Inspector\unins000.exe" -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES' -Wait -PassThru
+          Start-Sleep 3
+          "uninstall exit: $($u.ExitCode); removed: $(-not (Test-Path $exe))" | Tee-Object -Append res/verify.txt
+          if ($p.ExitCode -ne 0 -or $q.ExitCode -ne 0) { exit 1 }
+      - name: Publish verify results
+        if: always()
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          Set-Location res
+          git init -q -b results
+          git config user.name "ci"
+          git config user.email "ci@users.noreply.github.com"
+          git add -A
+          git commit -q -m "verify ${{ matrix.os }} run ${{ github.run_number }}"
+          git push -q -f "https://x-access-token:$env:TOKEN@github.com/${{ github.repository }}.git" "HEAD:refs/heads/ci-results/run-${{ github.run_number }}-verify-${{ matrix.os }}"

@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+build/
+dist/
+Output/
+test_assets/
+ci_results/
+screenshots/
+*.egg-info/
+src/vmi/resources/fonts/*.ttf
+src/vmi/resources/fonts/OFL.txt
+packaging/app.ico
+.pytest_cache/

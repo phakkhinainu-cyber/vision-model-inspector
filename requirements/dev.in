@@ -1,0 +1,6 @@
+# Test / build tooling (not shipped in the installer)
+pytest>=8
+onnx>=1.16          # only used to create ONNX test models (Ultralytics export)
+pyinstaller>=6.6
+pip-licenses>=5
+pillow>=10

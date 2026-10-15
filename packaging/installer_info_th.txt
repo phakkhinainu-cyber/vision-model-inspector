@@ -1,0 +1,12 @@
+﻿Vision Model Inspector — แพ็กเกจ CPU (Windows 10/11 x64)
+
+• ใช้งานได้โดยไม่ต้องติดตั้ง Python และไม่ต้องเปิด Terminal
+• ไม่ต้องมี GPU — แพ็กเกจนี้ประมวลผลด้วย CPU (PyTorch CPU + ONNX Runtime CPU)
+• ใช้งานแบบ offline ได้กับไฟล์ภาพ วิดีโอ และกล้อง USB หลังติดตั้งเสร็จ
+• ค่าตั้งและ log เก็บที่ %LOCALAPPDATA%\VisionModelInspector
+• ไฟล์โมเดล .pt เปิดได้เฉพาะจากแหล่งที่เชื่อถือได้ (pickle รันโค้ดได้ขณะโหลด)
+
+สัญญาอนุญาต: โปรแกรมนี้รวม Ultralytics (AGPL-3.0) จึงแจกจ่ายภายใต้ AGPL-3.0
+รายละเอียดไลบรารีอื่นอยู่ใน THIRD_PARTY_NOTICES.txt
+
+Vision Model Inspector — CPU package for Windows 10/11 x64. No Python or GPU required.

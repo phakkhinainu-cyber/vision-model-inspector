@@ -1,0 +1,12 @@
+# Top-level runtime dependencies (Windows 11/10 x64, CPU build).
+# The exact versions used for a build are frozen by CI into
+# requirements/lock-windows-cpu.txt — install from that file for reproducible builds.
+# PyTorch CPU wheels come from https://download.pytorch.org/whl/cpu (see build script).
+numpy>=1.26,<3
+opencv-python>=4.9,<5
+PyYAML>=6.0
+PySide6>=6.7,<6.10
+onnxruntime>=1.18,<2
+torch>=2.3,<2.9
+torchvision>=0.18,<0.24
+ultralytics>=8.3.0,<8.4
