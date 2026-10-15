@@ -366,7 +366,7 @@ class MainWindow(QMainWindow):
         self.det_card.body_layout.addLayout(dfoot)
         self.left_split.addWidget(self.det_card)
         self.table_card = Card("วัตถุที่ตรวจพบ  (จากภาพที่จับไว้)")
-        self.table_card.setMinimumHeight(200)
+        self.table_card.setMinimumHeight(165)
         self.table = DetectionTable()
         self.table.detectionSelected.connect(self.select_detection)
         self.table_card.body_layout.setContentsMargins(0, 0, 0, 0)
@@ -397,7 +397,7 @@ class MainWindow(QMainWindow):
         self.gc_card.body_layout.addLayout(gfoot)
         self.mid_split.addWidget(self.gc_card)
         self.detail_card = Card("ตัวอย่างวัตถุที่เลือก: -")
-        self.detail_card.setMinimumHeight(200)
+        self.detail_card.setMinimumHeight(150)
         self.detail = DetailPanel()
         self.detail.clear()
         self.detail_card.body_layout.addWidget(self.detail)
@@ -434,7 +434,7 @@ class MainWindow(QMainWindow):
         total = self.left_split.height()
         if total < 200:
             return
-        bottom = max(205, min(260, int(total * 0.30)))
+        bottom = max(170, min(240, int(total * 0.28)))
         self.left_split.setSizes([total - bottom, bottom])
         self.mid_split.setSizes([total - bottom, bottom])
         sizes = self.hsplit.sizes()

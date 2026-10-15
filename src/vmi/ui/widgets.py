@@ -556,25 +556,31 @@ class DetailPanel(QWidget):
         lay.setContentsMargins(4, 0, 4, 0)
         lay.setSpacing(16)
         self.thumb = QLabel()
-        self.thumb.setFixedSize(150, 120)
+        self.thumb.setFixedSize(132, 96)
         self.thumb.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.thumb.setStyleSheet(f"background:#F2F3F7;border:1px solid {theme.BORDER};border-radius:6px;")
         lay.addWidget(self.thumb)
-        from PySide6.QtWidgets import QFormLayout
-        form = QFormLayout()
-        form.setHorizontalSpacing(18)
-        form.setVerticalSpacing(1)
+        from PySide6.QtWidgets import QGridLayout
+        grid = QGridLayout()
+        grid.setHorizontalSpacing(12)
+        grid.setVerticalSpacing(4)
         self.vals = {}
-        for key in ("ประเภท", "รหัสคลาส", "ความมั่นใจ", "กรอบ (x, y, w, h)", "ขนาดภาพ", "โมเดล"):
+        keys = ("ประเภท", "ความมั่นใจ", "รหัสคลาส", "กรอบ (x, y, w, h)", "ขนาดภาพ", "โมเดล")
+        for i, key in enumerate(keys):
+            r, c = (i, 0) if i < 3 else (i - 3, 2)
             v = QLabel("-")
             v.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            v.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
             if key in ("ประเภท", "ความมั่นใจ"):
                 v.setStyleSheet("font-weight:600;")
             self.vals[key] = v
             k = QLabel(key + ":")
             k.setObjectName("Hint")
-            form.addRow(k, v)
-        lay.addLayout(form, 1)
+            grid.addWidget(k, r, c)
+            grid.addWidget(v, r, c + 1)
+        grid.setColumnStretch(1, 1)
+        grid.setColumnStretch(3, 1)
+        lay.addLayout(grid, 1)
 
     def clear(self, msg="เลือกวัตถุจากตารางหรือคลิกกรอบบนภาพ"):
         self.thumb.setPixmap(QPixmap())
@@ -595,9 +601,11 @@ class DetailPanel(QWidget):
             self.thumb.setPixmap(pm)
         orig = snap.class_names.get(int(det.class_id), f"class_{det.class_id}")
         lab = snap.label(det.class_id)
-        self.vals["ประเภท"].setText(lab if lab == orig else f"{lab}  (ต้นฉบับ: {orig})")
+        self.vals["ประเภท"].setText(lab if lab == orig else f"{lab} ({orig})")
+        self.vals["ประเภท"].setToolTip(f"ชื่อแสดงผล: {lab}\nชื่อต้นฉบับจากโมเดล: {orig}")
         self.vals["รหัสคลาส"].setText(str(det.class_id))
         self.vals["ความมั่นใจ"].setText(format_confidence(det.confidence))
         self.vals["กรอบ (x, y, w, h)"].setText(f"{x}, {y}, {w}, {h}")
         self.vals["ขนาดภาพ"].setText(f"{W} × {H}")
-        self.vals["โมเดล"].setText(f"{snap.result.model.name} ({snap.result.model.short_hash})")
+        self.vals["โมเดล"].setText(snap.result.model.name)
+        self.vals["โมเดล"].setToolTip(f"{snap.result.model.name}\nSHA-256: {snap.result.model.sha256}")
