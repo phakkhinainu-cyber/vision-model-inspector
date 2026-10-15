@@ -7,6 +7,13 @@
 * คู่มือนักพัฒนา / เพิ่ม adapter: `docs/DEVELOPER_TH.md`, `docs/ADAPTERS_TH.md`
 * Compatibility matrix และรายงานการทดสอบ: `docs/COMPATIBILITY_TH.md`, `docs/TEST_REPORT_TH.md`
 
+## ดาวน์โหลด
+
+ตัวติดตั้ง Windows x64 (CPU): หน้า Releases ของ repo นี้ → `VisionModelInspector-0.1.0-cpu-setup.exe`
+(ทดสอบ: 54/54 เทสผ่าน, ติดตั้ง/รัน/ถอนการติดตั้งบน Windows Server 2022 และ 2025 — ดู `docs/TEST_REPORT_TH.md`)
+
+ภาพหน้าจอจริงอยู่ใน `docs/screenshots/`
+
 ## รันจากซอร์ส (นักพัฒนา)
 
 ```powershell

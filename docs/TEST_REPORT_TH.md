@@ -1,6 +1,6 @@
 # รายงานการทดสอบและข้อจำกัด — Vision Model Inspector 0.1.0
 
-ทดสอบอัตโนมัติด้วย GitHub Actions (workflow `windows-build-test`) ผลดิบของแต่ละรอบอยู่ใน branch
+ทดสอบอัตโนมัติด้วย GitHub Actions (workflow `windows-build-test`, รอบสุดท้าย run 8 วันที่ 15 ต.ค. 2569) ผลดิบของแต่ละรอบอยู่ใน branch
 `ci-results/run-<N>` (pytest.txt, junit.xml, ภาพหน้าจอ, JSON ของ self-test, log ของ PyInstaller/Inno Setup)
 
 ## สภาพแวดล้อม
@@ -20,7 +20,7 @@
 | ชุดเทสอัตโนมัติ (pytest) | **54/54 ผ่าน** (core 26, pipeline 10, models 14, GUI 4) |
 | PyInstaller onedir | สำเร็จ (942 MB) |
 | Self-test โปรแกรมที่ build แล้ว (path ภาษาไทย `C:\ทดสอบ โมเดล\…`) | ✅ .pt: ตรวจพบ 6 วัตถุ + Grad-CAM (IoU จับคู่ 1.000) / ✅ .onnx: ตรวจพบ 5 วัตถุ, Grad-CAM ปิดตามข้อกำหนด |
-| ตัวติดตั้ง Inno Setup | สำเร็จ `VisionModelInspector-0.1.0-cpu-setup.exe` 232 MB |
+| ตัวติดตั้ง Inno Setup | สำเร็จ `VisionModelInspector-0.1.0-cpu-setup.exe` 246,025,841 ไบต์ (~235 MB), SHA-256 `2A6AC5C7B05186055EC4CC9CC2759D905CEE6DA57451A0F0A66A09E7FE4CD82F` (CI run 8, release `v0.1.0-build.8`) — รวมคู่มือ PDF และ THIRD_PARTY_NOTICES |
 | ติดตั้งเงียบ → self-test โดย **ตัด Python ออกจาก PATH** → ถอนการติดตั้ง (Server 2022) | ✅ ติดตั้ง/รัน/ถอนสำเร็จ, มี shortcut ใน Start Menu, ไฟล์โปรแกรมถูกลบหลังถอน |
 | ติดตั้งบนเครื่องใหม่ Server 2022 และ Server 2025 + self-test YOLO11 + เปิดหน้าจอ | ✅ ทั้งสองระบบ (หมายเหตุ: บน Server 2025 ยังมี `python` alias ของ Windows ใน PATH — โปรแกรมไม่ได้ใช้) |
 
