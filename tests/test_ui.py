@@ -9,7 +9,7 @@ pytest.importorskip("ultralytics")
 
 from conftest import ASSETS_DIR, model_path  # noqa: E402
 
-pytestmark = pytest.mark.skipif(not os.path.exists(os.path.join(ASSETS_DIR, "demo.mp4")),
+pytestmark = pytest.mark.skipif(not os.path.exists(os.path.join(ASSETS_DIR, "demo.avi")),
                                 reason="test assets missing")
 
 
@@ -57,9 +57,11 @@ def test_full_flow_video_snapshot_gradcam_export(app, win, tmp_path):
     ad = load(app, w, "yolov8n.pt")
     assert ad.info.classes.count == 80
     w.mode_combo.setCurrentIndex(w.mode_combo.findData("video"))
-    w.set_file_source(os.path.join(ASSETS_DIR, "demo.mp4"))
+    w.set_file_source(os.path.join(ASSETS_DIR, "demo.avi"))
     w.start_source()
-    assert wait_until(app, lambda: w._live_pair is not None, 60), "no live inference result"
+    ok = wait_until(app, lambda: w._live_pair is not None, 60)
+    assert ok, f"no live inference result; task={w._task!r} source={w._source_state!r} " \
+               f"last_frame={w._last_frame is not None} paused={w.worker.paused}"
     pkt, res = w._live_pair
     assert res.frame_id == pkt.frame_id
     assert w.b_capture.isEnabled() and w.b_stop.isEnabled() and not w.b_start.isEnabled()

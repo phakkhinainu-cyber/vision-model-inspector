@@ -8,7 +8,7 @@ Creates:
   * yolov8n.onnx            — Ultralytics ONNX export (static 640, with metadata)
   * yolov8n_nonames.onnx    — same, with all metadata removed
   * images/bus.jpg, zidane.jpg (copied from the ultralytics package)
-  * demo.mp4                — short pan over bus.jpg for the live-preview demo
+  * demo.avi                — short pan over bus.jpg for the live-preview demo
 """
 from __future__ import annotations
 
@@ -72,14 +72,16 @@ def images():
 
 
 def demo_video():
-    out = os.path.join(ASSETS, "demo.mp4")
+    out = os.path.join(ASSETS, "demo.avi")
     if os.path.exists(out):
         return out
     img = cv2.imread(os.path.join(IMAGES, "bus.jpg"))
     h, w = img.shape[:2]
     W, H = 960, 720
     canvas = cv2.resize(img, (int(w * H / h * 1.25), int(H * 1.25)))
-    vw = cv2.VideoWriter(out, cv2.VideoWriter_fourcc(*"mp4v"), 25, (W, H))
+    vw = cv2.VideoWriter(out, cv2.VideoWriter_fourcc(*"MJPG"), 25, (W, H))
+    if not vw.isOpened():
+        raise RuntimeError("cannot create demo video")
     n = 150
     for i in range(n):
         t = 0.5 - 0.5 * np.cos(2 * np.pi * i / n)
@@ -87,6 +89,11 @@ def demo_video():
         y = int(t * (canvas.shape[0] - H) * 0.5)
         vw.write(canvas[y:y + H, x:x + W])
     vw.release()
+    cap = cv2.VideoCapture(out)
+    ok, _ = cap.read()
+    cap.release()
+    if not ok:
+        raise RuntimeError("demo video is not readable")
     return out
 
 

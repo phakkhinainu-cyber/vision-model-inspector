@@ -169,6 +169,12 @@ def test_onnx_matches_pytorch(v8, onnx_v8):
 
 
 # ---------------------------------------------------------------- Grad-CAM
+def test_gradcam_enabled_for_v8_and_v11(v8, v11):
+    assert v8.info.caps.grad_cam, v8.info.caps.grad_cam_reason
+    assert v11.info.caps.grad_cam, v11.info.caps.grad_cam_reason
+    assert v8.info.details["ตระกูลโมเดล"] == "yolov8"
+
+
 def test_gradcam_target_matching_every_detection(v8):
     img = bus()
     eng = v8.gradcam_engine()

@@ -27,7 +27,12 @@ def create_app(argv=None):
     theme.FONT_FAMILY_ACTIVE = family
     app.setFont(theme.app_font(family))
     app.setStyle("Fusion")
-    app.setStyleSheet(theme.stylesheet(family))
+    from .config import user_data_dir
+    try:
+        img_dir = theme.make_indicator_images(os.path.join(user_data_dir(), "ui"))
+    except Exception:
+        img_dir = ""
+    app.setStyleSheet(theme.stylesheet(family, img_dir))
     return app
 
 

@@ -52,6 +52,7 @@ def resolve_torch_device(requested: str) -> str:
 
 
 def model_family(model) -> str:
+    """Identify the architecture family from the checkpoint yaml, else from its modules."""
     try:
         yaml_file = str(getattr(model, "yaml", {}).get("yaml_file", "")).lower()
     except Exception:
@@ -59,6 +60,20 @@ def model_family(model) -> str:
     for fam in ("yolo11", "yolov8", "yolov10", "yolo12", "yolo26", "yolov5", "yolov9", "rtdetr"):
         if fam in yaml_file:
             return fam
+    try:
+        mods = {type(m).__name__ for m in model.modules()}
+    except Exception:
+        mods = set()
+    if mods & {"SCDown", "PSA", "C2fCIB", "v10Detect"}:
+        return "yolov10"
+    if "A2C2f" in mods:
+        return "yolo12"
+    if "RTDETRDecoder" in mods:
+        return "rtdetr"
+    if {"C3k2", "C2PSA"} <= mods:
+        return "yolo11"
+    if {"C2f", "SPPF", "Detect"} <= mods and "C3k2" not in mods:
+        return "yolov8"
     return yaml_file or "unknown"
 
 

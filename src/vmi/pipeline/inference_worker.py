@@ -62,7 +62,7 @@ class InferenceWorker(threading.Thread):
         self._jobs = collections.deque(maxlen=16)
         self._cv = threading.Condition()
         self._busy = threading.Lock()
-        self._stop = False
+        self._stop_flag = False
         self._paused = False
         self.pause_reason = ""
         self._adapter = None
@@ -135,7 +135,7 @@ class InferenceWorker(threading.Thread):
 
     def stop(self, timeout: float = 10.0):
         with self._cv:
-            self._stop = True
+            self._stop_flag = True
             self._cv.notify_all()
         if self.is_alive():
             self.join(timeout)
@@ -143,7 +143,7 @@ class InferenceWorker(threading.Thread):
     # ------------------------------------------------------------ loop
     def _next_work(self):
         with self._cv:
-            while not self._stop:
+            while not self._stop_flag:
                 if self._jobs:
                     pkt, tag = self._jobs.popleft()
                     return pkt, "job", tag

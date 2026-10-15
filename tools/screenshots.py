@@ -70,7 +70,7 @@ def main(out_dir):
     w._apply_class_view()
 
     w.mode_combo.setCurrentIndex(w.mode_combo.findData("video"))
-    w.set_file_source(os.path.join(ASSETS, "demo.mp4"))
+    w.set_file_source(os.path.join(ASSETS, "demo.avi"))
     w.start_source()
     wait(lambda: w._live_pair is not None)
     snaps = []

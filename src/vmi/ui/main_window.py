@@ -106,6 +106,7 @@ class MainWindow(QMainWindow):
         self._build_ui()
         self._apply_settings_to_widgets()
         self.refresh_cameras(initial=True)
+        self._fill_layers()
         self._status_timer = QTimer(self)
         self._status_timer.timeout.connect(self._update_status)
         self._status_timer.start(500)
@@ -251,8 +252,9 @@ class MainWindow(QMainWindow):
         lv.setContentsMargins(8, 6, 8, 8)
         lv.setSpacing(4)
         hh = QHBoxLayout()
-        self.live_dot = QLabel("●")
-        self.live_dot.setStyleSheet("color:#7E879E;font-size:12pt;")
+        self.live_dot = QFrame()
+        self.live_dot.setFixedSize(10, 10)
+        self._set_dot(False)
         hh.addWidget(self.live_dot)
         t = QLabel("ภาพสด")
         t.setObjectName("LiveTitle")
@@ -336,6 +338,10 @@ class MainWindow(QMainWindow):
         row.addWidget(info)
         return row
 
+    def _set_dot(self, on: bool):
+        c = "#38D16A" if on else "#7E879E"
+        self.live_dot.setStyleSheet(f"background:{c};border-radius:5px;border:none;")
+
     def _build_main(self):
         self.hsplit = QSplitter(Qt.Orientation.Horizontal)
         self.hsplit.setChildrenCollapsible(False)
@@ -404,13 +410,14 @@ class MainWindow(QMainWindow):
 
     def _build_settings_panel(self):
         card = Card("ตั้งค่า Grad-CAM และการตรวจจับ")
-        card.setMinimumWidth(270)
+        card.setMinimumWidth(285)
         card.setMaximumWidth(340)
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         inner = QWidget()
-        inner.setStyleSheet("background:white;")
+        inner.setObjectName("SettingsInner")
+        inner.setMinimumWidth(0)
         lay = QVBoxLayout(inner)
         lay.setContentsMargins(10, 8, 10, 10)
         lay.setSpacing(6)
@@ -446,20 +453,23 @@ class MainWindow(QMainWindow):
         self.imgsz_combo = QComboBox()
         self.imgsz_combo.currentIndexChanged.connect(self._settings_changed)
         lay.addWidget(self.imgsz_combo)
+        lay.addWidget(_field("อัตราการตรวจจับสด"))
         rate = QHBoxLayout()
-        rate.addWidget(QLabel("ตรวจทุก"))
         self.every_n = QSpinBox()
         self.every_n.setRange(1, 60)
+        self.every_n.setPrefix("ทุก ")
         self.every_n.setSuffix(" เฟรม")
+        self.every_n.setToolTip("ตรวจจับทุก N เฟรมที่ได้รับ")
         self.every_n.valueChanged.connect(self._rate_changed)
-        rate.addWidget(self.every_n)
-        rate.addWidget(QLabel("สูงสุด"))
+        rate.addWidget(self.every_n, 1)
         self.max_fps = QSpinBox()
         self.max_fps.setRange(0, 120)
         self.max_fps.setSpecialValueText("ไม่จำกัด")
+        self.max_fps.setPrefix("สูงสุด ")
         self.max_fps.setSuffix(" FPS")
+        self.max_fps.setToolTip("จำกัดจำนวนครั้งที่ตรวจจับต่อวินาที (0 = ไม่จำกัด)")
         self.max_fps.valueChanged.connect(self._rate_changed)
-        rate.addWidget(self.max_fps)
+        rate.addWidget(self.max_fps, 1)
         lay.addLayout(rate)
         lay.addWidget(hline())
         lay.addWidget(_field("อุปกรณ์ประมวลผล"))
@@ -492,6 +502,7 @@ class MainWindow(QMainWindow):
         sec2.setObjectName("SectionTitle")
         lay.addWidget(sec2)
         lim = QHBoxLayout()
+        lim.setSpacing(6)
         self.max_items = QSpinBox()
         self.max_items.setRange(1, 500)
         self.max_items.setSuffix(" ภาพ")
@@ -987,7 +998,7 @@ class MainWindow(QMainWindow):
         src.stop()
         self.worker.slot.clear()
         self._source_state = "หยุดแล้ว"
-        self.live_dot.setStyleSheet("color:#7E879E;font-size:12pt;")
+        self._set_dot(False)
         self._update_states()
 
     def _toggle_pause(self, on):
@@ -1010,14 +1021,14 @@ class MainWindow(QMainWindow):
     def _on_source_stopped(self):
         if self.source is not None and not self.source.running and self.source.kind != "image":
             self.source = None
-            self.live_dot.setStyleSheet("color:#7E879E;font-size:12pt;")
+            self._set_dot(False)
         self._update_states()
 
     def _on_frame(self, pkt: FramePacket):
         if self.source is None:
             return
         self._last_frame = pkt
-        self.live_dot.setStyleSheet("color:#38D16A;font-size:12pt;")
+        self._set_dot(True)
         detecting = self.adapter is not None and not self.worker.paused
         if self.source.kind == "image":
             if self.adapter is not None:

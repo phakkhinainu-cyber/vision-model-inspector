@@ -14,3 +14,7 @@ ASSETS_DIR = os.path.join(ROOT, "test_assets")
 
 def model_path(name):
     return os.path.join(MODELS_DIR, name)
+
+import logging  # noqa: E402
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")

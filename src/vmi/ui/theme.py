@@ -59,7 +59,62 @@ def app_font(family: str, pt: float = 9.5) -> QFont:
     return f
 
 
-def stylesheet(family: str) -> str:
+def make_indicator_images(folder: str) -> str:
+    """Paint small arrow / check images used by the style sheet. Returns a QSS-safe path."""
+    from PySide6.QtCore import QPointF, Qt
+    from PySide6.QtGui import QColor, QPainter, QPen, QPixmap, QPolygonF
+    os.makedirs(folder, exist_ok=True)
+
+    def save(name, fn, color, w=24, h=24):
+        pm = QPixmap(w, h)
+        pm.fill(Qt.GlobalColor.transparent)
+        p = QPainter(pm)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        pen = QPen(QColor(color), 3.0)
+        pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+        p.setPen(pen)
+        fn(p)
+        p.end()
+        pm.save(os.path.join(folder, name))
+
+    down = lambda p: p.drawPolyline(QPolygonF([QPointF(5, 9), QPointF(12, 16), QPointF(19, 9)]))  # noqa: E731
+    up = lambda p: p.drawPolyline(QPolygonF([QPointF(5, 15), QPointF(12, 8), QPointF(19, 15)]))  # noqa: E731
+    check = lambda p: p.drawPolyline(QPolygonF([QPointF(5, 12.5), QPointF(10, 17.5), QPointF(19, 7)]))  # noqa: E731
+    save("down.png", down, MUTED)
+    save("down_disabled.png", down, "#B8BECC")
+    save("up.png", up, MUTED)
+    save("check.png", check, "#FFFFFF")
+    return folder.replace("\\", "/")
+
+
+def stylesheet(family: str, img_dir: str = "") -> str:
+    extra = ""
+    if img_dir:
+        d = img_dir.replace("\\", "/")
+        extra = f"""
+QComboBox::down-arrow {{ image: url("{d}/down.png"); width: 12px; height: 12px; }}
+QComboBox::down-arrow:disabled {{ image: url("{d}/down_disabled.png"); }}
+QSpinBox, QDoubleSpinBox {{ padding-right: 20px; }}
+QSpinBox::up-button, QDoubleSpinBox::up-button {{ subcontrol-origin: border; subcontrol-position: top right;
+    width: 18px; border: none; border-left: 1px solid {BORDER}; border-top-right-radius: 6px; background: #F7F8FB; }}
+QSpinBox::down-button, QDoubleSpinBox::down-button {{ subcontrol-origin: border; subcontrol-position: bottom right;
+    width: 18px; border: none; border-left: 1px solid {BORDER}; border-bottom-right-radius: 6px; background: #F7F8FB; }}
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {{ image: url("{d}/up.png"); width: 9px; height: 9px; }}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {{ image: url("{d}/down.png"); width: 9px; height: 9px; }}
+QDoubleSpinBox#SliderSpin {{ padding-right: 4px; padding-left: 4px; }}
+QCheckBox::indicator, QTableView::indicator {{ width: 15px; height: 15px; border: 1px solid #A9B0C2;
+    border-radius: 4px; background: white; }}
+QCheckBox::indicator:checked, QTableView::indicator:checked {{ background: {PURPLE}; border-color: {PURPLE};
+    image: url("{d}/check.png"); }}
+QFrame#CardHeaderAccent QCheckBox::indicator {{ border: 1px solid #FFFFFF; background: rgba(255,255,255,0.15); }}
+QFrame#CardHeaderAccent QCheckBox::indicator:checked {{ background: #FFFFFF; image: none;
+    border: 4px solid {PURPLE_2}; }}
+"""
+    return _base_qss(family) + extra
+
+
+def _base_qss(family: str) -> str:
     return f"""
 * {{ font-family: "{family}"; color: {TEXT}; }}
 QMainWindow, QDialog {{ background: {BG}; }}
@@ -165,7 +220,7 @@ QStatusBar QLabel {{ color: {MUTED}; padding: 0 8px; }}
 QSplitter::handle {{ background: transparent; }}
 QSplitter::handle:hover {{ background: #D5CFF6; }}
 QScrollArea {{ border: none; background: transparent; }}
-QCheckBox::indicator:checked, QRadioButton::indicator:checked {{ background: {PURPLE}; }}
+QWidget#SettingsInner {{ background: white; }}
 QGraphicsView {{ border: none; background: #F2F3F7; }}
 QProgressBar {{ border: 1px solid {BORDER}; border-radius: 4px; background: white; text-align: center; }}
 QProgressBar::chunk {{ background: {PURPLE}; border-radius: 3px; }}
