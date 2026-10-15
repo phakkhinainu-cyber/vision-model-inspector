@@ -16,7 +16,8 @@ from vmi import __version__  # noqa: E402
 
 
 def uri(p):
-    return "file://" + os.path.abspath(p).replace("\\", "/")
+    from pathlib import Path
+    return Path(p).resolve().as_uri()
 
 
 CALLOUTS = [
@@ -343,8 +344,16 @@ OpenCV, Qt และฟอนต์ภาษาไทยไว้แล้ว �
 <li>เลือก <b>วัตถุเป้าหมาย</b> (วัตถุชิ้นเดียว แม้มีหลายชิ้นในคลาสเดียวกัน) จากตาราง คลิกกรอบ หรือช่อง "วัตถุเป้าหมาย"</li>
 <li>เลือก <b>ชั้นเป้าหมาย</b>: "อัตโนมัติ (แนะนำ)" ใช้ feature map ของ head ระดับ P3/P4/P5 ที่ตรงกับวัตถุ หรือเลือกชั้นเอง</li>
 <li>กด <b>วิเคราะห์</b> — ระหว่างคำนวณ การตรวจจับสดจะพักชั่วคราว (ภาพสดยังแสดง) และมีป้าย "พักตรวจจับ"</li>
+<li>เลือก <b>วิธีคำนวณ</b>: Grad-CAM (มาตรฐาน) หรือ HiResCAM (ละเอียดรายวัตถุ) — ดูหัวข้อถัดไป</li>
 <li>ปรับ <b>ความทึบแผนที่สี</b> ได้ทันทีโดยไม่ต้องคำนวณใหม่</li></ol>
 {figure(shots, '02_gradcam_running.png', 'รูปที่ 9 ระหว่างคำนวณ Grad-CAM แผงขวาแสดงสถานะจริง (ไม่มี Heatmap จำลอง)', 'half')}
+<h2>Grad-CAM กับ HiResCAM ต่างกันอย่างไร</h2>
+<p><b>Grad-CAM</b> (Selvaraju et al., 2017) เฉลี่ย gradient ของแต่ละ channel ทั่วทั้งแผนที่ก่อนถ่วงน้ำหนัก
+จึงมักไฮไลต์ <i>ทุกบริเวณที่คล้ายคลาสนั้น</i> เช่น คนทุกคนในภาพ แม้คุณเลือกเพียงคนเดียว
+<b>HiResCAM</b> (Draelos &amp; Carin, 2020) คูณ gradient กับ activation ทีละตำแหน่งโดยไม่เฉลี่ย จึงสะท้อน
+<i>วัตถุชิ้นที่เลือก</i> ได้ตรงกว่า — เหมาะเมื่อในภาพมีวัตถุคลาสเดียวกันหลายชิ้น ทั้งสองวิธีใช้ target และชั้นเดียวกัน</p>
+<div class="two"><div>{figure(shots, '01_main.png', 'รูปที่ 10 Grad-CAM มาตรฐาน: เน้นหลายบริเวณในภาพ')}</div>
+<div>{figure(shots, '09_hirescam.png', 'รูปที่ 11 HiResCAM ของวัตถุเดียวกัน: เน้นที่คนที่เลือก')}</div></div>
 <h2>อ่านผลอย่างไร</h2>
 <p>สีแดง/เหลืองคือบริเวณที่ gradient ของ score ของวัตถุนั้นต่อ feature map มีผลเชิงบวกมาก — บอกว่าโมเดล "อาศัย" ส่วนใดของภาพ
 ไม่ได้บอกว่าโมเดลถูกหรือผิด ใต้ภาพจะแสดงชั้นที่ใช้ anchor ก่อน NMS ที่จับคู่ได้ ค่า IoU ของการจับคู่ score และเวลา
@@ -356,7 +365,7 @@ OpenCV, Qt และฟอนต์ภาษาไทยไว้แล้ว �
 
     sec.append(f"""
 <section><h1><span class="n">12</span>การส่งออกผล</h1>
-{figure(shots, '06_export_dialog.png', 'รูปที่ 10 หน้าต่างส่งออก', 'small')}
+{figure(shots, '06_export_dialog.png', 'รูปที่ 12 หน้าต่างส่งออก', 'small')}
 <p>ทุกครั้งที่ส่งออก โปรแกรมสร้างโฟลเดอร์ย่อยใหม่ เช่น <code>ภาพ03_20261015-102425_yolov8n</code> — ไม่เขียนทับไฟล์เดิม
 ถ้าชื่อซ้ำจะเติม (2), (3) อัตโนมัติ รองรับชื่อโฟลเดอร์ภาษาไทยและช่องว่าง</p>
 <table><tr><th style="width:30%">ไฟล์</th><th>เนื้อหา</th></tr>
@@ -422,6 +431,11 @@ def main():
     if len(sys.argv) > 4 and os.path.exists(sys.argv[4]):
         with open(sys.argv[4], encoding="utf-8") as f:
             facts = json.load(f)
+    log = os.path.join(shots, "screenshots_log.json")
+    if os.path.exists(log):
+        with open(log, encoding="utf-8") as f:
+            for k, v in json.load(f).items():
+                facts.setdefault(k, v)
     page = build_html(shots, fonts, facts)
     html_path = os.path.splitext(out)[0] + ".html"
     with open(html_path, "w", encoding="utf-8") as f:

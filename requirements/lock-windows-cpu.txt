@@ -6,7 +6,7 @@ click==8.5.0
 colorama==0.4.6
 contourpy==1.4.0
 cycler==0.12.1
-filelock==4.1.1
+filelock==4.0.10
 flatbuffers==25.12.19
 fonttools==4.67.0
 fsspec==2026.7.0
@@ -27,8 +27,8 @@ packaging==26.3
 pefile==2024.8.26
 pillow==12.3.0
 pip-licenses==5.5.5
-pipx==1.17.14
-platformdirs==4.13.0
+pipx==1.17.11
+platformdirs==4.12.3
 pluggy==1.7.0
 polars==2.0.0
 polars-runtime-32==2.0.0

@@ -553,17 +553,17 @@ class DetailPanel(QWidget):
     def __init__(self):
         super().__init__()
         lay = QHBoxLayout(self)
-        lay.setContentsMargins(4, 4, 4, 4)
+        lay.setContentsMargins(4, 0, 4, 0)
         lay.setSpacing(16)
         self.thumb = QLabel()
-        self.thumb.setFixedSize(150, 112)
+        self.thumb.setFixedSize(150, 120)
         self.thumb.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.thumb.setStyleSheet(f"background:#F2F3F7;border:1px solid {theme.BORDER};border-radius:6px;")
         lay.addWidget(self.thumb)
         from PySide6.QtWidgets import QFormLayout
         form = QFormLayout()
         form.setHorizontalSpacing(18)
-        form.setVerticalSpacing(5)
+        form.setVerticalSpacing(1)
         self.vals = {}
         for key in ("ประเภท", "รหัสคลาส", "ความมั่นใจ", "กรอบ (x, y, w, h)", "ขนาดภาพ", "โมเดล"):
             v = QLabel("-")

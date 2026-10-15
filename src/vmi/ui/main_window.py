@@ -366,7 +366,7 @@ class MainWindow(QMainWindow):
         self.det_card.body_layout.addLayout(dfoot)
         self.left_split.addWidget(self.det_card)
         self.table_card = Card("วัตถุที่ตรวจพบ  (จากภาพที่จับไว้)")
-        self.table_card.setMinimumHeight(170)
+        self.table_card.setMinimumHeight(200)
         self.table = DetectionTable()
         self.table.detectionSelected.connect(self.select_detection)
         self.table_card.body_layout.setContentsMargins(0, 0, 0, 0)
@@ -397,7 +397,7 @@ class MainWindow(QMainWindow):
         self.gc_card.body_layout.addLayout(gfoot)
         self.mid_split.addWidget(self.gc_card)
         self.detail_card = Card("ตัวอย่างวัตถุที่เลือก: -")
-        self.detail_card.setMinimumHeight(170)
+        self.detail_card.setMinimumHeight(200)
         self.detail = DetailPanel()
         self.detail.clear()
         self.detail_card.body_layout.addWidget(self.detail)
@@ -434,13 +434,19 @@ class MainWindow(QMainWindow):
         total = self.left_split.height()
         if total < 200:
             return
-        bottom = max(185, min(260, int(total * 0.30)))
+        bottom = max(205, min(260, int(total * 0.30)))
         self.left_split.setSizes([total - bottom, bottom])
         self.mid_split.setSizes([total - bottom, bottom])
+        sizes = self.hsplit.sizes()
+        if len(sizes) == 3 and sum(sizes) > 0:
+            side = max(self.hsplit.widget(2).minimumWidth(), min(320, sizes[2]))
+            half = (sum(sizes) - side) // 2
+            self.hsplit.setSizes([half, sum(sizes) - side - half, side])
 
     def showEvent(self, e):
         super().showEvent(e)
         QTimer.singleShot(0, self._equalize_splitters)
+        QTimer.singleShot(150, self._equalize_splitters)
 
     def resizeEvent(self, e):
         super().resizeEvent(e)

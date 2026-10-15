@@ -78,6 +78,14 @@ jobs:
           }
           Get-ChildItem ci_results/screenshots
 
+      - name: Build Thai user manual (PDF) from the screenshots
+        run: |
+          pip install playwright
+          python -m playwright install chromium
+          python tools/build_manual.py ci_results/screenshots src/vmi/resources/fonts "docs/คู่มือการใช้งาน_Vision_Model_Inspector.pdf" docs/manual_facts.json *> ci_results/manual_log.txt
+          if ($LASTEXITCODE -ne 0) { Get-Content ci_results/manual_log.txt -Tail 30; exit 1 }
+          Copy-Item "docs/คู่มือการใช้งาน_Vision_Model_Inspector.pdf" ci_results/
+
       - name: Third-party notices
         run: |
           pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --with-urls --output-file THIRD_PARTY_NOTICES.txt
@@ -113,6 +121,7 @@ jobs:
           if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress | Out-Null }
           & $iscc /Qp "/DAppVersion=$env:APP_VERSION" packaging\installer.iss *> ci_results/iscc.txt
           if ($LASTEXITCODE -ne 0) { Get-Content ci_results/iscc.txt -Tail 40; exit 1 }
+          Select-String -Path ci_results/iscc.txt -Pattern "docs" | Out-File -Encoding utf8 ci_results/iscc_docs.txt
           Get-ChildItem Output | Format-Table Name,Length -AutoSize | Out-File -Append -Encoding utf8 ci_results/sizes.txt
           Get-FileHash Output\*.exe -Algorithm SHA256 | Format-List | Out-File -Append -Encoding utf8 ci_results/sizes.txt
 
@@ -130,6 +139,8 @@ jobs:
           "installed selftest exit: $($q.ExitCode)" | Tee-Object -Append ci_results/installer_test.txt
           $lnk = Test-Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Vision Model Inspector\Vision Model Inspector.lnk"
           "start menu shortcut: $lnk" | Tee-Object -Append ci_results/installer_test.txt
+          "manual installed: $(Test-Path 'C:\VMI Installed\docs\คู่มือการใช้งาน_Vision_Model_Inspector.pdf')" | Tee-Object -Append ci_results/installer_test.txt
+          "notices installed: $(Test-Path 'C:\VMI Installed\THIRD_PARTY_NOTICES.txt')" | Tee-Object -Append ci_results/installer_test.txt
           $u = Start-Process "C:\VMI Installed\unins000.exe" -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Wait -PassThru
           Start-Sleep -Seconds 3
           "uninstall exit: $($u.ExitCode); exe removed: $(-not (Test-Path $exe))" | Tee-Object -Append ci_results/installer_test.txt
