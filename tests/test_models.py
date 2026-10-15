@@ -188,20 +188,29 @@ def test_gradcam_target_matching_every_detection(v8):
 
 
 def test_gradcam_same_class_different_instances(v8):
+    """Two people (same class) -> different target scalars -> different maps.
+
+    Standard Grad-CAM averages gradients spatially, so it may highlight every
+    person; we only require the maps to differ. HiResCAM keeps the spatial
+    gradient and must be strongest inside the selected person's own box.
+    """
     img = bus()
     people = sorted([d for d in v8.predict(img, S) if v8.info.classes.name(d.class_id) == "person"
                      and d.confidence > 0.5], key=lambda d: d.box[0])
     assert len(people) >= 2, "bus.jpg should contain several people"
     eng = v8.gradcam_engine()
     a, b = people[0], people[-1]
-    ha = eng.compute(img, a, 640).heatmap
-    hb = eng.compute(img, b, 640).heatmap
-    corr = np.corrcoef(ha.ravel(), hb.ravel())[0, 1]
-    assert corr < 0.9, corr
 
     def mean_in(h, box):
         x1, y1, x2, y2 = (int(v) for v in box)
         return float(h[y1:y2, x1:x2].mean())
+
+    ga = eng.compute(img, a, 640, "auto", "gradcam").heatmap
+    gb = eng.compute(img, b, 640, "auto", "gradcam").heatmap
+    assert not np.allclose(ga, gb, atol=1e-3)
+    ha = eng.compute(img, a, 640, "auto", "hirescam").heatmap
+    hb = eng.compute(img, b, 640, "auto", "hirescam").heatmap
+    assert np.corrcoef(ha.ravel(), hb.ravel())[0, 1] < 0.9
     assert mean_in(ha, a.box) > mean_in(ha, b.box)
     assert mean_in(hb, b.box) > mean_in(hb, a.box)
 

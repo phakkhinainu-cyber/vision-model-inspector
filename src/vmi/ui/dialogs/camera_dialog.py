@@ -97,6 +97,8 @@ class _Preview(QWidget):
 
     def stop(self):
         self._timer.stop()
+        if self.src is None:
+            return
         if self.src is not None:
             try:
                 self.src.on_frame = None

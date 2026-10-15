@@ -27,6 +27,7 @@ class GradCamRecord:
     layer_name: str
     heatmap: np.ndarray            # float32 0..1 in original image size
     details: dict = field(default_factory=dict)
+    method: str = "gradcam"
 
 
 @dataclass

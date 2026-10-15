@@ -96,6 +96,32 @@ def main(out_dir):
     wait(lambda: fin)
     pump(1.2)
     shot(w, "01_main.png")
+    # widget geometry (for numbered call-outs in the manual)
+    geo = {}
+    for key, wid in (("header", w.header_meta.parentWidget()), ("open", w.b_open), ("model", w.model_combo),
+                     ("mode", w.mode_combo), ("camera", w.src_stack), ("start", w.b_start),
+                     ("stop", w.b_stop), ("capture", w.b_capture), ("gradcam", w.b_gradcam),
+                     ("export", w.b_export), ("live", w.live_view.parentWidget()),
+                     ("strip", w.strip.parentWidget()), ("info", w.model_summary.parentWidget()),
+                     ("det_card", w.det_card), ("gc_card", w.gc_card), ("settings", w.hsplit.widget(2)),
+                     ("table", w.table_card), ("detail", w.detail_card), ("status", w.statusBar())):
+        tl = wid.mapTo(w, wid.rect().topLeft())
+        geo[key] = [tl.x(), tl.y(), wid.width(), wid.height()]
+    geo["_window"] = [0, 0, w.width(), w.height()]
+    log["geometry_1600"] = geo
+    # HiResCAM variant of the same object
+    w.method_combo.setCurrentIndex(w.method_combo.findData("hirescam"))
+    fin.clear()
+    w.run_gradcam()
+    wait(lambda: fin)
+    pump(1.0)
+    shot(w, "09_hirescam.png")
+    log["hirescam"] = {k: v for k, v in best.gradcam.details.items() if k != "letterbox"}
+    w.method_combo.setCurrentIndex(w.method_combo.findData("gradcam"))
+    fin.clear()
+    w.run_gradcam()
+    wait(lambda: fin)
+    pump(0.8)
     log["gradcam"] = {k: v for k, v in best.gradcam.details.items() if k != "letterbox"} if best.gradcam else None
 
     # 1366x768

@@ -355,13 +355,20 @@ class MainWindow(QMainWindow):
         self.det_view.set_placeholder("ยังไม่มีภาพที่บันทึก — กด 'เริ่ม' แล้ว 'จับภาพ'")
         self.det_view.detectionClicked.connect(self.select_detection)
         self.det_card.body_layout.addWidget(self.det_view, 1)
-        self.det_card.add_tool(ZoomBar(self.det_view, dark=True))
-        self.sync_cb = QCheckBox("ซิงก์มุมมอง")
-        self.sync_cb.setStyleSheet("QCheckBox{color:white;}")
+        dfoot = QHBoxLayout()
+        dfoot.setSpacing(6)
+        dfoot.addWidget(ZoomBar(self.det_view))
+        self.sync_cb = QCheckBox("ซิงก์มุมมองสองฝั่ง")
         self.sync_cb.setToolTip("ซูม/เลื่อนภาพทั้งสองฝั่งพร้อมกัน")
-        self.det_card.add_tool(self.sync_cb)
+        dfoot.addWidget(self.sync_cb)
+        dfoot.addStretch(1)
+        self.det_hint = QLabel("ล้อเมาส์ = ซูม • ลาก = เลื่อน • คลิกกรอบ = เลือกวัตถุ")
+        self.det_hint.setObjectName("Hint")
+        dfoot.addWidget(self.det_hint)
+        self.det_card.body_layout.addLayout(dfoot)
         self.left_split.addWidget(self.det_card)
         self.table_card = Card("วัตถุที่ตรวจพบ  (จากภาพที่จับไว้)")
+        self.table_card.setMinimumHeight(190)
         self.table = DetectionTable()
         self.table.detectionSelected.connect(self.select_detection)
         self.table_card.body_layout.setContentsMargins(0, 0, 0, 0)
@@ -381,13 +388,18 @@ class MainWindow(QMainWindow):
         self.gc_view = ImageView()
         self.gc_view.set_placeholder("เลือกวัตถุจากภาพที่จับไว้ แล้วกด 'วิเคราะห์'")
         self.gc_card.body_layout.addWidget(self.gc_view, 1)
-        self.gc_card.add_tool(ZoomBar(self.gc_view, dark=True))
+        gfoot = QHBoxLayout()
+        gfoot.setSpacing(6)
+        gfoot.addWidget(ZoomBar(self.gc_view))
         self.gc_note = QLabel("")
         self.gc_note.setObjectName("Hint")
         self.gc_note.setWordWrap(True)
-        self.gc_card.body_layout.addWidget(self.gc_note)
+        self.gc_note.setMaximumHeight(40)
+        gfoot.addWidget(self.gc_note, 1)
+        self.gc_card.body_layout.addLayout(gfoot)
         self.mid_split.addWidget(self.gc_card)
         self.detail_card = Card("ตัวอย่างวัตถุที่เลือก: -")
+        self.detail_card.setMinimumHeight(190)
         self.detail = DetailPanel()
         self.detail.clear()
         self.detail_card.body_layout.addWidget(self.detail)
@@ -406,7 +418,18 @@ class MainWindow(QMainWindow):
         self.hsplit.setStretchFactor(0, 5)
         self.hsplit.setStretchFactor(1, 5)
         self.hsplit.setStretchFactor(2, 0)
+        QTimer.singleShot(0, self._equalize_splitters)
         return self.hsplit
+
+    def _equalize_splitters(self):
+        total = max(self.left_split.height(), 400)
+        top = int(total * 0.70)
+        self.left_split.setSizes([top, total - top])
+        self.mid_split.setSizes([top, total - top])
+
+    def showEvent(self, e):
+        super().showEvent(e)
+        QTimer.singleShot(0, self._equalize_splitters)
 
     def _build_settings_panel(self):
         card = Card("ตั้งค่า Grad-CAM และการตรวจจับ")
@@ -432,6 +455,15 @@ class MainWindow(QMainWindow):
         self.layer_combo = QComboBox()
         self.layer_combo.currentIndexChanged.connect(lambda *_: self._show_gradcam())
         lay.addWidget(self.layer_combo)
+        lay.addWidget(_field("วิธีคำนวณ"))
+        self.method_combo = QComboBox()
+        from ..gradcam.ultralytics_gradcam import UltralyticsGradCAM
+        for key, label in UltralyticsGradCAM.METHODS:
+            self.method_combo.addItem(label, key)
+        self.method_combo.setToolTip("Grad-CAM: เฉลี่ย gradient ทั้งแผนที่ (อาจเน้นวัตถุคลาสเดียวกันหลายชิ้น)\n"
+                                     "HiResCAM: คง gradient รายตำแหน่ง — ตรงกับวัตถุที่เลือกมากกว่า")
+        self.method_combo.currentIndexChanged.connect(lambda *_: self._show_gradcam())
+        lay.addWidget(self.method_combo)
         lay.addWidget(_field("ความทึบแผนที่สี"))
         self.opacity = SliderRow(0.0, 1.0, 0.05, 0.5, left_hint="โปร่ง", right_hint="ทึบ")
         self.opacity.valueChanged.connect(lambda *_: self._show_gradcam(render_only=True))
@@ -520,6 +552,11 @@ class MainWindow(QMainWindow):
         h.setWordWrap(True)
         lay.addWidget(h)
         lay.addStretch(1)
+        for cb in inner.findChildren(QComboBox):
+            cb.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+            cb.setMinimumContentsLength(8)
+        for sp in inner.findChildren(QSpinBox):
+            sp.setMinimumWidth(60)
         scroll.setWidget(inner)
         card.body_layout.setContentsMargins(0, 0, 0, 0)
         card.body_layout.addWidget(scroll)
@@ -1167,10 +1204,11 @@ class MainWindow(QMainWindow):
             self._show_gradcam()
             self._update_states()
             return
-        ts = _dt.datetime.fromtimestamp(s.result.timestamp).strftime("%Y-%m-%d %H:%M:%S")
-        meta = f"ภาพที่ {s.index:02d}    {ts}"
-        self.det_card.meta.setText(meta)
-        self.gc_card.meta.setText(meta)
+        dt = _dt.datetime.fromtimestamp(s.result.timestamp)
+        meta = f"ภาพที่ {s.index:02d}   {dt:%H:%M:%S}"
+        for c in (self.det_card, self.gc_card):
+            c.meta.setText(meta)
+            c.meta.setToolTip(f"ภาพที่ {s.index:02d} • {dt:%Y-%m-%d %H:%M:%S} • frame {s.result.frame_id}")
         self.det_view.set_image(s.image, keep_view=True)
         vis = s.visible_detections()
         hidden_n = len(s.result.detections) - len(vis)
@@ -1236,7 +1274,8 @@ class MainWindow(QMainWindow):
             return
         g = s.gradcam
         layer = self.layer_combo.currentData() or "auto"
-        if g is None or g.det_id != d.det_id or g.layer_key != layer:
+        method = self.method_combo.currentData() or "gradcam"
+        if g is None or g.det_id != d.det_id or g.layer_key != layer or g.method != method:
             if self.adapter is None or not self.adapter.info.caps.grad_cam:
                 reason = self.adapter.info.gradcam_status if self.adapter else "ยังไม่ได้เปิดโมเดล"
                 self.gc_view.set_placeholder(f"Grad-CAM ใช้ไม่ได้กับโมเดลนี้\n{reason}")
@@ -1253,7 +1292,7 @@ class MainWindow(QMainWindow):
         if self.sync_cb.isChecked():
             self.gc_view.copy_view_from(self.det_view)
         dd = g.details
-        txt = (f"ชั้น {g.layer_name} • target ก่อน NMS: anchor {dd.get('matched_anchor_index')} "
+        txt = (f"{'HiResCAM' if g.method == 'hirescam' else 'Grad-CAM'} • ชั้น {g.layer_name} • target ก่อน NMS: anchor {dd.get('matched_anchor_index')} "
                f"({dd.get('matched_level')}) IoU {dd.get('match_iou', 0):.3f} • score "
                f"{dd.get('pre_nms_score', 0):.3f} • {dd.get('device')} {dd.get('elapsed_ms', 0):.0f} ms")
         if dd.get("match_warning"):
@@ -1281,7 +1320,7 @@ class MainWindow(QMainWindow):
             return
         layer = self.layer_combo.currentData() or "auto"
         job = {"snap": s.index, "det": d, "image": s.image, "imgsz": s.result.settings.imgsz,
-               "layer": layer}
+               "layer": layer, "method": self.method_combo.currentData() or "gradcam"}
         self.gc_view.set_placeholder(f"กำลังคำนวณ Grad-CAM สำหรับวัตถุ #{d.det_id + 1} "
                                      f"({s.label(d.class_id)}) …\nพักการตรวจจับสดชั่วคราว (ภาพสดยังแสดงอยู่)")
         self._set_task("กำลังคำนวณ Grad-CAM — พักการตรวจจับสดชั่วคราว")
@@ -1297,7 +1336,7 @@ class MainWindow(QMainWindow):
         if snap is not None:
             d = job["det"]
             snap.gradcam = GradCamRecord(d.det_id, d.class_id, d.confidence, d.box, job["layer"],
-                                         out.layer_name, out.heatmap, out.details)
+                                         out.layer_name, out.heatmap, out.details, job["method"])
         self._set_task(f"Grad-CAM เสร็จ ({out.details.get('elapsed_ms', 0):.0f} ms) — กลับมาตรวจจับสดแล้ว")
         QTimer.singleShot(0, self._after_gradcam)
         self.gradcamFinished.emit(True)
@@ -1376,7 +1415,8 @@ class MainWindow(QMainWindow):
 
     def _update_states_light(self):
         running = self.source is not None
-        if self.b_stop.isEnabled() != running:
+        can_capture = self.adapter is not None and self._last_frame is not None
+        if self.b_stop.isEnabled() != running or self.b_capture.isEnabled() != can_capture:
             self._update_states()
 
     def _update_states(self, *_):
@@ -1417,6 +1457,7 @@ class MainWindow(QMainWindow):
         self.b_classes.setEnabled(has_model and not loading)
         self.b_info.setEnabled(has_model)
         self.layer_combo.setEnabled(has_model and self.adapter.info.caps.grad_cam and not gc_running)
+        self.method_combo.setEnabled(has_model and self.adapter.info.caps.grad_cam and not gc_running)
         self.target_combo.setEnabled(s is not None and not gc_running)
         self.mode_combo.setEnabled(not running)
         self.src_stack.setEnabled(not running)

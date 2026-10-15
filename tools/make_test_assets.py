@@ -83,9 +83,9 @@ def demo_video():
     vw = cv2.VideoWriter(out, cv2.VideoWriter_fourcc(*"MJPG"), 25, (W, H))
     if not vw.isOpened():
         raise RuntimeError("cannot create demo video")
-    n = 150
+    n = 600
     for i in range(n):
-        t = 0.5 - 0.5 * np.cos(2 * np.pi * i / n)
+        t = 0.5 - 0.5 * np.cos(2 * np.pi * i / 150)
         x = int(t * (canvas.shape[1] - W))
         y = int(t * (canvas.shape[0] - H) * 0.5)
         frame = canvas[y:y + H, x:x + W]

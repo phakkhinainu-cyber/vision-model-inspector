@@ -20,6 +20,10 @@ How the post-NMS detection is mapped back to a pre-NMS target
    input (P3/P4/P5) whose grid contains the matched anchor.
 6. Grad-CAM = ReLU(sum_k mean(dS/dA_k) * A_k), normalised, resized to the
    letterbox, padding removed, resized to the original image.
+   Optional "HiResCAM" (Draelos & Carin 2020) = ReLU(sum_k dS/dA_k ⊙ A_k) keeps
+   the gradient's spatial layout. Standard Grad-CAM averages the gradient over
+   space, so it often lights up *every* object of the same class; HiResCAM is
+   more faithful to the single selected instance.
 
 A separate, *unfused* copy of the network is used because the predictor's
 fused weights are created inside ``torch.inference_mode`` and cannot take
@@ -127,8 +131,10 @@ class UltralyticsGradCAM:
             pass
 
     # ------------------------------------------------------------ main
+    METHODS = (("gradcam", "Grad-CAM (มาตรฐาน)"), ("hirescam", "HiResCAM (ละเอียดรายวัตถุ)"))
+
     def compute(self, image_bgr: np.ndarray, det: Detection, imgsz: int,
-                layer_key: str = "auto") -> GradCamOutput:
+                layer_key: str = "auto", method: str = "gradcam") -> GradCamOutput:
         import torch
         t0 = time.perf_counter()
         with self.adapter.lock:
@@ -204,8 +210,11 @@ class UltralyticsGradCAM:
                 if not torch.isfinite(G).all() or float(G.abs().max()) == 0.0:
                     raise GradCamError("gradient เป็นศูนย์/ไม่ถูกต้องที่ชั้นนี้ — ไม่สร้าง Heatmap "
                                        "(ลองเลือกชั้นอื่น เช่น P3/P4/P5 ที่ตรงกับขนาดวัตถุ)")
-                w = G.mean(dim=(1, 2), keepdim=True)
-                cam = torch.relu((w * A).sum(0))
+                if method == "hirescam":
+                    cam = torch.relu((G * A).sum(0))
+                else:
+                    w = G.mean(dim=(1, 2), keepdim=True)
+                    cam = torch.relu((w * A).sum(0))
                 cmax = float(cam.max())
                 if not np.isfinite(cmax) or cmax <= 1e-12:
                     raise GradCamError("Grad-CAM ได้ค่าเป็นศูนย์ทั้งแผนที่ (ไม่มีบริเวณที่ส่งผลเชิงบวก) "
@@ -215,7 +224,9 @@ class UltralyticsGradCAM:
                 heat = np.clip(heat, 0, 1).astype(np.float32)
                 score = float(cls_scores[a])
                 details = {
-                    "method": "Grad-CAM (Selvaraju et al. 2017) on pre-NMS class score",
+                    "method": ("HiResCAM (Draelos & Carin 2020)" if method == "hirescam" else
+                               "Grad-CAM (Selvaraju et al. 2017)") + " on pre-NMS class score",
+                    "method_key": method,
                     "target_scalar": f"sigmoid class score, class {int(det.class_id)}, anchor {a}",
                     "matched_anchor_index": a,
                     "matched_level": f"P{level + 3}",

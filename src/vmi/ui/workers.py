@@ -66,7 +66,7 @@ class GradCamThread(QThread):
         self.worker.pause("Grad-CAM")
         try:
             out = self.engine.compute(self.job["image"], self.job["det"], self.job["imgsz"],
-                                      self.job["layer"])
+                                      self.job["layer"], self.job.get("method", "gradcam"))
             self.done.emit(out, self.job)
         except GradCamError as e:
             self.failed.emit(str(e), self.job)
