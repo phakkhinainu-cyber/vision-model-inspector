@@ -362,13 +362,11 @@ class MainWindow(QMainWindow):
         self.sync_cb.setToolTip("ซูม/เลื่อนภาพทั้งสองฝั่งพร้อมกัน")
         dfoot.addWidget(self.sync_cb)
         dfoot.addStretch(1)
-        self.det_hint = QLabel("ล้อเมาส์ = ซูม • ลาก = เลื่อน • คลิกกรอบ = เลือกวัตถุ")
-        self.det_hint.setObjectName("Hint")
-        dfoot.addWidget(self.det_hint)
+        self.det_view.setToolTip("ล้อเมาส์ = ซูม • ลาก = เลื่อน • ดับเบิลคลิก = พอดีกรอบ • คลิกกรอบ = เลือกวัตถุ")
         self.det_card.body_layout.addLayout(dfoot)
         self.left_split.addWidget(self.det_card)
         self.table_card = Card("วัตถุที่ตรวจพบ  (จากภาพที่จับไว้)")
-        self.table_card.setMinimumHeight(190)
+        self.table_card.setMinimumHeight(170)
         self.table = DetectionTable()
         self.table.detectionSelected.connect(self.select_detection)
         self.table_card.body_layout.setContentsMargins(0, 0, 0, 0)
@@ -393,21 +391,30 @@ class MainWindow(QMainWindow):
         gfoot.addWidget(ZoomBar(self.gc_view))
         self.gc_note = QLabel("")
         self.gc_note.setObjectName("Hint")
-        self.gc_note.setWordWrap(True)
-        self.gc_note.setMaximumHeight(40)
+        self.gc_note.setMinimumWidth(10)
+        self.gc_note.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
         gfoot.addWidget(self.gc_note, 1)
         self.gc_card.body_layout.addLayout(gfoot)
         self.mid_split.addWidget(self.gc_card)
         self.detail_card = Card("ตัวอย่างวัตถุที่เลือก: -")
-        self.detail_card.setMinimumHeight(190)
+        self.detail_card.setMinimumHeight(170)
         self.detail = DetailPanel()
         self.detail.clear()
         self.detail_card.body_layout.addWidget(self.detail)
         self.mid_split.addWidget(self.detail_card)
         self.mid_split.setStretchFactor(0, 3)
         self.mid_split.setStretchFactor(1, 1)
-        self.left_split.splitterMoved.connect(lambda *_: self.mid_split.setSizes(self.left_split.sizes()))
-        self.mid_split.splitterMoved.connect(lambda *_: self.left_split.setSizes(self.mid_split.sizes()))
+        self._user_split = False
+
+        def moved_left(*_):
+            self._user_split = True
+            self.mid_split.setSizes(self.left_split.sizes())
+
+        def moved_mid(*_):
+            self._user_split = True
+            self.left_split.setSizes(self.mid_split.sizes())
+        self.left_split.splitterMoved.connect(moved_left)
+        self.mid_split.splitterMoved.connect(moved_mid)
 
         self.det_view.viewChanged.connect(lambda: self._sync(self.det_view, self.gc_view))
         self.gc_view.viewChanged.connect(lambda: self._sync(self.gc_view, self.det_view))
@@ -422,13 +429,21 @@ class MainWindow(QMainWindow):
         return self.hsplit
 
     def _equalize_splitters(self):
-        total = max(self.left_split.height(), 400)
-        top = int(total * 0.70)
-        self.left_split.setSizes([top, total - top])
-        self.mid_split.setSizes([top, total - top])
+        if getattr(self, "_user_split", True) or not hasattr(self, "mid_split"):
+            return
+        total = self.left_split.height()
+        if total < 200:
+            return
+        bottom = max(185, min(260, int(total * 0.30)))
+        self.left_split.setSizes([total - bottom, bottom])
+        self.mid_split.setSizes([total - bottom, bottom])
 
     def showEvent(self, e):
         super().showEvent(e)
+        QTimer.singleShot(0, self._equalize_splitters)
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
         QTimer.singleShot(0, self._equalize_splitters)
 
     def _build_settings_panel(self):
@@ -1270,7 +1285,7 @@ class MainWindow(QMainWindow):
             return
         if s is None or d is None:
             self.gc_view.set_placeholder("เลือกวัตถุจากภาพที่จับไว้ แล้วกด 'วิเคราะห์'")
-            self.gc_note.setText("")
+            self._set_gc_note("")
             return
         g = s.gradcam
         layer = self.layer_combo.currentData() or "auto"
@@ -1283,7 +1298,7 @@ class MainWindow(QMainWindow):
                 self.gc_view.set_placeholder(
                     f"ยังไม่ได้วิเคราะห์วัตถุ #{d.det_id + 1} ({s.label(d.class_id)})\n"
                     "กด 'วิเคราะห์' เพื่อคำนวณ Grad-CAM จากภาพที่จับไว้นี้")
-            self.gc_note.setText(GRADCAM_NOTICE)
+            self._set_gc_note(GRADCAM_NOTICE)
             return
         over = overlay_heatmap(s.image, g.heatmap, self.opacity.value())
         self.gc_view.set_image(over, keep_view=True)
@@ -1299,7 +1314,14 @@ class MainWindow(QMainWindow):
             txt += f"\n⚠ {dd['match_warning']}"
         if dd.get("placement_note"):
             txt += f"\n{dd['placement_note']}"
-        self.gc_note.setText(txt)
+        self._set_gc_note(txt)
+
+    def _set_gc_note(self, txt: str):
+        first = txt.split("\n")[0]
+        if "\n" in txt:
+            first = "⚠ " + first if "⚠" in txt else first
+        self.gc_note.setText(first)
+        self.gc_note.setToolTip(txt)
 
     # ================================================================ Grad-CAM
     def run_gradcam(self):
@@ -1324,6 +1346,7 @@ class MainWindow(QMainWindow):
         self.gc_view.set_placeholder(f"กำลังคำนวณ Grad-CAM สำหรับวัตถุ #{d.det_id + 1} "
                                      f"({s.label(d.class_id)}) …\nพักการตรวจจับสดชั่วคราว (ภาพสดยังแสดงอยู่)")
         self._set_task("กำลังคำนวณ Grad-CAM — พักการตรวจจับสดชั่วคราว")
+        self.worker.pause("Grad-CAM")          # paused synchronously; the thread resumes it
         self._gc_thread = GradCamThread(eng, self.worker, job, self)
         self._gc_thread.done.connect(self._gradcam_done)
         self._gc_thread.failed.connect(self._gradcam_failed)
@@ -1347,7 +1370,7 @@ class MainWindow(QMainWindow):
 
     def _gradcam_failed(self, msg, job):
         self.gc_view.set_placeholder(f"Grad-CAM ไม่สำเร็จ\n{msg}", error=True)
-        self.gc_note.setText("ไม่มีการสร้าง Heatmap แทนผลจริง")
+        self._set_gc_note("ไม่มีการสร้าง Heatmap แทนผลจริง")
         self._set_task("⚠ " + msg)
         self.gradcamFinished.emit(False)
 
