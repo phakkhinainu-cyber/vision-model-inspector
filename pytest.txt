@@ -1,0 +1,707 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.7.0 -- C:\hostedtoolcache\windows\Python\3.12.10\x64\python.exe
+cachedir: .pytest_cache
+rootdir: D:\a\vision-model-inspector\vision-model-inspector
+configfile: pyproject.toml
+testpaths: tests
+plugins: platformdirs-4.13.0
+collecting ... collected 53 items
+
+tests/test_core.py::test_letterbox_roundtrip[shape0-640-False] PASSED    [  1%]
+tests/test_core.py::test_letterbox_roundtrip[shape1-640-True] PASSED     [  3%]
+tests/test_core.py::test_letterbox_roundtrip[shape2-320-False] PASSED    [  5%]
+tests/test_core.py::test_letterbox_roundtrip[shape3-416-True] PASSED     [  7%]
+tests/test_core.py::test_letterbox_roundtrip[shape4-640-False] PASSED    [  9%]
+tests/test_core.py::test_letterbox_maps_pixels_correctly PASSED          [ 11%]
+tests/test_core.py::test_unletterbox_map_shape PASSED                    [ 13%]
+tests/test_core.py::test_nms_and_postprocess PASSED                      [ 15%]
+tests/test_core.py::test_box_iou PASSED                                  [ 16%]
+tests/test_core.py::test_mapping_files PASSED                            [ 18%]
+tests/test_core.py::test_mapping_errors[nc: 2\nnames: [a, b, c]\n-.yaml] PASSED [ 20%]
+tests/test_core.py::test_mapping_errors[names: {0: a, 2: b}\n-.yaml] PASSED [ 22%]
+tests/test_core.py::test_mapping_errors[names: [a, b\n-.yaml] PASSED     [ 24%]
+tests/test_core.py::test_mapping_errors[foo: 1\n-.yaml] PASSED           [ 26%]
+tests/test_core.py::test_mapping_errors[a\n\nb\n-.txt] PASSED            [ 28%]
+tests/test_core.py::test_mapping_errors[{bad json-.json] PASSED          [ 30%]
+tests/test_core.py::test_mapping_errors[!!python/object/apply:os.system ['echo hi']-.yaml] PASSED [ 32%]
+tests/test_core.py::test_compare_mapping_and_literal PASSED              [ 33%]
+tests/test_core.py::test_registry_generated_and_generic PASSED           [ 35%]
+tests/test_core.py::test_display_store PASSED                            [ 37%]
+tests/test_core.py::test_snapshot_store_bounds PASSED                    [ 39%]
+tests/test_core.py::test_snapshot_labels_survive_model_change PASSED     [ 41%]
+tests/test_core.py::test_export_thai_paths_no_overwrite PASSED           [ 43%]
+tests/test_core.py::test_unique_path PASSED                              [ 45%]
+tests/test_core.py::test_imwrite_unicode PASSED                          [ 47%]
+tests/test_core.py::test_format_confidence_and_redact PASSED             [ 49%]
+tests/test_models.py::test_two_models_with_different_classes PASSED      [ 50%]
+tests/test_models.py::test_yolo11_supported PASSED                       [ 52%]
+tests/test_models.py::test_registry_dispatch_and_unsupported PASSED      [ 54%]
+tests/test_models.py::test_classification_model_rejected PASSED          [ 56%]
+tests/test_models.py::test_cuda_request_without_gpu PASSED               [ 58%]
+tests/test_models.py::test_onnx_metadata_and_no_names PASSED             [ 60%]
+tests/test_models.py::test_boxes_in_original_coordinates_after_letterbox PASSED [ 62%]
+tests/test_models.py::test_onnx_matches_pytorch PASSED                   [ 64%]
+tests/test_models.py::test_gradcam_target_matching_every_detection FAILED [ 66%]
+tests/test_models.py::test_gradcam_same_class_different_instances FAILED [ 67%]
+tests/test_models.py::test_gradcam_layers_never_fake FAILED              [ 69%]
+tests/test_models.py::test_gradcam_unmatched_target_is_refused FAILED    [ 71%]
+tests/test_models.py::test_snapshot_keeps_model_identity FAILED          [ 73%]
+tests/test_pipeline.py::test_latest_frame_slot_is_bounded PASSED         [ 75%]
+tests/test_pipeline.py::test_results_match_their_frame FAILED            [ 77%]
+tests/test_pipeline.py::test_jobs_have_priority_and_pause FAILED         [ 79%]
+tests/test_pipeline.py::test_rate_limit_every_n FAILED                   [ 81%]
+tests/test_pipeline.py::test_model_swap_waits_for_running_inference FAILED [ 83%]
+tests/test_pipeline.py::test_video_source_and_repeated_start_stop PASSED [ 84%]
+tests/test_pipeline.py::test_video_eof_and_pause PASSED                  [ 86%]
+tests/test_pipeline.py::test_bad_sources_report_errors PASSED            [ 88%]
+tests/test_pipeline.py::test_image_folder_source PASSED                  [ 90%]
+tests/test_pipeline.py::test_memory_is_bounded_during_long_run FAILED    [ 92%]
+tests/test_ui.py::test_full_flow_video_snapshot_gradcam_export FAILED    [ 94%]
+tests/test_ui.py::test_full_flow_video_snapshot_gradcam_export ERROR     [ 94%]
+tests/test_ui.py::test_model_switch_keeps_old_snapshots PASSED           [ 96%]
+tests/test_ui.py::test_model_switch_keeps_old_snapshots ERROR            [ 96%]
+tests/test_ui.py::test_class_filter_hides_rows PASSED                    [ 98%]
+tests/test_ui.py::test_class_filter_hides_rows ERROR                     [ 98%]
+tests/test_ui.py::test_layout_small_screen PASSED                        [100%]
+tests/test_ui.py::test_layout_small_screen ERROR                         [100%]
+
+=================================== ERRORS ====================================
+______ ERROR at teardown of test_full_flow_video_snapshot_gradcam_export ______
+
+app = <PySide6.QtWidgets.QApplication(0x231e05a8410) at 0x00000231DA36D5C0>
+
+    @pytest.fixture()
+    def win(app):
+        from vmi.config import AppSettings
+        from vmi.ui.main_window import MainWindow
+        w = MainWindow(AppSettings())
+        w.resize(1366, 768)
+        w.show()
+        yield w
+>       w.close()
+
+tests\test_ui.py:41: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\vmi\ui\main_window.py:1456: in closeEvent
+    self.worker.stop()
+src\vmi\pipeline\inference_worker.py:141: in stop
+    self.join(timeout)
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1153: in join
+    self._wait_for_tstate_lock(timeout=max(timeout, 0))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <[TypeError("'bool' object is not callable") raised in repr()] InferenceWorker object at 0x231de53e000>
+block = True, timeout = 10.0
+
+    def _wait_for_tstate_lock(self, block=True, timeout=-1):
+        # Issue #18808: wait for the thread state to be gone.
+        # At the end of the thread's life, after all knowledge of the thread
+        # is removed from C data structures, C code releases our _tstate_lock.
+        # This method passes its arguments to _tstate_lock.acquire().
+        # If the lock is acquired, the C code is done, and self._stop() is
+        # called.  That sets ._is_stopped to True, and ._tstate_lock to None.
+        lock = self._tstate_lock
+        if lock is None:
+            # already determined that the C code is done
+            assert self._is_stopped
+            return
+    
+        try:
+            if lock.acquire(block, timeout):
+                lock.release()
+>               self._stop()
+E               TypeError: Error calling Python override of QMainWindow::closeEvent(): 'bool' object is not callable
+
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1171: TypeError
+_________ ERROR at teardown of test_model_switch_keeps_old_snapshots __________
+
+app = <PySide6.QtWidgets.QApplication(0x231e05a8410) at 0x00000231DA36D5C0>
+
+    @pytest.fixture()
+    def win(app):
+        from vmi.config import AppSettings
+        from vmi.ui.main_window import MainWindow
+        w = MainWindow(AppSettings())
+        w.resize(1366, 768)
+        w.show()
+        yield w
+>       w.close()
+
+tests\test_ui.py:41: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\vmi\ui\main_window.py:1456: in closeEvent
+    self.worker.stop()
+src\vmi\pipeline\inference_worker.py:141: in stop
+    self.join(timeout)
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1153: in join
+    self._wait_for_tstate_lock(timeout=max(timeout, 0))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <[TypeError("'bool' object is not callable") raised in repr()] InferenceWorker object at 0x231de47d7c0>
+block = True, timeout = 10.0
+
+    def _wait_for_tstate_lock(self, block=True, timeout=-1):
+        # Issue #18808: wait for the thread state to be gone.
+        # At the end of the thread's life, after all knowledge of the thread
+        # is removed from C data structures, C code releases our _tstate_lock.
+        # This method passes its arguments to _tstate_lock.acquire().
+        # If the lock is acquired, the C code is done, and self._stop() is
+        # called.  That sets ._is_stopped to True, and ._tstate_lock to None.
+        lock = self._tstate_lock
+        if lock is None:
+            # already determined that the C code is done
+            assert self._is_stopped
+            return
+    
+        try:
+            if lock.acquire(block, timeout):
+                lock.release()
+>               self._stop()
+E               TypeError: Error calling Python override of QMainWindow::closeEvent(): 'bool' object is not callable
+
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1171: TypeError
+______________ ERROR at teardown of test_class_filter_hides_rows ______________
+
+app = <PySide6.QtWidgets.QApplication(0x231e05a8410) at 0x00000231DA36D5C0>
+
+    @pytest.fixture()
+    def win(app):
+        from vmi.config import AppSettings
+        from vmi.ui.main_window import MainWindow
+        w = MainWindow(AppSettings())
+        w.resize(1366, 768)
+        w.show()
+        yield w
+>       w.close()
+
+tests\test_ui.py:41: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\vmi\ui\main_window.py:1456: in closeEvent
+    self.worker.stop()
+src\vmi\pipeline\inference_worker.py:141: in stop
+    self.join(timeout)
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1153: in join
+    self._wait_for_tstate_lock(timeout=max(timeout, 0))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <[TypeError("'bool' object is not callable") raised in repr()] InferenceWorker object at 0x231da3c39e0>
+block = True, timeout = 10.0
+
+    def _wait_for_tstate_lock(self, block=True, timeout=-1):
+        # Issue #18808: wait for the thread state to be gone.
+        # At the end of the thread's life, after all knowledge of the thread
+        # is removed from C data structures, C code releases our _tstate_lock.
+        # This method passes its arguments to _tstate_lock.acquire().
+        # If the lock is acquired, the C code is done, and self._stop() is
+        # called.  That sets ._is_stopped to True, and ._tstate_lock to None.
+        lock = self._tstate_lock
+        if lock is None:
+            # already determined that the C code is done
+            assert self._is_stopped
+            return
+    
+        try:
+            if lock.acquire(block, timeout):
+                lock.release()
+>               self._stop()
+E               TypeError: Error calling Python override of QMainWindow::closeEvent(): 'bool' object is not callable
+
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1171: TypeError
+________________ ERROR at teardown of test_layout_small_screen ________________
+
+app = <PySide6.QtWidgets.QApplication(0x231e05a8410) at 0x00000231DA36D5C0>
+
+    @pytest.fixture()
+    def win(app):
+        from vmi.config import AppSettings
+        from vmi.ui.main_window import MainWindow
+        w = MainWindow(AppSettings())
+        w.resize(1366, 768)
+        w.show()
+        yield w
+>       w.close()
+
+tests\test_ui.py:41: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\vmi\ui\main_window.py:1456: in closeEvent
+    self.worker.stop()
+src\vmi\pipeline\inference_worker.py:141: in stop
+    self.join(timeout)
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1153: in join
+    self._wait_for_tstate_lock(timeout=max(timeout, 0))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <[TypeError("'bool' object is not callable") raised in repr()] InferenceWorker object at 0x231da32a990>
+block = True, timeout = 10.0
+
+    def _wait_for_tstate_lock(self, block=True, timeout=-1):
+        # Issue #18808: wait for the thread state to be gone.
+        # At the end of the thread's life, after all knowledge of the thread
+        # is removed from C data structures, C code releases our _tstate_lock.
+        # This method passes its arguments to _tstate_lock.acquire().
+        # If the lock is acquired, the C code is done, and self._stop() is
+        # called.  That sets ._is_stopped to True, and ._tstate_lock to None.
+        lock = self._tstate_lock
+        if lock is None:
+            # already determined that the C code is done
+            assert self._is_stopped
+            return
+    
+        try:
+            if lock.acquire(block, timeout):
+                lock.release()
+>               self._stop()
+E               TypeError: Error calling Python override of QMainWindow::closeEvent(): 'bool' object is not callable
+
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1171: TypeError
+================================== FAILURES ===================================
+________________ test_gradcam_target_matching_every_detection _________________
+
+v8 = <vmi.adapters.ultralytics_adapter.UltralyticsAdapter object at 0x00000231D52417F0>
+
+    def test_gradcam_target_matching_every_detection(v8):
+        img = bus()
+        eng = v8.gradcam_engine()
+        dets = v8.predict(img, S)
+        for d in dets:
+>           out = eng.compute(img, d, S.imgsz, "auto")
+                  ^^^^^^^^^^^
+E           AttributeError: 'NoneType' object has no attribute 'compute'
+
+tests\test_models.py:177: AttributeError
+_________________ test_gradcam_same_class_different_instances _________________
+
+v8 = <vmi.adapters.ultralytics_adapter.UltralyticsAdapter object at 0x00000231D52417F0>
+
+    def test_gradcam_same_class_different_instances(v8):
+        img = bus()
+        people = sorted([d for d in v8.predict(img, S) if v8.info.classes.name(d.class_id) == "person"
+                         and d.confidence > 0.5], key=lambda d: d.box[0])
+        assert len(people) >= 2, "bus.jpg should contain several people"
+        eng = v8.gradcam_engine()
+        a, b = people[0], people[-1]
+>       ha = eng.compute(img, a, 640).heatmap
+             ^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'compute'
+
+tests\test_models.py:191: AttributeError
+_______________________ test_gradcam_layers_never_fake ________________________
+
+v8 = <vmi.adapters.ultralytics_adapter.UltralyticsAdapter object at 0x00000231D52417F0>
+
+    def test_gradcam_layers_never_fake(v8):
+        img = bus()
+        d = max(v8.predict(img, S), key=lambda x: x.confidence)
+        eng = v8.gradcam_engine()
+>       opts = eng.layer_options()
+               ^^^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'layer_options'
+
+tests\test_models.py:207: AttributeError
+__________________ test_gradcam_unmatched_target_is_refused ___________________
+
+v8 = <vmi.adapters.ultralytics_adapter.UltralyticsAdapter object at 0x00000231D52417F0>
+
+    def test_gradcam_unmatched_target_is_refused(v8):
+        from vmi.core.types import Detection
+        img = bus()
+        fake = Detection(0, 0, 0.9, (1.0, 1.0, 6.0, 6.0))       # nothing there
+        with pytest.raises(GradCamError):
+>           v8.gradcam_engine().compute(img, fake, 640)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'NoneType' object has no attribute 'compute'
+
+tests\test_models.py:222: AttributeError
+_____________________ test_snapshot_keeps_model_identity ______________________
+
+v8 = <vmi.adapters.ultralytics_adapter.UltralyticsAdapter object at 0x00000231D52417F0>
+
+    def test_snapshot_keeps_model_identity(v8):
+        from vmi.pipeline.inference_worker import InferenceWorker
+        import threading
+        custom = UltralyticsAdapter()
+        custom.load(model_path("custom3_untrained.pt"), "cpu")
+        got, ev = [], threading.Event()
+        w = InferenceWorker(on_result=lambda p, r, k, t: (got.append((p, r)), ev.set()))
+        w.set_settings(S)
+        w.set_adapter(v8)
+        w.start()
+        w.submit_job(FramePacket.make(1, bus()))
+        assert ev.wait(60)
+        pkt, res = got[0]
+        snap = Snapshot(1, pkt.image.copy(), res, dict(v8.info.classes.names), v8.info.classes.source,
+                        {}, set(), "bus.jpg")
+        ev.clear()
+        w.set_adapter(custom)                     # change model
+        w.submit_job(FramePacket.make(2, bus()))
+        assert ev.wait(60)
+>       w.stop()
+
+tests\test_models.py:244: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\vmi\pipeline\inference_worker.py:141: in stop
+    self.join(timeout)
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1153: in join
+    self._wait_for_tstate_lock(timeout=max(timeout, 0))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <[TypeError("'bool' object is not callable") raised in repr()] InferenceWorker object at 0x231da27b980>
+block = True, timeout = 10.0
+
+    def _wait_for_tstate_lock(self, block=True, timeout=-1):
+        # Issue #18808: wait for the thread state to be gone.
+        # At the end of the thread's life, after all knowledge of the thread
+        # is removed from C data structures, C code releases our _tstate_lock.
+        # This method passes its arguments to _tstate_lock.acquire().
+        # If the lock is acquired, the C code is done, and self._stop() is
+        # called.  That sets ._is_stopped to True, and ._tstate_lock to None.
+        lock = self._tstate_lock
+        if lock is None:
+            # already determined that the C code is done
+            assert self._is_stopped
+            return
+    
+        try:
+            if lock.acquire(block, timeout):
+                lock.release()
+>               self._stop()
+E               TypeError: 'bool' object is not callable
+
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1171: TypeError
+_______________________ test_results_match_their_frame ________________________
+
+    def test_results_match_their_frame():
+        """Each result must describe exactly the frame it is delivered with."""
+        ad = FakeAdapter(delay=0.02)
+        got, errors = [], []
+        w = InferenceWorker(on_result=lambda p, r, k, t: got.append((p, r, k)), on_error=errors.append)
+        w.set_adapter(ad)
+        w.start()
+        for i in range(1, 300):
+            w.submit_frame(_pkt(i))
+            time.sleep(0.001)
+        time.sleep(0.3)
+>       w.stop()
+
+tests\test_pipeline.py:79: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\vmi\pipeline\inference_worker.py:141: in stop
+    self.join(timeout)
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1153: in join
+    self._wait_for_tstate_lock(timeout=max(timeout, 0))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <[TypeError("'bool' object is not callable") raised in repr()] InferenceWorker object at 0x231d901e0c0>
+block = True, timeout = 10.0
+
+    def _wait_for_tstate_lock(self, block=True, timeout=-1):
+        # Issue #18808: wait for the thread state to be gone.
+        # At the end of the thread's life, after all knowledge of the thread
+        # is removed from C data structures, C code releases our _tstate_lock.
+        # This method passes its arguments to _tstate_lock.acquire().
+        # If the lock is acquired, the C code is done, and self._stop() is
+        # called.  That sets ._is_stopped to True, and ._tstate_lock to None.
+        lock = self._tstate_lock
+        if lock is None:
+            # already determined that the C code is done
+            assert self._is_stopped
+            return
+    
+        try:
+            if lock.acquire(block, timeout):
+                lock.release()
+>               self._stop()
+E               TypeError: 'bool' object is not callable
+
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1171: TypeError
+______________________ test_jobs_have_priority_and_pause ______________________
+
+    def test_jobs_have_priority_and_pause():
+        ad = FakeAdapter(delay=0.01)
+        got = []
+        w = InferenceWorker(on_result=lambda p, r, k, t: got.append((k, t, r.frame_id)))
+        w.set_adapter(ad)
+        w.start()
+        w.pause("gradcam")
+        for i in range(50):
+            w.submit_frame(_pkt(i))
+        w.submit_job(_pkt(7), tag="snap-7")
+        time.sleep(0.3)
+        assert [g for g in got if g[0] == "live"] == []           # paused: no live inference
+        assert ("job", "snap-7", 7) in got                        # snapshot jobs still run
+        w.resume()
+        w.submit_frame(_pkt(60))
+        time.sleep(0.2)
+>       w.stop()
+
+tests\test_pipeline.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\vmi\pipeline\inference_worker.py:141: in stop
+    self.join(timeout)
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1153: in join
+    self._wait_for_tstate_lock(timeout=max(timeout, 0))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <[TypeError("'bool' object is not callable") raised in repr()] InferenceWorker object at 0x231d8fecec0>
+block = True, timeout = 10.0
+
+    def _wait_for_tstate_lock(self, block=True, timeout=-1):
+        # Issue #18808: wait for the thread state to be gone.
+        # At the end of the thread's life, after all knowledge of the thread
+        # is removed from C data structures, C code releases our _tstate_lock.
+        # This method passes its arguments to _tstate_lock.acquire().
+        # If the lock is acquired, the C code is done, and self._stop() is
+        # called.  That sets ._is_stopped to True, and ._tstate_lock to None.
+        lock = self._tstate_lock
+        if lock is None:
+            # already determined that the C code is done
+            assert self._is_stopped
+            return
+    
+        try:
+            if lock.acquire(block, timeout):
+                lock.release()
+>               self._stop()
+E               TypeError: 'bool' object is not callable
+
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1171: TypeError
+___________________________ test_rate_limit_every_n ___________________________
+
+    def test_rate_limit_every_n():
+        ad = FakeAdapter(delay=0.0)
+        got = []
+        w = InferenceWorker(on_result=lambda p, r, k, t: got.append(r.frame_id))
+        w.set_adapter(ad)
+        w.set_rate(every_n=5, max_fps=0)
+        w.start()
+        for i in range(1, 101):
+            w.submit_frame(_pkt(i))
+            time.sleep(0.003)
+        time.sleep(0.2)
+>       w.stop()
+
+tests\test_pipeline.py:121: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\vmi\pipeline\inference_worker.py:141: in stop
+    self.join(timeout)
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1153: in join
+    self._wait_for_tstate_lock(timeout=max(timeout, 0))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <[TypeError("'bool' object is not callable") raised in repr()] InferenceWorker object at 0x231d91578f0>
+block = True, timeout = 10.0
+
+    def _wait_for_tstate_lock(self, block=True, timeout=-1):
+        # Issue #18808: wait for the thread state to be gone.
+        # At the end of the thread's life, after all knowledge of the thread
+        # is removed from C data structures, C code releases our _tstate_lock.
+        # This method passes its arguments to _tstate_lock.acquire().
+        # If the lock is acquired, the C code is done, and self._stop() is
+        # called.  That sets ._is_stopped to True, and ._tstate_lock to None.
+        lock = self._tstate_lock
+        if lock is None:
+            # already determined that the C code is done
+            assert self._is_stopped
+            return
+    
+        try:
+            if lock.acquire(block, timeout):
+                lock.release()
+>               self._stop()
+E               TypeError: 'bool' object is not callable
+
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1171: TypeError
+_________________ test_model_swap_waits_for_running_inference _________________
+
+    def test_model_swap_waits_for_running_inference():
+        a1, a2 = FakeAdapter(delay=0.2), FakeAdapter(delay=0.0)
+        got = []
+        w = InferenceWorker(on_result=lambda p, r, k, t: got.append(r))
+        w.set_adapter(a1)
+        w.start()
+        w.submit_job(_pkt(1))
+        time.sleep(0.05)                       # a1 is now busy
+        t0 = time.perf_counter()
+        w.set_adapter(a2)                      # must block until a1 finished
+        assert time.perf_counter() - t0 >= 0.1
+        w.submit_job(_pkt(2))
+        time.sleep(0.1)
+>       w.stop()
+
+tests\test_pipeline.py:138: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\vmi\pipeline\inference_worker.py:141: in stop
+    self.join(timeout)
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1153: in join
+    self._wait_for_tstate_lock(timeout=max(timeout, 0))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <[TypeError("'bool' object is not callable") raised in repr()] InferenceWorker object at 0x231d9155ee0>
+block = True, timeout = 10.0
+
+    def _wait_for_tstate_lock(self, block=True, timeout=-1):
+        # Issue #18808: wait for the thread state to be gone.
+        # At the end of the thread's life, after all knowledge of the thread
+        # is removed from C data structures, C code releases our _tstate_lock.
+        # This method passes its arguments to _tstate_lock.acquire().
+        # If the lock is acquired, the C code is done, and self._stop() is
+        # called.  That sets ._is_stopped to True, and ._tstate_lock to None.
+        lock = self._tstate_lock
+        if lock is None:
+            # already determined that the C code is done
+            assert self._is_stopped
+            return
+    
+        try:
+            if lock.acquire(block, timeout):
+                lock.release()
+>               self._stop()
+E               TypeError: 'bool' object is not callable
+
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1171: TypeError
+___________________ test_memory_is_bounded_during_long_run ____________________
+
+    def test_memory_is_bounded_during_long_run():
+        ad = FakeAdapter(delay=0.001)
+        w = InferenceWorker(on_result=lambda *a: None)
+        w.set_adapter(ad)
+        w.start()
+        tracemalloc.start()
+        big = np.zeros((720, 1280, 3), np.uint8)
+        for i in range(300):
+            w.submit_frame(FramePacket.make(i, big.copy()))
+        snap1 = tracemalloc.take_snapshot()
+        for i in range(300, 1500):
+            w.submit_frame(FramePacket.make(i, big.copy()))
+        time.sleep(0.2)
+        snap2 = tracemalloc.take_snapshot()
+>       w.stop()
+
+tests\test_pipeline.py:220: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\vmi\pipeline\inference_worker.py:141: in stop
+    self.join(timeout)
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1153: in join
+    self._wait_for_tstate_lock(timeout=max(timeout, 0))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <[TypeError("'bool' object is not callable") raised in repr()] InferenceWorker object at 0x231d901cad0>
+block = True, timeout = 10.0
+
+    def _wait_for_tstate_lock(self, block=True, timeout=-1):
+        # Issue #18808: wait for the thread state to be gone.
+        # At the end of the thread's life, after all knowledge of the thread
+        # is removed from C data structures, C code releases our _tstate_lock.
+        # This method passes its arguments to _tstate_lock.acquire().
+        # If the lock is acquired, the C code is done, and self._stop() is
+        # called.  That sets ._is_stopped to True, and ._tstate_lock to None.
+        lock = self._tstate_lock
+        if lock is None:
+            # already determined that the C code is done
+            assert self._is_stopped
+            return
+    
+        try:
+            if lock.acquire(block, timeout):
+                lock.release()
+>               self._stop()
+E               TypeError: 'bool' object is not callable
+
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\threading.py:1171: TypeError
+________________ test_full_flow_video_snapshot_gradcam_export _________________
+
+app = <PySide6.QtWidgets.QApplication(0x231e05a8410) at 0x00000231DA36D5C0>
+win = <vmi.ui.main_window.MainWindow(0x231dc9c1190) at 0x00000231DE444240>
+tmp_path = WindowsPath('C:/Users/runneradmin/AppData/Local/Temp/pytest-of-runneradmin/pytest-0/test_full_flow_video_snapshot_0')
+
+    def test_full_flow_video_snapshot_gradcam_export(app, win, tmp_path):
+        w = win
+        assert not w.b_gradcam.isEnabled() and not w.b_capture.isEnabled()
+        ad = load(app, w, "yolov8n.pt")
+        assert ad.info.classes.count == 80
+        w.mode_combo.setCurrentIndex(w.mode_combo.findData("video"))
+        w.set_file_source(os.path.join(ASSETS_DIR, "demo.mp4"))
+        w.start_source()
+>       assert wait_until(app, lambda: w._live_pair is not None, 60), "no live inference result"
+E       AssertionError: no live inference result
+E       assert False
+E        +  where False = wait_until(<PySide6.QtWidgets.QApplication(0x231e05a8410) at 0x00000231DA36D5C0>, <function test_full_flow_video_snapshot_gradcam_export.<locals>.<lambda> at 0x00000231DA24CD60>, 60)
+
+tests\test_ui.py:62: AssertionError
+=================================== PASSES ====================================
+_______________________ test_bad_sources_report_errors ________________________
+---------------------------- Captured stderr call -----------------------------
+[dshow @ 00000231da53ac40] Could not enumerate video devices (or none found).
+
+[dshow @ 00000231da53ac40] Could not enumerate audio only devices (or none found).
+
+[ WARN:0@1.091] global cap_ffmpeg_impl.hpp:1240 open VIDEOIO/FFMPEG: Failed list devices for backend dshow
+
+[ERROR:0@8.084] global obsensor_uvc_stream_channel.cpp:163 cv::obsensor::getStreamChannelGroup Camera index out of range
+
+[ WARN:1@2.182] global cap_ffmpeg_impl.hpp:453 _opencv_ffmpeg_interrupt_callback Stream timeout triggered after 1089.069000 ms
+
+[ WARN:2@5.279] global cap_ffmpeg_impl.hpp:453 _opencv_ffmpeg_interrupt_callback Stream timeout triggered after 1095.248000 ms
+
+- generated xml file: D:\a\vision-model-inspector\vision-model-inspector\ci_results\junit.xml -
+=========================== short test summary info ===========================
+PASSED tests/test_core.py::test_letterbox_roundtrip[shape0-640-False]
+PASSED tests/test_core.py::test_letterbox_roundtrip[shape1-640-True]
+PASSED tests/test_core.py::test_letterbox_roundtrip[shape2-320-False]
+PASSED tests/test_core.py::test_letterbox_roundtrip[shape3-416-True]
+PASSED tests/test_core.py::test_letterbox_roundtrip[shape4-640-False]
+PASSED tests/test_core.py::test_letterbox_maps_pixels_correctly
+PASSED tests/test_core.py::test_unletterbox_map_shape
+PASSED tests/test_core.py::test_nms_and_postprocess
+PASSED tests/test_core.py::test_box_iou
+PASSED tests/test_core.py::test_mapping_files
+PASSED tests/test_core.py::test_mapping_errors[nc: 2\nnames: [a, b, c]\n-.yaml]
+PASSED tests/test_core.py::test_mapping_errors[names: {0: a, 2: b}\n-.yaml]
+PASSED tests/test_core.py::test_mapping_errors[names: [a, b\n-.yaml]
+PASSED tests/test_core.py::test_mapping_errors[foo: 1\n-.yaml]
+PASSED tests/test_core.py::test_mapping_errors[a\n\nb\n-.txt]
+PASSED tests/test_core.py::test_mapping_errors[{bad json-.json]
+PASSED tests/test_core.py::test_mapping_errors[!!python/object/apply:os.system ['echo hi']-.yaml]
+PASSED tests/test_core.py::test_compare_mapping_and_literal
+PASSED tests/test_core.py::test_registry_generated_and_generic
+PASSED tests/test_core.py::test_display_store
+PASSED tests/test_core.py::test_snapshot_store_bounds
+PASSED tests/test_core.py::test_snapshot_labels_survive_model_change
+PASSED tests/test_core.py::test_export_thai_paths_no_overwrite
+PASSED tests/test_core.py::test_unique_path
+PASSED tests/test_core.py::test_imwrite_unicode
+PASSED tests/test_core.py::test_format_confidence_and_redact
+PASSED tests/test_models.py::test_two_models_with_different_classes
+PASSED tests/test_models.py::test_yolo11_supported
+PASSED tests/test_models.py::test_registry_dispatch_and_unsupported
+PASSED tests/test_models.py::test_classification_model_rejected
+PASSED tests/test_models.py::test_cuda_request_without_gpu
+PASSED tests/test_models.py::test_onnx_metadata_and_no_names
+PASSED tests/test_models.py::test_boxes_in_original_coordinates_after_letterbox
+PASSED tests/test_models.py::test_onnx_matches_pytorch
+PASSED tests/test_pipeline.py::test_latest_frame_slot_is_bounded
+PASSED tests/test_pipeline.py::test_video_source_and_repeated_start_stop
+PASSED tests/test_pipeline.py::test_video_eof_and_pause
+PASSED tests/test_pipeline.py::test_bad_sources_report_errors
+PASSED tests/test_pipeline.py::test_image_folder_source
+PASSED tests/test_ui.py::test_model_switch_keeps_old_snapshots
+PASSED tests/test_ui.py::test_class_filter_hides_rows
+PASSED tests/test_ui.py::test_layout_small_screen
+ERROR tests/test_ui.py::test_full_flow_video_snapshot_gradcam_export - TypeError: Error calling Python override of QMainWindow::closeEvent(): 'bool' object is not callable
+ERROR tests/test_ui.py::test_model_switch_keeps_old_snapshots - TypeError: Error calling Python override of QMainWindow::closeEvent(): 'bool' object is not callable
+ERROR tests/test_ui.py::test_class_filter_hides_rows - TypeError: Error calling Python override of QMainWindow::closeEvent(): 'bool' object is not callable
+ERROR tests/test_ui.py::test_layout_small_screen - TypeError: Error calling Python override of QMainWindow::closeEvent(): 'bool' object is not callable
+FAILED tests/test_models.py::test_gradcam_target_matching_every_detection - AttributeError: 'NoneType' object has no attribute 'compute'
+FAILED tests/test_models.py::test_gradcam_same_class_different_instances - AttributeError: 'NoneType' object has no attribute 'compute'
+FAILED tests/test_models.py::test_gradcam_layers_never_fake - AttributeError: 'NoneType' object has no attribute 'layer_options'
+FAILED tests/test_models.py::test_gradcam_unmatched_target_is_refused - AttributeError: 'NoneType' object has no attribute 'compute'
+FAILED tests/test_models.py::test_snapshot_keeps_model_identity - TypeError: 'bool' object is not callable
+FAILED tests/test_pipeline.py::test_results_match_their_frame - TypeError: 'bool' object is not callable
+FAILED tests/test_pipeline.py::test_jobs_have_priority_and_pause - TypeError: 'bool' object is not callable
+FAILED tests/test_pipeline.py::test_rate_limit_every_n - TypeError: 'bool' object is not callable
+FAILED tests/test_pipeline.py::test_model_swap_waits_for_running_inference - TypeError: 'bool' object is not callable
+FAILED tests/test_pipeline.py::test_memory_is_bounded_during_long_run - TypeError: 'bool' object is not callable
+FAILED tests/test_ui.py::test_full_flow_video_snapshot_gradcam_export - AssertionError: no live inference result
+assert False
+ +  where False = wait_until(<PySide6.QtWidgets.QApplication(0x231e05a8410) at 0x00000231DA36D5C0>, <function test_full_flow_video_snapshot_gradcam_export.<locals>.<lambda> at 0x00000231DA24CD60>, 60)
+============= 11 failed, 42 passed, 4 errors in 75.88s (0:01:15) ==============

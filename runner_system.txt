@@ -1,0 +1,13 @@
+
+OS Name:                   Microsoft Windows Server 2022 Datacenter
+OS Version:                10.0.20348 N/A Build 20348
+OS Build Type:             Multiprocessor Free
+Processor(s):              1 Processor(s) Installed.
+BIOS Version:              Microsoft Corporation Hyper-V UEFI Release v4.1, 4/22/2026
+Total Physical Memory:     16,379 MB
+
+
+Name                      : AMD EPYC 9V45 96-Core Processor                
+NumberOfCores             : 2
+NumberOfLogicalProcessors : 4
+

@@ -1,0 +1,9 @@
+saved ci_results/screenshots\00_start.png
+Traceback (most recent call last):
+  File "D:\a\vision-model-inspector\vision-model-inspector\tools\screenshots.py", line 171, in <module>
+    main(sys.argv[1] if len(sys.argv) > 1 else "screenshots")
+  File "D:\a\vision-model-inspector\vision-model-inspector\tools\screenshots.py", line 75, in main
+    wait(lambda: w._live_pair is not None)
+  File "D:\a\vision-model-inspector\vision-model-inspector\tools\screenshots.py", line 45, in wait
+    raise RuntimeError("timeout")
+RuntimeError: timeout

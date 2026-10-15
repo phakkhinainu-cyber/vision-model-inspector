@@ -1,0 +1,4 @@
+Creating new Ultralytics Settings v0.0.6 file  
+View Ultralytics Settings with 'yolo settings' or at 'C:\Users\runneradmin\AppData\Roaming\Ultralytics\settings.json'
+Update Settings with 'yolo settings key=value', i.e. 'yolo settings runs_dir=path/to/dir'. For help see https://docs.ultralytics.com/quickstart/#ultralytics-settings.
+torch 2.8.0+cpu ultralytics 8.3.253 PySide6 6.9.3 ort 1.31.0 cv2 4.14.0
