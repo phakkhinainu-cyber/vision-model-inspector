@@ -1,0 +1,102 @@
+{
+  "ok": true,
+  "frozen": true,
+  "executable": "C:\\Users\\runneradmin\\AppData\\Local\\Programs\\Vision Model Inspector\\VisionModelInspector.exe",
+  "version": "0.1.0",
+  "dependencies": {
+    "python": "3.12.10",
+    "platform": "Windows-2022Server-10.0.20348-SP0",
+    "machine": "AMD64",
+    "numpy": "2.5.2",
+    "opencv-python": "4.14.0.94",
+    "onnxruntime": "1.31.0",
+    "torch": "2.8.0+cpu",
+    "torchvision": "0.23.0+cpu",
+    "ultralytics": "8.3.253",
+    "PySide6": "6.9.3",
+    "PyYAML": "6.0.3",
+    "opencv": "4.14.0"
+  },
+  "model": {
+    "name": "yolo11n.pt",
+    "path": "C:\\data\\yolo11n.pt",
+    "sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
+    "adapter": "ultralytics-pt",
+    "file_format": ".pt"
+  },
+  "classes": 80,
+  "inference_ms_first": 78.14955711364746,
+  "inference_ms_second": 31.2347412109375,
+  "detections": [
+    {
+      "det_id": 0,
+      "class_id": 5,
+      "confidence": 0.9401523470878601,
+      "box_xyxy": [
+        3.8326663970947266,
+        229.36419677734375,
+        796.194580078125,
+        728.4122314453125
+      ],
+      "name": "bus"
+    },
+    {
+      "det_id": 1,
+      "class_id": 0,
+      "confidence": 0.8882200121879578,
+      "box_xyxy": [
+        671.0172119140625,
+        394.83319091796875,
+        809.8097534179688,
+        878.7124633789062
+      ],
+      "name": "person"
+    },
+    {
+      "det_id": 2,
+      "class_id": 0,
+      "confidence": 0.8782548308372498,
+      "box_xyxy": [
+        47.404727935791016,
+        399.56512451171875,
+        239.3006591796875,
+        904.1950073242188
+      ],
+      "name": "person"
+    },
+    {
+      "det_id": 3,
+      "class_id": 0,
+      "confidence": 0.8557725548744202,
+      "box_xyxy": [
+        223.0589599609375,
+        408.68865966796875,
+        344.4676513671875,
+        860.435791015625
+      ],
+      "name": "person"
+    },
+    {
+      "det_id": 4,
+      "class_id": 0,
+      "confidence": 0.6219192743301392,
+      "box_xyxy": [
+        0.021738767623901367,
+        556.0685424804688,
+        68.88550567626953,
+        872.3591918945312
+      ],
+      "name": "person"
+    }
+  ],
+  "gradcam": {
+    "ok": true,
+    "ms": 203.1261920928955,
+    "layer": "layer 22 (C3k2)",
+    "match_iou": 0.9999996037421718,
+    "score_difference": 1.1920928955078125e-07
+  },
+  "ui_font": "IBM Plex Sans Thai",
+  "screenshot": "D:\\a\\vision-model-inspector\\vision-model-inspector\\res\\selftest.png",
+  "elapsed_s": 4.587684392929077
+}
