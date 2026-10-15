@@ -1,0 +1,97 @@
+{
+  "ok": true,
+  "frozen": true,
+  "executable": "D:\\a\\vision-model-inspector\\vision-model-inspector\\dist\\VisionModelInspector\\VisionModelInspector.exe",
+  "version": "0.1.0",
+  "dependencies": {
+    "python": "3.12.10",
+    "platform": "Windows-2022Server-10.0.20348-SP0",
+    "machine": "AMD64",
+    "numpy": "2.5.2",
+    "opencv-python": "4.14.0.94",
+    "onnxruntime": "1.31.0",
+    "torch": "2.8.0+cpu",
+    "torchvision": "0.23.0+cpu",
+    "ultralytics": "8.3.253",
+    "PySide6": "6.9.3",
+    "PyYAML": "6.0.3",
+    "opencv": "4.14.0"
+  },
+  "model": {
+    "name": "yolov8n.onnx",
+    "path": "C:\\ทดสอบ โมเดล\\yolov8n.onnx",
+    "sha256": "af49801ad4a562aac58364b5b2534b8b07ff4ea7bdc32f60d7554674a189850f",
+    "adapter": "onnx-yolo",
+    "file_format": ".onnx"
+  },
+  "classes": 80,
+  "inference_ms_first": 78.12285423278809,
+  "inference_ms_second": 62.49833106994629,
+  "detections": [
+    {
+      "det_id": 0,
+      "class_id": 0,
+      "confidence": 0.890207052230835,
+      "box_xyxy": [
+        670.4491882324219,
+        380.55782318115234,
+        809.9188385009766,
+        879.6510887145996
+      ],
+      "name": "person"
+    },
+    {
+      "det_id": 1,
+      "class_id": 0,
+      "confidence": 0.8832789659500122,
+      "box_xyxy": [
+        221.67641258239746,
+        407.41988468170166,
+        343.78368186950684,
+        856.1857595443726
+      ],
+      "name": "person"
+    },
+    {
+      "det_id": 2,
+      "class_id": 0,
+      "confidence": 0.8784422874450684,
+      "box_xyxy": [
+        50.68151307106018,
+        397.29872131347656,
+        244.39769911766052,
+        905.3758850097656
+      ],
+      "name": "person"
+    },
+    {
+      "det_id": 3,
+      "class_id": 5,
+      "confidence": 0.8433688879013062,
+      "box_xyxy": [
+        31.488730430603027,
+        230.74348068237305,
+        801.4140558242798,
+        775.7797164916992
+      ],
+      "name": "bus"
+    },
+    {
+      "det_id": 4,
+      "class_id": 0,
+      "confidence": 0.43630796670913696,
+      "box_xyxy": [
+        0.4496133327484131,
+        549.8380765914917,
+        57.76949715614319,
+        868.3000917434692
+      ],
+      "name": "person"
+    }
+  ],
+  "gradcam": {
+    "ok": false,
+    "reason": "ไฟล์ ONNX: ปิด Grad-CAM ในรุ่นแรก — ใช้ไฟล์ .pt (YOLOv8/YOLO11) ที่รองรับแทน"
+  },
+  "elapsed_s": 0.609351634979248
+}

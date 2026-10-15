@@ -1,0 +1,114 @@
+{
+  "ok": true,
+  "frozen": true,
+  "executable": "D:\\a\\vision-model-inspector\\vision-model-inspector\\dist\\VisionModelInspector\\VisionModelInspector.exe",
+  "version": "0.1.0",
+  "dependencies": {
+    "python": "3.12.10",
+    "platform": "Windows-2022Server-10.0.20348-SP0",
+    "machine": "AMD64",
+    "numpy": "2.5.2",
+    "opencv-python": "4.14.0.94",
+    "onnxruntime": "1.31.0",
+    "torch": "2.8.0+cpu",
+    "torchvision": "0.23.0+cpu",
+    "ultralytics": "8.3.253",
+    "PySide6": "6.9.3",
+    "PyYAML": "6.0.3",
+    "opencv": "4.14.0"
+  },
+  "model": {
+    "name": "yolov8n.pt",
+    "path": "C:\\ทดสอบ โมเดล\\yolov8n.pt",
+    "sha256": "f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36",
+    "adapter": "ultralytics-pt",
+    "file_format": ".pt"
+  },
+  "classes": 80,
+  "inference_ms_first": 109.36522483825684,
+  "inference_ms_second": 78.12166213989258,
+  "detections": [
+    {
+      "det_id": 0,
+      "class_id": 5,
+      "confidence": 0.8734488487243652,
+      "box_xyxy": [
+        22.87126922607422,
+        231.27731323242188,
+        805.002685546875,
+        756.8404541015625
+      ],
+      "name": "bus"
+    },
+    {
+      "det_id": 1,
+      "class_id": 0,
+      "confidence": 0.8656910061836243,
+      "box_xyxy": [
+        48.550437927246094,
+        398.55230712890625,
+        245.34559631347656,
+        902.7026977539062
+      ],
+      "name": "person"
+    },
+    {
+      "det_id": 2,
+      "class_id": 0,
+      "confidence": 0.8528353571891785,
+      "box_xyxy": [
+        669.472900390625,
+        392.1859436035156,
+        809.7201538085938,
+        877.0354614257812
+      ],
+      "name": "person"
+    },
+    {
+      "det_id": 3,
+      "class_id": 0,
+      "confidence": 0.8252246379852295,
+      "box_xyxy": [
+        221.5172882080078,
+        405.79864501953125,
+        344.9706115722656,
+        857.53662109375
+      ],
+      "name": "person"
+    },
+    {
+      "det_id": 4,
+      "class_id": 0,
+      "confidence": 0.2611119747161865,
+      "box_xyxy": [
+        0.0,
+        550.5250244140625,
+        63.00690460205078,
+        873.4429321289062
+      ],
+      "name": "person"
+    },
+    {
+      "det_id": 5,
+      "class_id": 11,
+      "confidence": 0.25506842136383057,
+      "box_xyxy": [
+        0.058167457580566406,
+        254.45938110351562,
+        32.557411193847656,
+        324.8741760253906
+      ],
+      "name": "stop sign"
+    }
+  ],
+  "gradcam": {
+    "ok": true,
+    "ms": 313.34853172302246,
+    "layer": "layer 21 (C2f)",
+    "match_iou": 0.9999999853680633,
+    "score_difference": 1.7881393432617188e-07
+  },
+  "ui_font": "IBM Plex Sans Thai",
+  "screenshot": "D:\\a\\vision-model-inspector\\vision-model-inspector\\ci_results\\selftest_frozen.png",
+  "elapsed_s": 5.010885238647461
+}

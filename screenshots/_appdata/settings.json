@@ -1,0 +1,21 @@
+{
+ "conf": 0.25,
+ "iou": 0.45,
+ "imgsz": 640,
+ "device": "auto",
+ "heatmap_opacity": 0.5,
+ "infer_every_n": 1,
+ "max_infer_fps": 15.0,
+ "snapshot_max_items": 30,
+ "snapshot_max_mb": 16,
+ "recent_models": [
+  "D:\\a\\vision-model-inspector\\vision-model-inspector\\test_assets\\models\\yolov8n.onnx",
+  "D:\\a\\vision-model-inspector\\vision-model-inspector\\test_assets\\models\\yolov8n.pt"
+ ],
+ "trusted_model_hashes": [],
+ "preferred_camera": {},
+ "ip_cameras": [],
+ "last_export_dir": "",
+ "last_open_dir": "D:\\a\\vision-model-inspector\\vision-model-inspector\\test_assets\\images",
+ "sync_views": true
+}

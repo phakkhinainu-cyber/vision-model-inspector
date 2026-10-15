@@ -1,0 +1,172 @@
+{
+  "geometry_1600": {
+    "header": [
+      0,
+      0,
+      1200,
+      50
+    ],
+    "open": [
+      12,
+      60,
+      116,
+      36
+    ],
+    "model": [
+      136,
+      60,
+      150,
+      36
+    ],
+    "mode": [
+      298,
+      60,
+      133,
+      36
+    ],
+    "camera": [
+      439,
+      60,
+      233,
+      36
+    ],
+    "start": [
+      680,
+      60,
+      72,
+      36
+    ],
+    "stop": [
+      760,
+      60,
+      76,
+      36
+    ],
+    "capture": [
+      879,
+      60,
+      92,
+      36
+    ],
+    "gradcam": [
+      979,
+      60,
+      99,
+      36
+    ],
+    "export": [
+      1086,
+      60,
+      102,
+      36
+    ],
+    "live": [
+      12,
+      106,
+      400,
+      168
+    ],
+    "strip": [
+      422,
+      106,
+      456,
+      168
+    ],
+    "info": [
+      888,
+      106,
+      300,
+      168
+    ],
+    "det_card": [
+      12,
+      284,
+      344,
+      239
+    ],
+    "gc_card": [
+      366,
+      284,
+      514,
+      239
+    ],
+    "settings": [
+      890,
+      284,
+      298,
+      430
+    ],
+    "table": [
+      12,
+      533,
+      344,
+      181
+    ],
+    "detail": [
+      366,
+      533,
+      514,
+      181
+    ],
+    "status": [
+      0,
+      722,
+      1200,
+      27
+    ],
+    "_window": [
+      0,
+      0,
+      1200,
+      749
+    ]
+  },
+  "hirescam": {
+    "method": "HiResCAM (Draelos & Carin 2020) on pre-NMS class score",
+    "method_key": "hirescam",
+    "target_scalar": "sigmoid class score, class 0, anchor 6203",
+    "matched_anchor_index": 6203,
+    "matched_level": "P5",
+    "match_iou": 0.9999998593361457,
+    "pre_nms_score": 0.8881790637969971,
+    "reported_confidence": 0.8881790637969971,
+    "score_difference": 0.0,
+    "feature_map_shape": [
+      1,
+      256,
+      15,
+      20
+    ],
+    "device": "cpu",
+    "elapsed_ms": 294.1355000000385
+  },
+  "gradcam": {
+    "method": "Grad-CAM (Selvaraju et al. 2017) on pre-NMS class score",
+    "method_key": "gradcam",
+    "target_scalar": "sigmoid class score, class 0, anchor 6203",
+    "matched_anchor_index": 6203,
+    "matched_level": "P5",
+    "match_iou": 0.9999998593361457,
+    "pre_nms_score": 0.8881790637969971,
+    "reported_confidence": 0.8881790637969971,
+    "score_difference": 0.0,
+    "feature_map_shape": [
+      1,
+      256,
+      15,
+      20
+    ],
+    "device": "cpu",
+    "elapsed_ms": 303.60039999999344
+  },
+  "export_files": [
+    "ตัวอย่างการส่งออก\\ภาพ04_20261015-113414_yolov8n\\original.png",
+    "ตัวอย่างการส่งออก\\ภาพ04_20261015-113414_yolov8n\\detections.png",
+    "ตัวอย่างการส่งออก\\ภาพ04_20261015-113414_yolov8n\\gradcam_heatmap.png",
+    "ตัวอย่างการส่งออก\\ภาพ04_20261015-113414_yolov8n\\gradcam_overlay.png",
+    "ตัวอย่างการส่งออก\\ภาพ04_20261015-113414_yolov8n\\comparison.png",
+    "ตัวอย่างการส่งออก\\ภาพ04_20261015-113414_yolov8n\\detections.csv",
+    "ตัวอย่างการส่งออก\\ภาพ04_20261015-113414_yolov8n\\metadata.json"
+  ],
+  "onnx_detections": 3
+}
