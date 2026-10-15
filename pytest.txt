@@ -1,0 +1,254 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.7.0 -- C:\hostedtoolcache\windows\Python\3.12.10\x64\python.exe
+cachedir: .pytest_cache
+rootdir: D:\a\vision-model-inspector\vision-model-inspector
+configfile: pyproject.toml
+testpaths: tests
+plugins: platformdirs-4.12.3
+collecting ... collected 54 items
+
+tests/test_core.py::test_letterbox_roundtrip[shape0-640-False] PASSED    [  1%]
+tests/test_core.py::test_letterbox_roundtrip[shape1-640-True] PASSED     [  3%]
+tests/test_core.py::test_letterbox_roundtrip[shape2-320-False] PASSED    [  5%]
+tests/test_core.py::test_letterbox_roundtrip[shape3-416-True] PASSED     [  7%]
+tests/test_core.py::test_letterbox_roundtrip[shape4-640-False] PASSED    [  9%]
+tests/test_core.py::test_letterbox_maps_pixels_correctly PASSED          [ 11%]
+tests/test_core.py::test_unletterbox_map_shape PASSED                    [ 12%]
+tests/test_core.py::test_nms_and_postprocess PASSED                      [ 14%]
+tests/test_core.py::test_box_iou PASSED                                  [ 16%]
+tests/test_core.py::test_mapping_files PASSED                            [ 18%]
+tests/test_core.py::test_mapping_errors[nc: 2\nnames: [a, b, c]\n-.yaml] PASSED [ 20%]
+tests/test_core.py::test_mapping_errors[names: {0: a, 2: b}\n-.yaml] PASSED [ 22%]
+tests/test_core.py::test_mapping_errors[names: [a, b\n-.yaml] PASSED     [ 24%]
+tests/test_core.py::test_mapping_errors[foo: 1\n-.yaml] PASSED           [ 25%]
+tests/test_core.py::test_mapping_errors[a\n\nb\n-.txt] PASSED            [ 27%]
+tests/test_core.py::test_mapping_errors[{bad json-.json] PASSED          [ 29%]
+tests/test_core.py::test_mapping_errors[!!python/object/apply:os.system ['echo hi']-.yaml] PASSED [ 31%]
+tests/test_core.py::test_compare_mapping_and_literal PASSED              [ 33%]
+tests/test_core.py::test_registry_generated_and_generic PASSED           [ 35%]
+tests/test_core.py::test_display_store PASSED                            [ 37%]
+tests/test_core.py::test_snapshot_store_bounds PASSED                    [ 38%]
+tests/test_core.py::test_snapshot_labels_survive_model_change PASSED     [ 40%]
+tests/test_core.py::test_export_thai_paths_no_overwrite PASSED           [ 42%]
+tests/test_core.py::test_unique_path PASSED                              [ 44%]
+tests/test_core.py::test_imwrite_unicode PASSED                          [ 46%]
+tests/test_core.py::test_format_confidence_and_redact PASSED             [ 48%]
+tests/test_models.py::test_two_models_with_different_classes PASSED      [ 50%]
+tests/test_models.py::test_yolo11_supported PASSED                       [ 51%]
+tests/test_models.py::test_registry_dispatch_and_unsupported PASSED      [ 53%]
+tests/test_models.py::test_classification_model_rejected PASSED          [ 55%]
+tests/test_models.py::test_cuda_request_without_gpu PASSED               [ 57%]
+tests/test_models.py::test_onnx_metadata_and_no_names PASSED             [ 59%]
+tests/test_models.py::test_boxes_in_original_coordinates_after_letterbox PASSED [ 61%]
+tests/test_models.py::test_onnx_matches_pytorch PASSED                   [ 62%]
+tests/test_models.py::test_gradcam_enabled_for_v8_and_v11 PASSED         [ 64%]
+tests/test_models.py::test_gradcam_target_matching_every_detection PASSED [ 66%]
+tests/test_models.py::test_gradcam_same_class_different_instances PASSED [ 68%]
+tests/test_models.py::test_gradcam_layers_never_fake PASSED              [ 70%]
+tests/test_models.py::test_gradcam_unmatched_target_is_refused PASSED    [ 72%]
+tests/test_models.py::test_snapshot_keeps_model_identity PASSED          [ 74%]
+tests/test_pipeline.py::test_latest_frame_slot_is_bounded PASSED         [ 75%]
+tests/test_pipeline.py::test_results_match_their_frame PASSED            [ 77%]
+tests/test_pipeline.py::test_jobs_have_priority_and_pause PASSED         [ 79%]
+tests/test_pipeline.py::test_rate_limit_every_n PASSED                   [ 81%]
+tests/test_pipeline.py::test_model_swap_waits_for_running_inference PASSED [ 83%]
+tests/test_pipeline.py::test_video_source_and_repeated_start_stop PASSED [ 85%]
+tests/test_pipeline.py::test_video_eof_and_pause PASSED                  [ 87%]
+tests/test_pipeline.py::test_bad_sources_report_errors PASSED            [ 88%]
+tests/test_pipeline.py::test_image_folder_source PASSED                  [ 90%]
+tests/test_pipeline.py::test_memory_is_bounded_during_long_run PASSED    [ 92%]
+tests/test_ui.py::test_full_flow_video_snapshot_gradcam_export PASSED    [ 94%]
+tests/test_ui.py::test_model_switch_keeps_old_snapshots PASSED           [ 96%]
+tests/test_ui.py::test_class_filter_hides_rows PASSED                    [ 98%]
+tests/test_ui.py::test_layout_small_screen PASSED                        [100%]
+
+=================================== PASSES ====================================
+___________________ test_two_models_with_different_classes ____________________
+---------------------------- Captured stderr setup ----------------------------
+2026-10-15 11:53:10,971 INFO vmi.adapters.ultralytics_adapter: loaded yolov8n.pt (yolov8, nc=80, device=cpu, sha=f59b3d833e2f)
+----------------------------- Captured log setup ------------------------------
+INFO     vmi.adapters.ultralytics_adapter:ultralytics_adapter.py:165 loaded yolov8n.pt (yolov8, nc=80, device=cpu, sha=f59b3d833e2f)
+---------------------------- Captured stderr call -----------------------------
+2026-10-15 11:53:11,033 INFO vmi.adapters.ultralytics_adapter: loaded custom3_untrained.pt (yolov8, nc=3, device=cpu, sha=32140ec47eae)
+------------------------------ Captured log call ------------------------------
+INFO     vmi.adapters.ultralytics_adapter:ultralytics_adapter.py:165 loaded custom3_untrained.pt (yolov8, nc=3, device=cpu, sha=32140ec47eae)
+____________________________ test_yolo11_supported ____________________________
+---------------------------- Captured stderr setup ----------------------------
+2026-10-15 11:53:11,248 INFO vmi.adapters.ultralytics_adapter: loaded yolo11n.pt (yolo11, nc=80, device=cpu, sha=0ebbc80d4a76)
+----------------------------- Captured log setup ------------------------------
+INFO     vmi.adapters.ultralytics_adapter:ultralytics_adapter.py:165 loaded yolo11n.pt (yolo11, nc=80, device=cpu, sha=0ebbc80d4a76)
+_______________________ test_onnx_metadata_and_no_names _______________________
+---------------------------- Captured stderr setup ----------------------------
+2026-10-15 11:53:11,722 INFO vmi.adapters.onnx_adapter: loaded ONNX yolov8n.onnx layout=raw nc=80 providers=['CPUExecutionProvider']
+----------------------------- Captured log setup ------------------------------
+INFO     vmi.adapters.onnx_adapter:onnx_adapter.py:175 loaded ONNX yolov8n.onnx layout=raw nc=80 providers=['CPUExecutionProvider']
+---------------------------- Captured stderr call -----------------------------
+2026-10-15 11:53:11,878 INFO vmi.adapters.onnx_adapter: loaded ONNX yolov8n_nonames.onnx layout=raw nc=80 providers=['CPUExecutionProvider']
+------------------------------ Captured log call ------------------------------
+INFO     vmi.adapters.onnx_adapter:onnx_adapter.py:175 loaded ONNX yolov8n_nonames.onnx layout=raw nc=80 providers=['CPUExecutionProvider']
+________________ test_gradcam_target_matching_every_detection _________________
+---------------------------- Captured stderr call -----------------------------
+2026-10-15 11:53:12,457 INFO vmi.gradcam.ultralytics_gradcam: Grad-CAM model copy on cpu 
+------------------------------ Captured log call ------------------------------
+INFO     vmi.gradcam.ultralytics_gradcam:ultralytics_gradcam.py:122 Grad-CAM model copy on cpu
+_____________________ test_snapshot_keeps_model_identity ______________________
+---------------------------- Captured stderr call -----------------------------
+2026-10-15 11:53:15,635 INFO vmi.adapters.ultralytics_adapter: loaded custom3_untrained.pt (yolov8, nc=3, device=cpu, sha=32140ec47eae)
+------------------------------ Captured log call ------------------------------
+INFO     vmi.adapters.ultralytics_adapter:ultralytics_adapter.py:165 loaded custom3_untrained.pt (yolov8, nc=3, device=cpu, sha=32140ec47eae)
+_______________________ test_bad_sources_report_errors ________________________
+---------------------------- Captured stderr call -----------------------------
+[dshow @ 0000027d1859ac40] Could not enumerate video devices (or none found).
+
+[dshow @ 0000027d1859ac40] Could not enumerate audio only devices (or none found).
+
+[ WARN:0@1.039] global cap_ffmpeg_impl.hpp:1240 open VIDEOIO/FFMPEG: Failed list devices for backend dshow
+
+[ERROR:0@12.089] global obsensor_uvc_stream_channel.cpp:163 cv::obsensor::getStreamChannelGroup Camera index out of range
+
+[ WARN:1@2.048] global cap_ffmpeg_impl.hpp:453 _opencv_ffmpeg_interrupt_callback Stream timeout triggered after 1006.021000 ms
+
+[ WARN:2@5.052] global cap_ffmpeg_impl.hpp:453 _opencv_ffmpeg_interrupt_callback Stream timeout triggered after 1002.894000 ms
+
+________________ test_full_flow_video_snapshot_gradcam_export _________________
+---------------------------- Captured stderr call -----------------------------
+2026-10-15 11:53:24,532 INFO vmi.ui.main_window: status: กำลังโหลดโมเดล yolov8n.pt …
+2026-10-15 11:53:24,615 INFO vmi.adapters.ultralytics_adapter: loaded yolov8n.pt (yolov8, nc=80, device=cpu, sha=f59b3d833e2f)
+2026-10-15 11:53:24,625 INFO vmi.ui.main_window: status: โหลดโมเดลแล้ว: yolov8n.pt (คลาส 80, cpu)
+2026-10-15 11:53:24,629 INFO vmi.ui.main_window: status: กำลังเชื่อมต่อ demo.avi …
+2026-10-15 11:53:24,629 INFO vmi.ui.main_window: status: เชื่อมต่อแล้ว
+2026-10-15 11:53:24,738 INFO vmi.ui.main_window: status: กำลังตรวจจับภาพที่จับไว้ …
+2026-10-15 11:53:24,817 INFO vmi.ui.main_window: status: บันทึกภาพที่ 01 — พบ 4 วัตถุ
+2026-10-15 11:53:25,141 INFO vmi.ui.main_window: status: กำลังตรวจจับภาพที่จับไว้ …
+2026-10-15 11:53:25,245 INFO vmi.ui.main_window: status: บันทึกภาพที่ 02 — พบ 3 วัตถุ
+2026-10-15 11:53:25,551 INFO vmi.ui.main_window: status: กำลังตรวจจับภาพที่จับไว้ …
+2026-10-15 11:53:25,659 INFO vmi.ui.main_window: status: บันทึกภาพที่ 03 — พบ 3 วัตถุ
+2026-10-15 11:53:25,980 INFO vmi.ui.main_window: status: กำลังคำนวณ Grad-CAM — พักการตรวจจับสดชั่วคราว
+2026-10-15 11:53:26,040 INFO vmi.gradcam.ultralytics_gradcam: Grad-CAM model copy on cpu 
+2026-10-15 11:53:26,264 INFO vmi.ui.main_window: status: Grad-CAM เสร็จ (271 ms) — กลับมาตรวจจับสดแล้ว
+2026-10-15 11:53:26,431 INFO vmi.ui.main_window: status: ส่งออก 7 ไฟล์ไปที่ C:\Users\runneradmin\AppData\Local\Temp\pytest-of-runneradmin\pytest-0\test_full_flow_video_snapshot_0\ผลลัพธ์ ทดสอบ\ภาพ03_20261015-115325_yolov8n
+2026-10-15 11:53:26,447 INFO vmi.ui.main_window: status: กำลังเชื่อมต่อ demo.avi …
+2026-10-15 11:53:26,447 INFO vmi.ui.main_window: status: เชื่อมต่อแล้ว
+2026-10-15 11:53:26,857 INFO vmi.ui.main_window: status: กำลังเชื่อมต่อ demo.avi …
+2026-10-15 11:53:26,857 INFO vmi.ui.main_window: status: เชื่อมต่อแล้ว
+2026-10-15 11:53:27,262 INFO vmi.ui.main_window: status: กำลังเชื่อมต่อ demo.avi …
+2026-10-15 11:53:27,262 INFO vmi.ui.main_window: status: เชื่อมต่อแล้ว
+------------------------------ Captured log call ------------------------------
+INFO     vmi.ui.main_window:main_window.py:1443 status: กำลังโหลดโมเดล yolov8n.pt …
+INFO     vmi.adapters.ultralytics_adapter:ultralytics_adapter.py:165 loaded yolov8n.pt (yolov8, nc=80, device=cpu, sha=f59b3d833e2f)
+INFO     vmi.ui.main_window:main_window.py:1443 status: โหลดโมเดลแล้ว: yolov8n.pt (คลาส 80, cpu)
+INFO     vmi.ui.main_window:main_window.py:1443 status: กำลังเชื่อมต่อ demo.avi …
+INFO     vmi.ui.main_window:main_window.py:1443 status: เชื่อมต่อแล้ว
+INFO     vmi.ui.main_window:main_window.py:1443 status: กำลังตรวจจับภาพที่จับไว้ …
+INFO     vmi.ui.main_window:main_window.py:1443 status: บันทึกภาพที่ 01 — พบ 4 วัตถุ
+INFO     vmi.ui.main_window:main_window.py:1443 status: กำลังตรวจจับภาพที่จับไว้ …
+INFO     vmi.ui.main_window:main_window.py:1443 status: บันทึกภาพที่ 02 — พบ 3 วัตถุ
+INFO     vmi.ui.main_window:main_window.py:1443 status: กำลังตรวจจับภาพที่จับไว้ …
+INFO     vmi.ui.main_window:main_window.py:1443 status: บันทึกภาพที่ 03 — พบ 3 วัตถุ
+INFO     vmi.ui.main_window:main_window.py:1443 status: กำลังคำนวณ Grad-CAM — พักการตรวจจับสดชั่วคราว
+INFO     vmi.gradcam.ultralytics_gradcam:ultralytics_gradcam.py:122 Grad-CAM model copy on cpu 
+INFO     vmi.ui.main_window:main_window.py:1443 status: Grad-CAM เสร็จ (271 ms) — กลับมาตรวจจับสดแล้ว
+INFO     vmi.ui.main_window:main_window.py:1443 status: ส่งออก 7 ไฟล์ไปที่ C:\Users\runneradmin\AppData\Local\Temp\pytest-of-runneradmin\pytest-0\test_full_flow_video_snapshot_0\ผลลัพธ์ ทดสอบ\ภาพ03_20261015-115325_yolov8n
+INFO     vmi.ui.main_window:main_window.py:1443 status: กำลังเชื่อมต่อ demo.avi …
+INFO     vmi.ui.main_window:main_window.py:1443 status: เชื่อมต่อแล้ว
+INFO     vmi.ui.main_window:main_window.py:1443 status: กำลังเชื่อมต่อ demo.avi …
+INFO     vmi.ui.main_window:main_window.py:1443 status: เชื่อมต่อแล้ว
+INFO     vmi.ui.main_window:main_window.py:1443 status: กำลังเชื่อมต่อ demo.avi …
+INFO     vmi.ui.main_window:main_window.py:1443 status: เชื่อมต่อแล้ว
+____________________ test_model_switch_keeps_old_snapshots ____________________
+---------------------------- Captured stderr call -----------------------------
+2026-10-15 11:53:27,847 INFO vmi.ui.main_window: status: กำลังโหลดโมเดล yolov8n.pt …
+2026-10-15 11:53:27,920 INFO vmi.adapters.ultralytics_adapter: loaded yolov8n.pt (yolov8, nc=80, device=cpu, sha=f59b3d833e2f)
+2026-10-15 11:53:27,930 INFO vmi.ui.main_window: status: โหลดโมเดลแล้ว: yolov8n.pt (คลาส 80, cpu)
+2026-10-15 11:53:27,930 INFO vmi.ui.main_window: status: ภาพ 1/1: bus.jpg
+2026-10-15 11:53:28,025 INFO vmi.ui.main_window: status: บันทึกภาพที่ 01 — พบ 6 วัตถุ
+2026-10-15 11:53:28,181 INFO vmi.ui.main_window: status: กำลังโหลดโมเดล custom3_untrained.pt …
+2026-10-15 11:53:28,247 INFO vmi.adapters.ultralytics_adapter: loaded custom3_untrained.pt (yolov8, nc=3, device=cpu, sha=32140ec47eae)
+2026-10-15 11:53:28,257 INFO vmi.ui.main_window: status: โหลดโมเดลแล้ว: custom3_untrained.pt (คลาส 3, cpu)
+2026-10-15 11:53:28,447 INFO vmi.ui.main_window: status: กำลังโหลดโมเดล yolov8n.onnx …
+2026-10-15 11:53:28,447 INFO vmi.ui.main_window: discarding result from previous model
+2026-10-15 11:53:28,613 INFO vmi.adapters.onnx_adapter: loaded ONNX yolov8n.onnx layout=raw nc=80 providers=['CPUExecutionProvider']
+2026-10-15 11:53:28,623 INFO vmi.ui.main_window: status: โหลดโมเดลแล้ว: yolov8n.onnx (คลาส 80, cpu)
+------------------------------ Captured log call ------------------------------
+INFO     vmi.ui.main_window:main_window.py:1443 status: กำลังโหลดโมเดล yolov8n.pt …
+INFO     vmi.adapters.ultralytics_adapter:ultralytics_adapter.py:165 loaded yolov8n.pt (yolov8, nc=80, device=cpu, sha=f59b3d833e2f)
+INFO     vmi.ui.main_window:main_window.py:1443 status: โหลดโมเดลแล้ว: yolov8n.pt (คลาส 80, cpu)
+INFO     vmi.ui.main_window:main_window.py:1443 status: ภาพ 1/1: bus.jpg
+INFO     vmi.ui.main_window:main_window.py:1443 status: บันทึกภาพที่ 01 — พบ 6 วัตถุ
+INFO     vmi.ui.main_window:main_window.py:1443 status: กำลังโหลดโมเดล custom3_untrained.pt …
+INFO     vmi.adapters.ultralytics_adapter:ultralytics_adapter.py:165 loaded custom3_untrained.pt (yolov8, nc=3, device=cpu, sha=32140ec47eae)
+INFO     vmi.ui.main_window:main_window.py:1443 status: โหลดโมเดลแล้ว: custom3_untrained.pt (คลาส 3, cpu)
+INFO     vmi.ui.main_window:main_window.py:1443 status: กำลังโหลดโมเดล yolov8n.onnx …
+INFO     vmi.ui.main_window:main_window.py:1109 discarding result from previous model
+INFO     vmi.adapters.onnx_adapter:onnx_adapter.py:175 loaded ONNX yolov8n.onnx layout=raw nc=80 providers=['CPUExecutionProvider']
+INFO     vmi.ui.main_window:main_window.py:1443 status: โหลดโมเดลแล้ว: yolov8n.onnx (คลาส 80, cpu)
+________________________ test_class_filter_hides_rows _________________________
+---------------------------- Captured stderr call -----------------------------
+2026-10-15 11:53:28,752 INFO vmi.ui.main_window: status: กำลังโหลดโมเดล yolov8n.pt …
+2026-10-15 11:53:28,820 INFO vmi.adapters.ultralytics_adapter: loaded yolov8n.pt (yolov8, nc=80, device=cpu, sha=f59b3d833e2f)
+2026-10-15 11:53:28,825 INFO vmi.ui.main_window: status: โหลดโมเดลแล้ว: yolov8n.pt (คลาส 80, cpu)
+2026-10-15 11:53:28,836 INFO vmi.ui.main_window: status: ภาพ 1/1: bus.jpg
+2026-10-15 11:53:28,928 INFO vmi.ui.main_window: status: บันทึกภาพที่ 01 — พบ 6 วัตถุ
+------------------------------ Captured log call ------------------------------
+INFO     vmi.ui.main_window:main_window.py:1443 status: กำลังโหลดโมเดล yolov8n.pt …
+INFO     vmi.adapters.ultralytics_adapter:ultralytics_adapter.py:165 loaded yolov8n.pt (yolov8, nc=80, device=cpu, sha=f59b3d833e2f)
+INFO     vmi.ui.main_window:main_window.py:1443 status: โหลดโมเดลแล้ว: yolov8n.pt (คลาส 80, cpu)
+INFO     vmi.ui.main_window:main_window.py:1443 status: ภาพ 1/1: bus.jpg
+INFO     vmi.ui.main_window:main_window.py:1443 status: บันทึกภาพที่ 01 — พบ 6 วัตถุ
+- generated xml file: D:\a\vision-model-inspector\vision-model-inspector\ci_results\junit.xml -
+=========================== short test summary info ===========================
+PASSED tests/test_core.py::test_letterbox_roundtrip[shape0-640-False]
+PASSED tests/test_core.py::test_letterbox_roundtrip[shape1-640-True]
+PASSED tests/test_core.py::test_letterbox_roundtrip[shape2-320-False]
+PASSED tests/test_core.py::test_letterbox_roundtrip[shape3-416-True]
+PASSED tests/test_core.py::test_letterbox_roundtrip[shape4-640-False]
+PASSED tests/test_core.py::test_letterbox_maps_pixels_correctly
+PASSED tests/test_core.py::test_unletterbox_map_shape
+PASSED tests/test_core.py::test_nms_and_postprocess
+PASSED tests/test_core.py::test_box_iou
+PASSED tests/test_core.py::test_mapping_files
+PASSED tests/test_core.py::test_mapping_errors[nc: 2\nnames: [a, b, c]\n-.yaml]
+PASSED tests/test_core.py::test_mapping_errors[names: {0: a, 2: b}\n-.yaml]
+PASSED tests/test_core.py::test_mapping_errors[names: [a, b\n-.yaml]
+PASSED tests/test_core.py::test_mapping_errors[foo: 1\n-.yaml]
+PASSED tests/test_core.py::test_mapping_errors[a\n\nb\n-.txt]
+PASSED tests/test_core.py::test_mapping_errors[{bad json-.json]
+PASSED tests/test_core.py::test_mapping_errors[!!python/object/apply:os.system ['echo hi']-.yaml]
+PASSED tests/test_core.py::test_compare_mapping_and_literal
+PASSED tests/test_core.py::test_registry_generated_and_generic
+PASSED tests/test_core.py::test_display_store
+PASSED tests/test_core.py::test_snapshot_store_bounds
+PASSED tests/test_core.py::test_snapshot_labels_survive_model_change
+PASSED tests/test_core.py::test_export_thai_paths_no_overwrite
+PASSED tests/test_core.py::test_unique_path
+PASSED tests/test_core.py::test_imwrite_unicode
+PASSED tests/test_core.py::test_format_confidence_and_redact
+PASSED tests/test_models.py::test_two_models_with_different_classes
+PASSED tests/test_models.py::test_yolo11_supported
+PASSED tests/test_models.py::test_registry_dispatch_and_unsupported
+PASSED tests/test_models.py::test_classification_model_rejected
+PASSED tests/test_models.py::test_cuda_request_without_gpu
+PASSED tests/test_models.py::test_onnx_metadata_and_no_names
+PASSED tests/test_models.py::test_boxes_in_original_coordinates_after_letterbox
+PASSED tests/test_models.py::test_onnx_matches_pytorch
+PASSED tests/test_models.py::test_gradcam_enabled_for_v8_and_v11
+PASSED tests/test_models.py::test_gradcam_target_matching_every_detection
+PASSED tests/test_models.py::test_gradcam_same_class_different_instances
+PASSED tests/test_models.py::test_gradcam_layers_never_fake
+PASSED tests/test_models.py::test_gradcam_unmatched_target_is_refused
+PASSED tests/test_models.py::test_snapshot_keeps_model_identity
+PASSED tests/test_pipeline.py::test_latest_frame_slot_is_bounded
+PASSED tests/test_pipeline.py::test_results_match_their_frame
+PASSED tests/test_pipeline.py::test_jobs_have_priority_and_pause
+PASSED tests/test_pipeline.py::test_rate_limit_every_n
+PASSED tests/test_pipeline.py::test_model_swap_waits_for_running_inference
+PASSED tests/test_pipeline.py::test_video_source_and_repeated_start_stop
+PASSED tests/test_pipeline.py::test_video_eof_and_pause
+PASSED tests/test_pipeline.py::test_bad_sources_report_errors
+PASSED tests/test_pipeline.py::test_image_folder_source
+PASSED tests/test_pipeline.py::test_memory_is_bounded_during_long_run
+PASSED tests/test_ui.py::test_full_flow_video_snapshot_gradcam_export
+PASSED tests/test_ui.py::test_model_switch_keeps_old_snapshots
+PASSED tests/test_ui.py::test_class_filter_hides_rows
+PASSED tests/test_ui.py::test_layout_small_screen
+============================= 54 passed in 21.84s =============================
