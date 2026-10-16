@@ -1,0 +1,2 @@
+total 295224
+-rw-r--r--  1 runner  staff  144432354 Oct 16 19:28 LPR-Portable-1.0.0-macos-arm64.tar.gz
