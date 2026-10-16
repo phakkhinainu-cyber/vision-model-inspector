@@ -152,6 +152,10 @@ def _dummy_feed(sess: Any) -> dict[str, np.ndarray]:
     return feed
 
 
+# เหตุผลล่าสุดที่โมเดลแต่ละไฟล์ใช้ GPU ไม่ได้ (แสดงใน selftest เพื่อหาสาเหตุ)
+fallbacks: dict[str, str] = {}
+
+
 def make_session(path: Path, device: str = "auto", threads: int = 0):  # type: ignore[no-untyped-def]
     import onnxruntime as ort
 
@@ -169,6 +173,7 @@ def make_session(path: Path, device: str = "auto", threads: int = 0):  # type: i
 
     providers = pick_providers(device)
     gpu = provider_name(providers[0]) if provider_name(providers[0]) in _GPU_PROVIDERS else None
+    fallbacks.pop(path.name, None)
     if gpu == "CUDAExecutionProvider":
         _preload_cuda()
     sess = None
@@ -177,8 +182,11 @@ def make_session(path: Path, device: str = "auto", threads: int = 0):  # type: i
             sess = ort.InferenceSession(str(path), options(gpu), providers=providers)
             if sess.get_providers()[0] in _GPU_PROVIDERS:
                 sess.run(None, _dummy_feed(sess))  # ทดลองรัน 1 ครั้ง ถ้าการ์ด/ไดรเวอร์มีปัญหาจะได้รู้ตั้งแต่ตอนนี้
+            else:
+                fallbacks[path.name] = f"{gpu}: onnxruntime เลือกใช้ {sess.get_providers()[0]} แทน"
         except Exception as e:  # noqa: BLE001
             log.warning("ใช้ %s กับโมเดล %s ไม่ได้ (%s) ใช้ CPU แทน", gpu, path.name, e)
+            fallbacks[path.name] = f"{gpu}: {type(e).__name__}: {e}"[:500]
             sess = None
     if sess is None:
         sess = ort.InferenceSession(str(path), options(None), providers=["CPUExecutionProvider"])
@@ -197,8 +205,11 @@ def probe(path: Path, device: str) -> dict[str, Any]:
         sess.run(None, feed)
         t1 = time.time()
         sess.run(None, feed)
-        return {"provider": sess.get_providers()[0], "load_s": round(t1 - t0, 2),
-                "run_ms": round((time.time() - t1) * 1000, 1)}
+        out: dict[str, Any] = {"provider": sess.get_providers()[0], "load_s": round(t1 - t0, 2),
+                               "run_ms": round((time.time() - t1) * 1000, 1)}
+        if path.name in fallbacks:
+            out["fallback"] = fallbacks[path.name]
+        return out
     except Exception as e:  # noqa: BLE001
         return {"error": f"{type(e).__name__}: {e}"}
 

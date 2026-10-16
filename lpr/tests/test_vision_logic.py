@@ -121,3 +121,5 @@ def test_gpu_fallback_to_cpu(monkeypatch, tmp_path):
     sess = runtime.make_session(model, "auto")
     assert sess.get_providers()[0] == "CPUExecutionProvider"
     sess.run(None, runtime._dummy_feed(sess))
+    assert "CUDAExecutionProvider" in runtime.fallbacks[model.name]
+    assert "fallback" in runtime.probe(model, "auto")
