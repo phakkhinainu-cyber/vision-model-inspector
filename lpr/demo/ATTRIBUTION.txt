@@ -1,0 +1,9 @@
+วิดีโอตัวอย่าง (demo.mp4) สำหรับโหมดจำลอง
+
+ภาพรถยนต์มาจากชุดข้อมูล "License Plates" (Roboflow) ที่เผยแพร่บน Hugging Face:
+https://huggingface.co/datasets/keremberke/license-plate-object-detection
+สัญญาอนุญาต: Creative Commons Attribution 4.0 (CC BY 4.0) https://creativecommons.org/licenses/by/4.0/
+
+ดัดแปลง: ตัดเฉพาะตัวรถ, แทนที่ป้ายทะเบียนเดิมด้วยป้ายทะเบียนไทยที่สร้างขึ้นเอง (ไม่ใช่ทะเบียนจริง),
+และจัดให้เคลื่อนที่บนฉากถนนจำลอง (lpr/tools/make_demo_video.py)
+demo.json คือเฉลยทะเบียนของรถแต่ละคัน ใช้ในการทดสอบอัตโนมัติ

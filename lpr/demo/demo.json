@@ -1,0 +1,50 @@
+[
+ {
+  "plate_norm": "จฬ1543",
+  "province": "ราชบุรี",
+  "style": "white_black",
+  "t_start": 1.47,
+  "t_end": 4.67,
+  "source": "test_000.jpg"
+ },
+ {
+  "plate_norm": "4อร969",
+  "province": "ศรีสะเกษ",
+  "style": "white_black",
+  "t_start": 6.47,
+  "t_end": 9.67,
+  "source": "test_001.jpg"
+ },
+ {
+  "plate_norm": "งต764",
+  "province": "อุดรธานี",
+  "style": "white_black",
+  "t_start": 11.47,
+  "t_end": 14.67,
+  "source": "test_003.jpg"
+ },
+ {
+  "plate_norm": "836054",
+  "province": "ตราด",
+  "style": "yellow_black",
+  "t_start": 16.47,
+  "t_end": 19.67,
+  "source": "test_006.jpg"
+ },
+ {
+  "plate_norm": "2ง3375",
+  "province": "ร้อยเอ็ด",
+  "style": "white_black",
+  "t_start": 21.47,
+  "t_end": 24.67,
+  "source": "test_007.jpg"
+ },
+ {
+  "plate_norm": "3ถ1342",
+  "province": "ยะลา",
+  "style": "white_blue",
+  "t_start": 26.47,
+  "t_end": 29.67,
+  "source": "test_010.jpg"
+ }
+]

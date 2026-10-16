@@ -7,7 +7,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 MODELS = ROOT / "models"
-DEMO = ROOT / "work" / "demo" / "demo.mp4"
+DEMO = ROOT / "demo" / "demo.mp4"
 sys.path.insert(0, str(ROOT / "tools"))
 
 need_models = pytest.mark.skipif(not (MODELS / "vehicle_yolo11n.onnx").exists(), reason="ไม่มีไฟล์โมเดล")

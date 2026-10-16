@@ -13,5 +13,4 @@ dist/
 Output/
 work/
 _home/
-packaging/*.ico
 packaging/WinSW*.exe
