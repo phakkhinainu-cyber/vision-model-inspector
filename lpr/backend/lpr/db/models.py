@@ -76,6 +76,7 @@ class Event(Base):
     yolo_class: Mapped[str] = mapped_column(String(20), default="")
     frames_used: Mapped[int] = mapped_column(Integer, default=0)
     night: Mapped[bool] = mapped_column(Boolean, default=False)
+    alternatives: Mapped[str] = mapped_column(Text, default="[]")  # JSON ผลอ่านอันดับรองจากการโหวต
     note: Mapped[str] = mapped_column(Text, default="")
 
 

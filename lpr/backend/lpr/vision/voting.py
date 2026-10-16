@@ -39,6 +39,7 @@ class VoteResult:
     n_lines: int
     frames: int
     best: Candidate | None
+    alternatives: list[dict[str, Any]] = field(default_factory=list)
 
 
 class PlateVoter:
@@ -76,14 +77,24 @@ class PlateVoter:
         for c in read:
             groups[c.norm].append(c)
 
-        def score(items: list[Candidate]) -> float:
-            # ความถี่ × ความมั่นใจ (ป้ายที่รูปแบบถูกต้องได้น้ำหนักเพิ่ม)
-            return sum(c.conf * (1.0 if c.valid else 0.6) for c in items)
+        max_sharp = max((c.sharp for c in read), default=1.0) or 1.0
 
-        norm, items = max(groups.items(), key=lambda kv: score(kv[1]))
+        def score(items: list[Candidate]) -> float:
+            # ความถี่ × ความมั่นใจ × ความคม (ป้ายที่ใกล้/คมกว่าเชื่อถือได้มากกว่า, รูปแบบถูกต้องได้น้ำหนักเพิ่ม)
+            return sum(c.conf * (1.0 if c.valid else 0.6) * (0.4 + 0.6 * (c.sharp / max_sharp) ** 0.5)
+                       for c in items)
+
+        ranked = sorted(groups.items(), key=lambda kv: score(kv[1]), reverse=True)
+        norm, items = ranked[0]
         agreement = len(items) / len(read)
         mean_conf = sum(c.conf for c in items) / len(items)
         confidence = mean_conf * (0.6 + 0.4 * agreement)
+        total = sum(score(v) for _, v in ranked) or 1.0
+        if len(ranked) > 1:
+            # ผลอันดับ 2 ใกล้เคียงอันดับ 1 = ไม่แน่ใจ -> ลดความมั่นใจ (เข้าคิว รอตรวจสอบ)
+            confidence *= 1.0 - 0.5 * score(ranked[1][1]) / score(items)
+        alternatives = [{"plate_norm": n, "display": v[0].display, "share": round(score(v) / total, 3)}
+                        for n, v in ranked[:3]]
         # จังหวัด: โหวตแยก ถ่วงด้วยคะแนนจับคู่
         prov_votes: dict[str, float] = defaultdict(float)
         for c in read:
@@ -96,4 +107,4 @@ class PlateVoter:
         fgs = [c.fg for c in colors if c.bg == bg]
         fg = max(set(fgs), key=fgs.count) if fgs else "unknown"
         return VoteResult(norm, best.display, best.raw, province, round(confidence, 4), best.valid, best.kind,
-                          bg, fg, best.n_lines, len(self.cands), best)
+                          bg, fg, best.n_lines, len(self.cands), best, alternatives)

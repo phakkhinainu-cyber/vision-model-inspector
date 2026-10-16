@@ -2,7 +2,7 @@
 
 Revision ID: 0001
 Revises: 
-Create Date: 2026-10-16 11:41:16.217834
+Create Date: 2026-10-16
 """
 from alembic import op
 import sqlalchemy as sa
@@ -101,6 +101,7 @@ def upgrade() -> None:
     sa.Column('yolo_class', sa.String(length=20), nullable=False),
     sa.Column('frames_used', sa.Integer(), nullable=False),
     sa.Column('night', sa.Boolean(), nullable=False),
+    sa.Column('alternatives', sa.Text(), nullable=False),
     sa.Column('note', sa.Text(), nullable=False),
     sa.ForeignKeyConstraint(['camera_id'], ['cameras.id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['vehicle_id'], ['vehicles.id'], ondelete='SET NULL'),

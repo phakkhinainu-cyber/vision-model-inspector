@@ -53,7 +53,8 @@ class YoloDetector:
         self.provider = self.sess.get_providers()[0]
 
     def detect(self, img_bgr: np.ndarray, conf: float = 0.3, classes: set[int] | None = None,
-               iou: float = 0.45, max_det: int = 50) -> list[Detection]:
+               iou: float = 0.45, max_det: int = 50, agnostic: bool = False) -> list[Detection]:
+        """agnostic=True: NMS รวมทุกคลาส (รถคันเดียวที่ถูกทายเป็นทั้ง car และ bus จะเหลือกล่องเดียว)"""
         if img_bgr is None or img_bgr.size == 0:
             return []
         lb, r, (left, top) = letterbox(img_bgr, self.imgsz)
@@ -75,7 +76,10 @@ class YoloDetector:
         xywh = boxes.copy()
         xywh[:, 0] -= xywh[:, 2] / 2
         xywh[:, 1] -= xywh[:, 3] / 2
-        idx = cv2.dnn.NMSBoxesBatched(xywh.tolist(), scores.tolist(), cls.tolist(), conf, iou)
+        if agnostic:
+            idx = cv2.dnn.NMSBoxes(xywh.tolist(), scores.tolist(), conf, iou)
+        else:
+            idx = cv2.dnn.NMSBoxesBatched(xywh.tolist(), scores.tolist(), cls.tolist(), conf, iou)
         idx = np.array(idx).reshape(-1)[:max_det]
         h, w = img_bgr.shape[:2]
         dets = []

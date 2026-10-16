@@ -71,6 +71,9 @@ class TrackState:
     fallback_area: float = 0.0
     start: tuple[float, float] | None = None
     plate_seen: int = 0
+    uid: str = ""
+    emitted_key: tuple[str, str, float] = ("", "", 0.0)
+    emitted_frames: int = 0
     extra: dict[str, Any] = field(default_factory=dict)
 
 
@@ -132,7 +135,8 @@ class CameraPipeline:
         sh, sw = sub.shape[:2]
         conf = float(self.p.get("vehicle_conf", 0.35)) * (0.85 if self.night else 1.0)
         self.tracker.high = conf  # ByteTrack: กล่องที่มั่นใจต่ำกว่านี้ใช้ต่อ track เดิมเท่านั้น
-        dets = self.m.vehicle.detect(sub, conf=min(self.tracker.low, conf), classes=set(COCO_VEHICLES))
+        dets = self.m.vehicle.detect(sub, conf=min(self.tracker.low, conf), classes=set(COCO_VEHICLES),
+                                     agnostic=True)
         dets = [d for d in dets if point_in_poly(self.roi, (d.x1 + d.x2) / 2 / sw, (d.y1 + d.y2) / 2 / sh)]
         tracks, ended = self.tracker.update(dets, ts)
         hh, hw = hi.shape[:2]
@@ -155,9 +159,30 @@ class CameraPipeline:
                     events.append(self._emit(t, st, sw, sh))
         for t in ended:
             st = t.data.get("st")
-            if st is not None and not st.emitted and self._qualifies(t, st, sw, sh):
+            if st is None:
+                continue
+            if not st.emitted and self._qualifies(t, st, sw, sh):
                 events.append(self._emit(t, st, sw, sh))
+            elif st.emitted:
+                rev = self._revision(t, st, sw, sh)
+                if rev is not None:
+                    events.append(rev)
         return events
+
+    def _revision(self, t: Track, st: TrackState, sw: int, sh: int) -> dict[str, Any] | None:
+        """บันทึกไปแล้วตอนข้ามเส้น แต่ได้เฟรมที่ดีกว่าหลังจากนั้น: ส่งผลที่แก้ไขแล้ว (uid เดิม)"""
+        if st.voter.count <= st.emitted_frames:
+            return None
+        res = st.voter.result()
+        norm, prov, conf = st.emitted_key
+        if (res.norm, res.province or "") == (norm, prov) and res.confidence <= conf + 0.05:
+            return None
+        if not res.norm or res.confidence < conf * 0.9:
+            return None
+        ev = self._payload(t, st, sw, sh, res, C.SOURCE_AUTO)
+        ev["type"] = "event_revise"
+        ev["uid"] = st.uid
+        return ev
 
     def flush(self, sub_size: tuple[int, int]) -> list[dict[str, Any]]:
         """จบทุก track (เช่นตอนปิดกล้อง หรือจบไฟล์วิดีโอ)"""
@@ -231,6 +256,13 @@ class CameraPipeline:
         st.emitted = True
         self.stats["events"] += 1
         res = st.voter.result()
+        ev = self._payload(t, st, sw, sh, res, source)
+        st.uid = ev["uid"]
+        st.emitted_key = (res.norm, res.province or "", res.confidence)
+        st.emitted_frames = st.voter.count
+        return ev
+
+    def _payload(self, t: Track, st: TrackState, sw: int, sh: int, res: Any, source: str) -> dict[str, Any]:
         sign = st.cross_dir
         if sign == 0 and len(t.centers) >= 2:
             sign = net_side_motion(self.line, st.start or self._norm_center(t, sw, sh, 0),
@@ -245,7 +277,7 @@ class CameraPipeline:
             "valid": res.valid, "kind": res.kind, "plate_bg": res.bg, "plate_fg": res.fg,
             "n_lines": res.n_lines, "yolo_class": yolo_cls or "",
             "vehicle_type": merge_vehicle_type(yolo_cls, res.bg, res.fg, res.kind, res.n_lines),
-            "frames": res.frames, "night": self.night, "source": source,
+            "frames": res.frames, "night": self.night, "source": source, "alternatives": res.alternatives,
             "full_jpg": (best.extra.get("full_jpg") if best and best.extra.get("full_jpg") else st.fallback_full),
             "plate_jpg": best.extra.get("plate_jpg", b"") if best else b"",
         }
@@ -254,7 +286,7 @@ class CameraPipeline:
     def capture_now(self, hi: np.ndarray, ts: float | None = None, direction: str | None = None) -> dict[str, Any]:
         """ปุ่ม จับภาพเดี๋ยวนี้: วิเคราะห์ภาพปัจจุบันทันที (รถคันที่ใหญ่ที่สุด)"""
         ts = time.time() if ts is None else ts
-        dets = self.m.vehicle.detect(hi, conf=0.25, classes=set(COCO_VEHICLES))
+        dets = self.m.vehicle.detect(hi, conf=0.25, classes=set(COCO_VEHICLES), agnostic=True)
         dets.sort(key=lambda d: d.w * d.h, reverse=True)
         t = Track(0, np.array([0, 0, hi.shape[1] - 1, hi.shape[0] - 1], np.float32), 1.0, ts, ts)
         if dets:
