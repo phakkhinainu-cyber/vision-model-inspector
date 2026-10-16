@@ -284,12 +284,13 @@ function SystemPanel() {
         <div><dt>พื้นที่ดิสก์</dt><dd>ว่าง {fmtBytes(system.disk.free)} จาก {fmtBytes(system.disk.total)} ({system.disk.free_percent}%)</dd></div>
         <div><dt>ที่เก็บรหัสผ่านกล้อง</dt><dd>{system.credentials}</dd></div>
         <div><dt>ตัวประมวลผลโมเดล</dt><dd>{(system.providers || []).map((p) => p.replace("ExecutionProvider", "")).join(", ")}</dd></div>
+        <div><dt>การ์ดจอ</dt><dd>{system.gpus?.length ? system.gpus.join(", ") : "ไม่พบ (ใช้ CPU)"}</dd></div>
         <div><dt>ไฟล์โมเดล</dt><dd>{Object.entries(system.models || {}).map(([k, v]) => `${k} ${v ? "✓" : "✗"}`).join(" · ")}</dd></div>
         <div><dt>สำรองข้อมูลล่าสุด</dt><dd>{system.last_backup?.ts ? fmtDateTime(system.last_backup.ts) : "ยังไม่มีในรอบนี้"}</dd></div>
       </dl>
       <h3>กล้อง</h3>
       <ul className="filelist">{system.cameras.map((c) => <li key={c.id}>{c.name} — {c.status.state_th}{c.status.error ? ` (${c.status.error})` : ""}
-        {c.status.ocr ? ` · ${c.status.ocr}` : ""}</li>)}</ul>
+        {c.status.ocr ? ` · ${c.status.ocr}` : ""}{c.status.device ? ` · ${c.status.device.replace("ExecutionProvider", "")}` : ""}</li>)}</ul>
     </div>
   );
 }

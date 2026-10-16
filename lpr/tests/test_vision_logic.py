@@ -88,3 +88,36 @@ def test_point_in_poly():
     assert point_in_poly(sq, 0.5, 0.5)
     assert not point_in_poly(sq, 0.95, 0.5)
     assert point_in_poly([], 0.99, 0.99)  # ไม่มี ROI = ทั้งภาพ
+
+
+def test_pick_providers_gpu_order(monkeypatch):
+    from lpr.vision import runtime
+
+    monkeypatch.setattr(runtime, "available_providers", lambda: ["DmlExecutionProvider", "CPUExecutionProvider"])
+    monkeypatch.setattr(runtime, "best_adapter", lambda: None)
+    assert runtime.pick_providers("auto") == ["CPUExecutionProvider"]  # ไม่มีการ์ดจอจริง ไม่ใช้ DirectML
+    assert runtime.pick_providers("dml")[0] == "DmlExecutionProvider"
+    monkeypatch.setattr(runtime, "best_adapter", lambda: {"index": 1, "name": "GPU", "vendor": "10de", "vram_mb": 8192})
+    assert runtime.pick_providers("auto") == [("DmlExecutionProvider", {"device_id": 1}), "CPUExecutionProvider"]
+    assert runtime.pick_providers("cpu") == ["CPUExecutionProvider"]
+    monkeypatch.setattr(runtime, "available_providers", lambda: ["CUDAExecutionProvider", "CPUExecutionProvider"])
+    assert runtime.pick_providers("auto") == ["CUDAExecutionProvider", "CPUExecutionProvider"]
+
+
+def test_gpu_fallback_to_cpu(monkeypatch, tmp_path):
+    """ถ้า GPU ใช้ไม่ได้ ต้องกลับไปใช้ CPU และยังรันโมเดลได้"""
+    from pathlib import Path
+
+    from lpr.vision import runtime
+
+    model = Path(__file__).resolve().parents[1] / "models" / "PP-OCRv5_mobile_det.onnx"
+    if not model.exists():
+        import pytest
+
+        pytest.skip("ไม่มีไฟล์โมเดล")
+    # ไม่มี build ไหนใน CI ที่มี CUDA จึงต้องตกไปใช้ CPU
+    monkeypatch.setattr(runtime, "pick_providers", lambda d: ["CUDAExecutionProvider", "CPUExecutionProvider"])
+    monkeypatch.setattr(runtime, "_preload_cuda", lambda: None)
+    sess = runtime.make_session(model, "auto")
+    assert sess.get_providers()[0] == "CPUExecutionProvider"
+    sess.run(None, runtime._dummy_feed(sess))

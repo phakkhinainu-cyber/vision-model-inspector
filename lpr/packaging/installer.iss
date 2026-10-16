@@ -1,7 +1,19 @@
 ; Inno Setup 6 — LPR บ้าน (Windows 10/11 x64)
 ; Build: iscc /DAppVersion=1.0.0 packaging\installer.iss   (หลัง PyInstaller build และดาวน์โหลด WinSW-x64.exe มาไว้ที่ packaging\)
+;        iscc /DAppVersion=1.0.0 /DEdition=GPU packaging\installer.iss   (รุ่น GPU ที่ build ด้วย onnxruntime-directml)
+; ทั้งสองรุ่นใช้ AppId เดียวกัน ติดตั้งทับกันได้ (ข้อมูลเดิมยังอยู่)
 #ifndef AppVersion
   #define AppVersion "1.0.0"
+#endif
+#ifndef Edition
+  #define Edition ""
+#endif
+#if Edition == ""
+  #define EditionSuffix ""
+  #define EditionLabel ""
+#else
+  #define EditionSuffix "-" + Edition
+  #define EditionLabel " (" + Edition + ")"
 #endif
 #define AppName "LPR บ้าน"
 #define AppExe "LPR.exe"
@@ -10,7 +22,7 @@
 AppId={{3B7A6F1E-5C2D-4F9A-8E21-7D4C9B0A1F63}
 AppName={#AppName}
 AppVersion={#AppVersion}
-AppVerName={#AppName} {#AppVersion}
+AppVerName={#AppName} {#AppVersion}{#EditionLabel}
 AppPublisher=LPR บ้าน
 DefaultDirName={autopf}\LPR
 DefaultGroupName={#AppName}
@@ -20,7 +32,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763
 OutputDir=..\Output
-OutputBaseFilename=LPR-Setup-{#AppVersion}
+OutputBaseFilename=LPR-Setup-{#AppVersion}{#EditionSuffix}
 SetupIconFile=app.ico
 UninstallDisplayIcon={app}\{#AppExe}
 UninstallDisplayName={#AppName}
@@ -48,6 +60,10 @@ Name: "service"; Description: "{cm:TaskService}"
 Name: "firewall"; Description: "{cm:TaskFirewall}"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 Name: "startup"; Description: "{cm:TaskStartup}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+
+[InstallDelete]
+; ลบไลบรารีของรุ่น/เวอร์ชันเดิมก่อน (เช่น เปลี่ยนจากรุ่น GPU เป็นรุ่นปกติ) — ไม่แตะโฟลเดอร์ข้อมูล
+Type: filesandordirs; Name: "{app}\_internal"
 
 [Files]
 Source: "..\dist\LPR\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs

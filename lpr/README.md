@@ -8,15 +8,21 @@
 
 ## ดาวน์โหลดและติดตั้ง (ไม่ต้องเขียนโค้ด)
 
+ลิงก์ด้านล่างชี้ไปที่ build ล่าสุดเสมอ (release `lpr-latest`) — ทุกไฟล์ผ่านการทดสอบอัตโนมัติก่อนเผยแพร่
+(unit test, self-test ของไฟล์ที่ build แล้ว, ติดตั้งจริงเป็น Windows service แล้วเรียกใช้งาน API, ถอนการติดตั้ง)
+
 | ระบบ | ไฟล์ | วิธีใช้ |
 | --- | --- | --- |
-| **Windows 10/11 64-bit** (แนะนำ) | `LPR-Setup-1.0.0.exe` | ดับเบิลคลิกติดตั้ง → ระบบทำงานเป็น Windows service เปิดเองตอนบูต |
-| Windows แบบพกพา | `LPR-Portable-1.0.0-windows-x64.zip` | แตกไฟล์ แล้วเปิด `LPR\LPR.exe` (ไม่ต้องติดตั้ง ไม่มี service) |
-| Linux x64 | `LPR-Portable-1.0.0-linux-x64.tar.gz` | แตกไฟล์ แล้วรัน `LPR/LPR --server` แล้วเปิด http://localhost:8765 |
-| macOS (Apple Silicon) | `LPR-Portable-1.0.0-macos-arm64.tar.gz` | แตกไฟล์ แล้วรัน `LPR/LPR` (ครั้งแรกอาจต้องอนุญาตใน System Settings → Privacy & Security) |
+| **Windows 10/11 64-bit** (แนะนำ ใช้ได้ทุกเครื่อง) | [LPR-Setup.exe](https://github.com/phakkhinainu-cyber/vision-model-inspector/releases/download/lpr-latest/LPR-Setup.exe) | ดับเบิลคลิกติดตั้ง → ระบบทำงานเป็น Windows service เปิดเองตอนบูต |
+| Windows ที่มีการ์ดจอ (NVIDIA / AMD / Intel, DirectX 12) | [LPR-Setup-GPU.exe](https://github.com/phakkhinainu-cyber/vision-model-inspector/releases/download/lpr-latest/LPR-Setup-GPU.exe) | เหมือนรุ่นปกติ แต่ใช้การ์ดจอประมวลผลโมเดล — เหมาะกับเครื่องที่ต่อหลายกล้อง |
+| Windows แบบพกพา | [LPR-Portable-windows-x64.zip](https://github.com/phakkhinainu-cyber/vision-model-inspector/releases/download/lpr-latest/LPR-Portable-windows-x64.zip) · [รุ่น GPU](https://github.com/phakkhinainu-cyber/vision-model-inspector/releases/download/lpr-latest/LPR-Portable-windows-x64-GPU.zip) | แตกไฟล์ แล้วเปิด `LPR\LPR.exe` (ไม่ต้องติดตั้ง ไม่มี service) |
+| Linux x64 | [LPR-Portable-linux-x64.tar.gz](https://github.com/phakkhinainu-cyber/vision-model-inspector/releases/download/lpr-latest/LPR-Portable-linux-x64.tar.gz) | แตกไฟล์ แล้วรัน `LPR/LPR --server` แล้วเปิด http://localhost:8765 |
+| Linux ARM64 (เช่น Raspberry Pi 5, OS 64-bit) | [LPR-Portable-linux-arm64.tar.gz](https://github.com/phakkhinainu-cyber/vision-model-inspector/releases/download/lpr-latest/LPR-Portable-linux-arm64.tar.gz) | เหมือน Linux x64 |
+| macOS ชิป Apple (M1–M4) | [LPR-Portable-macos-arm64.tar.gz](https://github.com/phakkhinainu-cyber/vision-model-inspector/releases/download/lpr-latest/LPR-Portable-macos-arm64.tar.gz) | แตกไฟล์ แล้วรัน `LPR/LPR --browser` (ครั้งแรกอาจต้องอนุญาตใน System Settings → Privacy & Security) |
+| macOS ชิป Intel | [LPR-Portable-macos-x64.tar.gz](https://github.com/phakkhinainu-cyber/vision-model-inspector/releases/download/lpr-latest/LPR-Portable-macos-x64.tar.gz) | เหมือน macOS ชิป Apple |
 
-ไฟล์อยู่ที่หน้า **Releases** ของ repository นี้ (ชื่อ `lpr-v1.0.0-build.N`) — ทุกไฟล์ผ่านการทดสอบอัตโนมัติก่อนเผยแพร่
-(unit test, self-test ของไฟล์ที่ build แล้ว, ติดตั้งจริงเป็น Windows service แล้วเรียกใช้งาน API, ถอนการติดตั้ง)
+รุ่น GPU ใช้การ์ดจอเมื่อพบการ์ดจริงในเครื่อง ถ้าไม่พบหรือใช้ไม่ได้จะกลับไปใช้ CPU เอง (ทั้งสองรุ่นติดตั้งทับกันได้ ข้อมูลเดิมยังอยู่)
+ไฟล์ของแต่ละ build อยู่ที่หน้า **Releases** (ชื่อ `lpr-v1.0.0-build.N`) และมี `SHA256SUMS.txt` ไว้ตรวจไฟล์
 
 หลังติดตั้ง:
 1. เปิดโปรแกรม "LPR บ้าน" → ตั้งชื่อผู้ใช้/รหัสผ่านผู้ดูแลระบบ และชื่อบ้าน
@@ -75,6 +81,7 @@ lpr/
 python -m venv .venv && . .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements/runtime.txt -r requirements/desktop.txt -r requirements/dev.txt
 python tools/fetch_models.py                           # ดาวน์โหลดโมเดล ONNX (~34 MB)
+python tools/fetch_assets.py                           # เฉพาะเมื่อได้ซอร์สจากสำเนาใน Google Drive: ฟอนต์/ไอคอน/วิดีโอตัวอย่าง
 (cd frontend && npm ci && npm run build)
 PYTHONPATH=backend python -m lpr                        # หรือ --server / --browser / --home D:\LPR
 PYTHONPATH=backend python -m pytest                     # ทดสอบ (155 tests)

@@ -22,7 +22,8 @@
 | SQLite | ฐานข้อมูลในเครื่อง (โหมด WAL) | Public Domain |
 | OpenCV (opencv-python-headless) | อ่าน RTSP/วิดีโอ, ประมวลผลภาพ, เขียนคลิป WebM (FFmpeg LGPL + libvpx BSD) | Apache-2.0 (OpenCV), LGPL-2.1 (FFmpeg) |
 | NumPy | คำนวณ | BSD-3-Clause |
-| ONNX Runtime | รันโมเดลบน CPU/CUDA/DirectML | MIT |
+| ONNX Runtime (`onnxruntime`; รุ่น GPU ใช้ `onnxruntime-directml`) | รันโมเดลบน CPU / DirectML / CUDA | MIT |
+| DirectML (`DirectML.dll`, Microsoft) — เฉพาะรุ่น GPU | ใช้การ์ดจอผ่าน DirectX 12 (มากับ onnxruntime-directml) | Microsoft DirectML redistributable license |
 | RapidFuzz | จับคู่ชื่อจังหวัด | MIT |
 | argon2-cffi | เข้ารหัสรหัสผ่านผู้ใช้ | MIT |
 | cryptography | VAPID, self-signed certificate, เข้ารหัสสำรอง | Apache-2.0 / BSD-3-Clause |

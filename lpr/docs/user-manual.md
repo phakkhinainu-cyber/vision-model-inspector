@@ -5,12 +5,17 @@
 ## 1. สิ่งที่ต้องมี
 
 - คอม Windows 10/11 64-bit ที่เปิดไว้ตลอด (Core i5 รุ่น 10 ขึ้นไป หรือ Ryzen 5, RAM 8–16 GB) — CPU อย่างเดียวรองรับ 2 กล้อง
+  ถ้ามีการ์ดจอ (NVIDIA / AMD / Intel Arc หรือการ์ดในตัวรุ่นใหม่ที่รองรับ DirectX 12) ใช้รุ่น GPU เพื่อต่อกล้องได้มากขึ้น
 - กล้อง IP ที่ส่งภาพแบบ RTSP ต่อสาย LAN ถึงคอม (ดูวิธีติดกล้องในหัวข้อ 9)
 - ถ้าจะดูจากมือถือนอกบ้าน: บัญชี Tailscale (ฟรี) — ดู [mobile-setup.md](mobile-setup.md)
 
 ## 2. ติดตั้ง
 
-1. ดาวน์โหลด `LPR-Setup-1.0.0.exe` จากหน้า Releases แล้วดับเบิลคลิก (ต้องเป็นผู้ดูแลเครื่อง)
+1. ดาวน์โหลดตัวติดตั้ง แล้วดับเบิลคลิก (ต้องเป็นผู้ดูแลเครื่อง)
+   - รุ่นปกติ ใช้ได้ทุกเครื่อง: [LPR-Setup.exe](https://github.com/phakkhinainu-cyber/vision-model-inspector/releases/download/lpr-latest/LPR-Setup.exe)
+   - รุ่น GPU สำหรับเครื่องที่มีการ์ดจอ: [LPR-Setup-GPU.exe](https://github.com/phakkhinainu-cyber/vision-model-inspector/releases/download/lpr-latest/LPR-Setup-GPU.exe)
+     (ถ้าไม่พบการ์ดจอ จะใช้ CPU เหมือนรุ่นปกติ — ดูว่าใช้อะไรอยู่ที่ ตั้งค่า → ระบบ → การ์ดจอ / กล้อง)
+   - Windows SmartScreen อาจเตือนเพราะตัวติดตั้งยังไม่ได้ลงลายเซ็นดิจิทัล: กด **More info → Run anyway**
 2. เลือก **โฟลเดอร์เก็บข้อมูล** (ค่าเริ่มต้น `D:\LPR` ถ้ามีไดรฟ์ D: ไม่เช่นนั้น `C:\ProgramData\LPR`)
    ข้างในจะมี `data\lpr.db` (ฐานข้อมูล), `data\images\ปี\เดือน\วัน\` (ภาพ), `logs\`, `backup\`
 3. ตัวเลือก (แนะนำให้เลือกไว้ทั้งหมด):

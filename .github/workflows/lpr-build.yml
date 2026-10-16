@@ -1,7 +1,10 @@
 name: lpr-build
 
-# สร้างโปรแกรมสำเร็จรูป LPR บ้าน: ตัวติดตั้ง Windows (LPR-Setup.exe) + แบบพกพา Windows/Linux/macOS
+# สร้างโปรแกรมสำเร็จรูป LPR บ้าน:
+#   Windows x64: ตัวติดตั้ง + แบบพกพา 2 รุ่น — รุ่นปกติ (CPU, ใช้ได้ทุกเครื่อง) และรุ่น GPU (DirectML: การ์ดจอ NVIDIA/AMD/Intel)
+#   แบบพกพา: Linux x64, Linux ARM64, macOS Apple Silicon, macOS Intel
 # ทดสอบ: unit test, self-test ของไฟล์ที่ build แล้ว, ติดตั้งจริงเป็น Windows service แล้วเรียก API, ถอนการติดตั้ง
+# เผยแพร่: release ตามเลข build + release "lpr-latest" ที่ลิงก์ดาวน์โหลดไม่เปลี่ยน
 on:
   push:
     paths: ["lpr/**", ".github/workflows/lpr-build.yml"]
@@ -17,14 +20,23 @@ env:
 
 jobs:
   windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - edition: cpu
+            suffix: ""
+            ort: ""
+          - edition: gpu
+            suffix: "-GPU"
+            ort: "onnxruntime-directml"
+    name: windows (${{ matrix.edition }})
     runs-on: windows-2022
     timeout-minutes: 120
     defaults:
       run:
         shell: pwsh
         working-directory: lpr
-    outputs:
-      tag: ${{ steps.rel.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -43,7 +55,11 @@ jobs:
           New-Item -ItemType Directory -Force ci_results | Out-Null
           python -m pip install --upgrade pip
           pip install -r requirements/runtime.txt -r requirements/desktop.txt -r requirements/dev.txt
-          pip freeze | Out-File -Encoding utf8 ci_results/lock-windows.txt
+          if ("${{ matrix.ort }}" -ne "") {
+            pip uninstall -y onnxruntime
+            pip install "${{ matrix.ort }}"
+          }
+          pip freeze | Out-File -Encoding utf8 ci_results/lock-windows-${{ matrix.edition }}.txt
           python -c "import onnxruntime, cv2, fastapi, webview; print('ort', onnxruntime.__version__, onnxruntime.get_available_providers(), 'cv2', cv2.__version__, 'fastapi', fastapi.__version__)" | Tee-Object ci_results/versions.txt
       - name: Models
         run: python tools/fetch_models.py
@@ -77,9 +93,11 @@ jobs:
           curl.exe -sSL --retry 3 -o packaging\WinSW-x64.exe https://github.com/winsw/winsw/releases/download/v2.12.0/WinSW-x64.exe
           $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
           if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress | Out-Null }
-          & $iscc /Qp "/DAppVersion=$env:APP_VERSION" packaging\installer.iss *> ci_results/iscc.txt
+          $defs = @("/DAppVersion=$env:APP_VERSION")
+          if ("${{ matrix.suffix }}" -ne "") { $defs += "/DEdition=GPU" }
+          & $iscc /Qp @defs packaging\installer.iss *> ci_results/iscc.txt
           if ($LASTEXITCODE -ne 0) { Get-Content ci_results/iscc.txt -Tail 40; exit 1 }
-          Compress-Archive -Path dist\LPR -DestinationPath "Output\LPR-Portable-$env:APP_VERSION-windows-x64.zip"
+          Compress-Archive -Path dist\LPR -DestinationPath "Output\LPR-Portable-$env:APP_VERSION-windows-x64${{ matrix.suffix }}.zip"
           Get-ChildItem Output | Format-Table Name, Length -AutoSize | Out-File -Append -Encoding utf8 ci_results/sizes.txt
           Get-FileHash Output\* -Algorithm SHA256 | Format-List | Out-File -Append -Encoding utf8 ci_results/sizes.txt
       - name: Install as Windows service, use it through the API, uninstall
@@ -104,9 +122,9 @@ jobs:
           if ($p.ExitCode -ne 0 -or $chk -ne 0) { exit 1 }
       - uses: actions/upload-artifact@v4
         with:
-          name: lpr-windows
+          name: lpr-windows-${{ matrix.edition }}
           path: lpr/Output/*
-          retention-days: 30
+          retention-days: 7
           compression-level: 0
       - name: Publish CI results branch
         if: always()
@@ -121,27 +139,23 @@ jobs:
           git config user.name "ci"
           git config user.email "ci@users.noreply.github.com"
           git add -A
-          git commit -q -m "LPR CI results run ${{ github.run_number }} (${{ github.sha }})"
-          git push -q -f "https://x-access-token:$env:TOKEN@github.com/${{ github.repository }}.git" "HEAD:refs/heads/ci-results/lpr-run-${{ github.run_number }}"
-      - name: Release
-        id: rel
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          $tag = "lpr-v$env:APP_VERSION-build.${{ github.run_number }}"
-          gh release create $tag (Get-ChildItem Output\*).FullName --target $env:GITHUB_SHA --prerelease --title "LPR บ้าน $env:APP_VERSION build ${{ github.run_number }}" --notes "ตัวติดตั้ง Windows 10/11 x64 (LPR-Setup) และแบบพกพา สร้างและทดสอบโดย CI จาก ${{ github.sha }} — ผลทดสอบอยู่ใน branch ci-results/lpr-run-${{ github.run_number }}"
-          "tag=$tag" >> $env:GITHUB_OUTPUT
+          git commit -q -m "LPR CI results run ${{ github.run_number }} windows-${{ matrix.edition }} (${{ github.sha }})"
+          git push -q -f "https://x-access-token:$env:TOKEN@github.com/${{ github.repository }}.git" "HEAD:refs/heads/ci-results/lpr-run-${{ github.run_number }}-windows-${{ matrix.edition }}"
 
   portable:
-    needs: windows
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: ubuntu-22.04
             name: linux-x64
+          - os: ubuntu-22.04-arm
+            name: linux-arm64
           - os: macos-14
             name: macos-arm64
+          - os: macos-15-intel
+            name: macos-x64
+    name: portable (${{ matrix.name }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     defaults:
@@ -155,20 +169,109 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: Build
+      - name: Build + test
         run: |
+          mkdir -p ci_results out
           (cd frontend && npm ci --no-audit --no-fund && npm run build)
           python -m pip install --upgrade pip
           pip install -r requirements/runtime.txt -r requirements/dev.txt
+          pip freeze > ci_results/lock-${{ matrix.name }}.txt
           python tools/fetch_models.py
-          mkdir -p ci_results
           python -m pytest -q -p no:cacheprovider 2>&1 | tee ci_results/pytest-${{ matrix.name }}.txt | tail -5
           test "${PIPESTATUS[0]}" = "0"
-          pyinstaller --noconfirm --clean packaging/lpr.spec > ci_results/pyinstaller-${{ matrix.name }}.txt 2>&1
+          pyinstaller --noconfirm --clean packaging/lpr.spec > ci_results/pyinstaller-${{ matrix.name }}.txt 2>&1 || { tail -60 ci_results/pyinstaller-${{ matrix.name }}.txt; exit 1; }
           ./dist/LPR/LPR --selftest ci_results/selftest-${{ matrix.name }}.json --home "$RUNNER_TEMP/lpr-st"
-          cat ci_results/selftest-${{ matrix.name }}.json | head -40
-          tar -C dist -czf "LPR-Portable-${APP_VERSION}-${{ matrix.name }}.tar.gz" LPR
-      - name: Upload to release
+          head -60 ci_results/selftest-${{ matrix.name }}.json
+          tar -C dist -czf "out/LPR-Portable-${APP_VERSION}-${{ matrix.name }}.tar.gz" LPR
+          ls -l out | tee ci_results/sizes-${{ matrix.name }}.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lpr-portable-${{ matrix.name }}
+          path: lpr/out/*
+          retention-days: 7
+          compression-level: 0
+      - name: Publish CI results branch
+        if: always()
         env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release upload "${{ needs.windows.outputs.tag }}" "LPR-Portable-${APP_VERSION}-${{ matrix.name }}.tar.gz" --clobber
+          TOKEN: ${{ github.token }}
+        run: |
+          dst="$RUNNER_TEMP/results"
+          mkdir -p "$dst" && cp -r ci_results/. "$dst"/ 2>/dev/null || true
+          cd "$dst"
+          git init -q -b results
+          git config user.name "ci"
+          git config user.email "ci@users.noreply.github.com"
+          git add -A
+          git commit -q -m "LPR CI results run ${{ github.run_number }} ${{ matrix.name }} (${{ github.sha }})" --allow-empty
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" "HEAD:refs/heads/ci-results/lpr-run-${{ github.run_number }}-${{ matrix.name }}"
+
+  release:
+    needs: [windows, portable]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: lpr-*
+          path: dist
+          merge-multiple: true
+      - name: Release for this build + lpr-latest
+        run: |
+          set -euo pipefail
+          ls -l dist
+          # ต้องมีอย่างน้อยตัวติดตั้งรุ่นปกติ ไม่เช่นนั้นไม่เผยแพร่
+          test -f "dist/LPR-Setup-${APP_VERSION}.exe"
+          tag="lpr-v${APP_VERSION}-build.${{ github.run_number }}"
+          url="https://github.com/${GH_REPO}"
+          mkdir latest
+          for f in dist/*; do cp "$f" "latest/$(basename "$f" | sed "s/-${APP_VERSION}//")"; done
+          (cd latest && sha256sum * > SHA256SUMS.txt)
+          (cd dist && sha256sum * > SHA256SUMS.txt)
+          {
+            echo "## LPR บ้าน ${APP_VERSION} (build ${{ github.run_number }})"
+            echo
+            echo "| ไฟล์ | ใช้กับ |"
+            echo "| --- | --- |"
+            for f in latest/*; do
+              n=$(basename "$f")
+              case "$n" in
+                LPR-Setup.exe) w="Windows 10/11 64-bit ทุกเครื่อง — **แนะนำ** (ติดตั้ง + Windows service)";;
+                LPR-Setup-GPU.exe) w="Windows 10/11 64-bit ที่มีการ์ดจอ NVIDIA/AMD/Intel รองรับ DirectX 12 (หลายกล้อง)";;
+                LPR-Portable-windows-x64.zip) w="Windows แบบไม่ต้องติดตั้ง (แตกไฟล์แล้วเปิด LPR.exe)";;
+                LPR-Portable-windows-x64-GPU.zip) w="Windows รุ่น GPU แบบไม่ต้องติดตั้ง";;
+                LPR-Portable-linux-x64.tar.gz) w="Linux 64-bit (Ubuntu 22.04+ / Debian 12+)";;
+                LPR-Portable-linux-arm64.tar.gz) w="Linux ARM64 (Raspberry Pi 5 / mini PC ARM, 64-bit OS)";;
+                LPR-Portable-macos-arm64.tar.gz) w="Mac ชิป Apple (M1/M2/M3/M4)";;
+                LPR-Portable-macos-x64.tar.gz) w="Mac ชิป Intel";;
+                SHA256SUMS.txt) w="ค่า SHA-256 สำหรับตรวจไฟล์";;
+                *) w="";;
+              esac
+              echo "| [${n}](${url}/releases/download/lpr-latest/${n}) ($(du -h "$f" | cut -f1)) | ${w} |"
+            done
+            echo
+            echo "สร้างและทดสอบโดย CI จาก commit \`${GITHUB_SHA}\` — ผลทดสอบอยู่ใน branch \`ci-results/lpr-run-${{ github.run_number }}-*\`"
+            echo "ลิงก์ในตารางนี้ (release lpr-latest) จะชี้ไปที่ build ล่าสุดเสมอ"
+          } > notes.md
+          cat notes.md
+          gh release create "$tag" dist/* --target "$GITHUB_SHA" --prerelease \
+            --title "LPR บ้าน ${APP_VERSION} build ${{ github.run_number }}" --notes-file notes.md
+          # lpr-latest: ย้าย tag มาที่ commit นี้ แล้วแทนไฟล์ทั้งหมด (ชื่อไฟล์ไม่มีเลขเวอร์ชัน ลิงก์จึงไม่เปลี่ยน)
+          if gh api "repos/${GH_REPO}/git/refs/tags/lpr-latest" > /dev/null 2>&1; then
+            gh api -X PATCH "repos/${GH_REPO}/git/refs/tags/lpr-latest" -f sha="$GITHUB_SHA" -F force=true > /dev/null
+          else
+            gh api -X POST "repos/${GH_REPO}/git/refs" -f ref=refs/tags/lpr-latest -f sha="$GITHUB_SHA" > /dev/null
+          fi
+          if gh release view lpr-latest > /dev/null 2>&1; then
+            gh release edit lpr-latest --title "LPR บ้าน ${APP_VERSION} (ล่าสุด)" --notes-file notes.md --prerelease=false --latest
+          else
+            gh release create lpr-latest --verify-tag --title "LPR บ้าน ${APP_VERSION} (ล่าสุด)" --notes-file notes.md --latest
+          fi
+          gh release upload lpr-latest latest/* --clobber
+          for old in $(gh release view lpr-latest --json assets -q '.assets[].name'); do
+            [ -f "latest/$old" ] || gh release delete-asset lpr-latest "$old" -y
+          done
+          gh release view lpr-latest --json assets -q '.assets[] | "\(.name) \(.size)"'

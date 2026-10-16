@@ -2,7 +2,7 @@
 # Build: pyinstaller --noconfirm --clean packaging/lpr.spec   (ต้อง build หน้าเว็บและมีไฟล์โมเดลใน models/ ก่อน)
 import os
 
-from PyInstaller.utils.hooks import collect_data_files, collect_submodules, copy_metadata
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs, collect_submodules, copy_metadata
 
 ROOT = os.path.abspath(os.path.join(SPECPATH, ".."))
 BACKEND = os.path.join(ROOT, "backend")
@@ -14,7 +14,8 @@ datas = [
     (os.path.join(BACKEND, "lpr", "resources"), os.path.join("lpr", "resources")),
     (os.path.join(BACKEND, "lpr", "db", "migrations"), os.path.join("lpr", "db", "migrations")),
 ]
-for pkg in ("keyring", "fastapi", "starlette", "uvicorn", "pywebpush", "py-vapid", "onnxruntime", "opencv-python-headless",
+for pkg in ("keyring", "fastapi", "starlette", "uvicorn", "pywebpush", "py-vapid", "onnxruntime", "onnxruntime-directml",
+            "onnxruntime-gpu", "opencv-python-headless",
             "sqlalchemy", "alembic", "fpdf2", "pywebview", "pystray"):
     try:
         datas += copy_metadata(pkg)
@@ -33,10 +34,13 @@ hiddenimports += ["pystray._win32", "webview.platforms.edgechromium", "webview.p
                   "sqlalchemy.dialects.sqlite", "argon2", "_cffi_backend", "uharfbuzz", "openpyxl", "httpx",
                   "multipart", "python_multipart", "tzdata"]
 
+# DLL ของ onnxruntime ทุกแบบ (CPU / DirectML.dll ของรุ่น GPU / provider ของ CUDA)
+binaries = collect_dynamic_libs("onnxruntime")
+
 a = Analysis(
     [os.path.join(ROOT, "packaging", "launcher.py")],
     pathex=[BACKEND],
-    binaries=[],
+    binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
     excludes=["tkinter", "IPython", "jupyter", "notebook", "matplotlib", "torch", "tensorflow", "paddle", "easyocr",

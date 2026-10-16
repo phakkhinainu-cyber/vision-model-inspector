@@ -122,6 +122,6 @@ export interface SystemStatus {
   cameras: { id: number; name: string; role: string; enabled: boolean; status: CameraStatus }[];
   disk: { path: string; total: number; free: number; free_percent: number };
   alerts: string[]; restart_required: string[]; user: Me;
-  home?: string; credentials?: string; providers?: string[]; models?: Record<string, boolean>;
+  home?: string; credentials?: string; providers?: string[]; gpus?: string[]; models?: Record<string, boolean>;
   last_backup?: { file?: string; ts?: number; size?: number };
 }

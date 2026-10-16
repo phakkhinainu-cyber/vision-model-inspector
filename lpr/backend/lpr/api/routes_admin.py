@@ -22,7 +22,7 @@ from ..maintenance import disk_usage
 from ..notify import ensure_vapid
 from ..selftest import demo_video
 from ..settings import G_GENERAL
-from ..vision.runtime import available_providers
+from ..vision.runtime import available_providers, gpu_adapters
 from .auth import (COOKIE, CurrentUser, client_ip, create_session, current_user, get_ctx, hash_password,
                    require_admin, token_hash, user_count, validate_password, verify_password)
 
@@ -387,6 +387,7 @@ def system_status(ctx=Depends(get_ctx), user: CurrentUser = Depends(current_user
     }
     if user.is_admin:
         out.update(home=str(ctx.paths.home), credentials=ctx.creds.backend, providers=available_providers(),
+                   gpus=[g["name"] for g in gpu_adapters()],
                    models={k: bool(find_model(ctx.paths, k)) for k in MODEL_FILES},
                    last_backup=ctx.maintenance.last_backup, pid=os.getpid(),
                    demo_video=str(demo_video()) if demo_video() else None)

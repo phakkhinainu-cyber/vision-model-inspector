@@ -14,3 +14,4 @@ Output/
 work/
 _home/
 packaging/WinSW*.exe
+!docs/screenshots/

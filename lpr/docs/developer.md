@@ -91,9 +91,17 @@ python tools/make_demo_video.py --images <โฟลเดอร์ภาพร�
 
 ## Build และเผยแพร่
 
-- push ไปที่ branch → `.github/workflows/lpr-build.yml` สร้าง `LPR-Setup-<ver>.exe` + แบบพกพา Windows/Linux/macOS
-  ทดสอบทั้งหมด (pytest, frozen self-test ใน path ภาษาไทย, ติดตั้งจริงเป็น service + เรียก API + ถอนการติดตั้ง)
-  แล้วสร้าง GitHub Release `lpr-v<ver>-build.<n>` · ผลทดสอบอยู่ใน branch `ci-results/lpr-run-<n>`
+- push ไปที่ branch → `.github/workflows/lpr-build.yml` สร้าง
+  - Windows x64 สองรุ่น: ปกติ (`onnxruntime` CPU) และ GPU (`onnxruntime-directml`) — ตัวติดตั้ง `LPR-Setup-<ver>[-GPU].exe` + zip แบบพกพา
+  - แบบพกพา Linux x64, Linux ARM64, macOS arm64, macOS x64 (`.tar.gz`)
+  ทดสอบทั้งหมด (pytest ทุกระบบ, frozen self-test, path ภาษาไทยบน Windows, ติดตั้งจริงเป็น service + เรียก API + ถอนการติดตั้ง)
+  แล้วสร้าง GitHub Release `lpr-v<ver>-build.<n>` และอัปเดต release `lpr-latest` (ชื่อไฟล์ไม่มีเลขเวอร์ชัน ลิงก์ไม่เปลี่ยน)
+  · ผลทดสอบอยู่ใน branch `ci-results/lpr-run-<n>-<ระบบ>` (เช่น `-windows-cpu`, `-linux-arm64`)
+- รุ่น GPU: `vision/runtime.py` หาการ์ดจอจริงผ่าน DXGI (ไม่นับ Microsoft Basic Render Driver), เลือกการ์ดที่มี VRAM มากสุด,
+  ทดลองรันโมเดล 1 ครั้งตอนโหลด ถ้าไม่ผ่านใช้ CPU — CI ไม่มีการ์ดจอ จึงทดสอบได้แค่ว่า DirectML โหลด/รันบนตัวจำลอง (WARP) ได้
+  และกลับไปใช้ CPU ถูกต้อง (`gpu_probe` ใน selftest) ยังไม่ได้ทดสอบกับการ์ดจอจริง
+- CUDA (NVIDIA): รันจากซอร์สด้วย `pip uninstall onnxruntime && pip install "onnxruntime-gpu[cuda,cudnn]"` — ระบบเรียก
+  `onnxruntime.preload_dlls()` ให้เอง (build เป็น .exe ได้โดยคัดลอก DLL ของ CUDA/cuDNN ไปไว้ที่ `_internal\nvidia\`)
 - build เองบน Windows: `powershell -ExecutionPolicy Bypass -File packaging\build_windows.ps1`
 - เปลี่ยนเวอร์ชัน: `backend/lpr/__init__.py`, `pyproject.toml`, `frontend/package.json`, `APP_VERSION` ใน workflow
 - สร้างโมเดลใหม่: แก้ `tools/models/build_models.py` แล้ว push (workflow `lpr-models.yml`)
@@ -118,10 +126,9 @@ python tools/make_demo_video.py --images <โฟลเดอร์ภาพร�
 | 3 | หน้าจอแบบ 4 ครบ: ตัวกรอง, ไทม์ไลน์สด, รายละเอียด, แก้ไข, ส่งออก CSV/Excel/PDF | — |
 | 4 | ทะเบียนรถ (+ Excel), กล้อง (วาด ROI/เส้น), รอตรวจสอบ (คีย์บอร์ด), รายงาน, ตั้งค่า, ผู้ใช้, audit log | — |
 | 5 | PWA, ล็อกอิน (จำเครื่อง 30 วัน, rate limit), Web Push (VAPID), Telegram, LINE Messaging API, คู่มือ Tailscale + self-signed | — |
-| 6 | ตัวติดตั้ง .exe (Inno Setup), Windows service (WinSW), เปิดเองตอนบูต, สำรองข้อมูล, คู่มือภาษาไทย, แบบพกพา Linux/macOS | code signing ตัวติดตั้ง (กันคำเตือน SmartScreen), รุ่นสำหรับการ์ด NVIDIA (onnxruntime-gpu) |
+| 6 | ตัวติดตั้ง .exe (Inno Setup), Windows service (WinSW), เปิดเองตอนบูต, สำรองข้อมูล, คู่มือภาษาไทย, แบบพกพา Linux/macOS | code signing ตัวติดตั้ง (กันคำเตือน SmartScreen), ทดสอบรุ่น GPU กับการ์ดจอจริง |
 
 ข้อจำกัดที่ทราบ:
 - ความแม่นยำวัดกับภาพรถจริงที่แปะป้ายไทยจำลอง (ยังไม่มีชุดภาพป้ายไทยจริงที่เผยแพร่ได้) — ควรวัดซ้ำด้วยภาพจากกล้องของบ้าน
-- ตัวติดตั้งรวม onnxruntime รุ่น CPU (ใช้ได้ทุกเครื่อง) — ถ้ามีการ์ด NVIDIA และต้องการ 4–8 กล้อง ให้รันจากซอร์สแล้ว
-  `pip install onnxruntime-gpu` (ระบบเลือก CUDA ให้อัตโนมัติ) หรือ build รุ่น GPU เพิ่มใน workflow
+- รุ่น GPU (DirectML) ผ่านการทดสอบบน CI ที่ไม่มีการ์ดจอเท่านั้น — ผลกับการ์ดจอจริงยังไม่ได้วัด
 - ตัวติดตั้งยังไม่ได้ลงลายเซ็นดิจิทัล Windows SmartScreen อาจเตือนครั้งแรก (กด More info → Run anyway)
