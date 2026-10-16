@@ -1,0 +1,88 @@
+2026-10-16 15:22:44,303 INFO [alembic.runtime.plugins] setup plugin alembic.autogenerate.schemas
+2026-10-16 15:22:44,303 INFO [alembic.runtime.plugins] setup plugin alembic.autogenerate.tables
+2026-10-16 15:22:44,303 INFO [alembic.runtime.plugins] setup plugin alembic.autogenerate.types
+2026-10-16 15:22:44,303 INFO [alembic.runtime.plugins] setup plugin alembic.autogenerate.constraints
+2026-10-16 15:22:44,303 INFO [alembic.runtime.plugins] setup plugin alembic.autogenerate.defaults
+2026-10-16 15:22:44,303 INFO [alembic.runtime.plugins] setup plugin alembic.autogenerate.comments
+2026-10-16 15:22:44,303 INFO [alembic.runtime.plugins] setup plugin alembic.ext.checkconstraint_byname
+2026-10-16 15:22:44,344 INFO [alembic.runtime.migration] Context impl SQLiteImpl.
+2026-10-16 15:22:44,344 INFO [alembic.runtime.migration] Will assume non-transactional DDL.
+2026-10-16 15:22:44,360 INFO [alembic.runtime.migration] Running upgrade  -> 0001, initial schema
+2026-10-16 15:22:44,672 INFO [lpr] LPR บ้าน เปิดที่ http://127.0.0.1:8765  (LAN: http://10.1.0.14:8765, http://172.19.208.1:8765)  ข้อมูล: C:\LPRdata
+2026-10-16 15:22:44,702 INFO [uvicorn.error] Started server process [1296]
+2026-10-16 15:22:44,702 INFO [uvicorn.error] Waiting for application startup.
+2026-10-16 15:22:44,702 INFO [uvicorn.error] Application startup complete.
+2026-10-16 15:22:44,708 INFO [uvicorn.error] Uvicorn running on http://0.0.0.0:8765 (Press CTRL+C to quit)
+2026-10-16 15:22:50,279 INFO [lpr.camera.manager] เริ่มกล้อง 1 (CI demo)
+2026-10-16 15:22:50,811 INFO [lpr.vision.runtime] โหลดโมเดล vehicle_yolo11n.onnx ใช้ CPUExecutionProvider
+2026-10-16 15:22:50,905 INFO [lpr.vision.runtime] โหลดโมเดล plate_yolo.onnx ใช้ CPUExecutionProvider
+2026-10-16 15:22:51,061 INFO [lpr.vision.runtime] โหลดโมเดล th_PP-OCRv5_mobile_rec.onnx ใช้ CPUExecutionProvider
+2026-10-16 15:22:51,171 INFO [lpr.vision.runtime] โหลดโมเดล PP-OCRv5_mobile_det.onnx ใช้ CPUExecutionProvider
+2026-10-16 15:23:04,820 INFO [lpr.maintenance] สำรองฐานข้อมูลไปที่ C:\LPRdata\backup\lpr-20261016-222304.db
+2026-10-16 15:23:04,836 INFO [lpr.maintenance] ลบข้อมูลเก่า: ไฟล์ 0, แถว 0
+2026-10-16 15:23:12,597 INFO [fontTools.subset] maxp pruned
+2026-10-16 15:23:12,597 INFO [fontTools.subset] cmap pruned
+2026-10-16 15:23:12,597 INFO [fontTools.subset] post pruned
+2026-10-16 15:23:12,597 INFO [fontTools.subset] DSIG dropped
+2026-10-16 15:23:12,597 INFO [fontTools.subset] GDEF dropped
+2026-10-16 15:23:12,597 INFO [fontTools.subset] GPOS dropped
+2026-10-16 15:23:12,597 INFO [fontTools.subset] GSUB dropped
+2026-10-16 15:23:12,597 INFO [fontTools.subset] glyf pruned
+2026-10-16 15:23:12,597 INFO [fontTools.subset] Added gid0 to subset
+2026-10-16 15:23:12,597 INFO [fontTools.subset] Added first four glyphs to subset
+2026-10-16 15:23:12,597 INFO [fontTools.subset] Closing glyph list over 'glyf': 76 glyphs before
+2026-10-16 15:23:12,597 INFO [fontTools.subset] Glyph names: ['.notdef', 'C', 'I', 'NULL', 'a', 'colon', 'd', 'e', 'eight', 'endash', 'five', 'four', 'hyphen', 'i', 'm', 'n', 'nine', 'nonmarkingreturn', 'o', 'one', 'percent', 'period', 'periodcentered', 'seven', 'six', 'slash', 'space', 'three', 'two', 'uni0E01', 'uni0E02', 'uni0E04', 'uni0E07', 'uni0E08', 'uni0E0A', 'uni0E0B', 'uni0E14', 'uni0E15', 'uni0E16', 'uni0E17', 'uni0E18', 'uni0E19', 'uni0E1A', 'uni0E1B', 'uni0E1E', 'uni0E21', 'uni0E22', 'uni0E23', 'uni0E25', 'uni0E27', 'uni0E28', 'uni0E29', 'uni0E2A', 'uni0E2B', 'uni0E2D', 'uni0E30', 'uni0E31', 'uni0E32', 'uni0E34', 'uni0E35', 'uni0E37', 'uni0E38', 'uni0E39', 'uni0E40', 'uni0E41', 'uni0E42', 'uni0E44', 'uni0E47', 'uni0E48', 'uni0E48.small', 'uni0E49', 'uni0E49.small', 'uni0E4B', 'uni0E4C', 'uni0E4D0E49', 'zero']
+2026-10-16 15:23:12,597 INFO [fontTools.subset] Glyph IDs:   [0, 1, 2, 3, 31, 74, 211, 245, 251, 283, 312, 314, 324, 432, 433, 435, 438, 439, 441, 442, 457, 458, 459, 460, 461, 462, 463, 464, 467, 470, 471, 472, 475, 478, 479, 480, 481, 482, 485, 487, 488, 490, 491, 492, 494, 497, 498, 499, 500, 501, 502, 503, 504, 505, 506, 547, 549, 556, 560, 572, 574, 643, 733, 735, 736, 738, 739, 744, 746, 749, 752, 754, 758, 762, 767, 769]
+2026-10-16 15:23:12,597 INFO [fontTools.subset] Closed glyph list over 'glyf': 77 glyphs after
+2026-10-16 15:23:12,597 INFO [fontTools.subset] Glyph names: ['.notdef', 'C', 'I', 'NULL', 'a', 'colon', 'd', 'e', 'eight', 'endash', 'five', 'four', 'hyphen', 'i', 'm', 'n', 'nine', 'nonmarkingreturn', 'o', 'one', 'percent', 'period', 'periodcentered', 'seven', 'six', 'slash', 'space', 'three', 'two', 'uni0E01', 'uni0E02', 'uni0E04', 'uni0E07', 'uni0E08', 'uni0E0A', 'uni0E0B', 'uni0E14', 'uni0E15', 'uni0E16', 'uni0E17', 'uni0E18', 'uni0E19', 'uni0E1A', 'uni0E1B', 'uni0E1E', 'uni0E21', 'uni0E22', 'uni0E23', 'uni0E25', 'uni0E27', 'uni0E28', 'uni0E29', 'uni0E2A', 'uni0E2B', 'uni0E2D', 'uni0E30', 'uni0E31', 'uni0E32', 'uni0E34', 'uni0E35', 'uni0E37', 'uni0E38', 'uni0E39', 'uni0E40', 'uni0E41', 'uni0E42', 'uni0E44', 'uni0E47', 'uni0E48', 'uni0E48.small', 'uni0E49', 'uni0E49.small', 'uni0E4B', 'uni0E4C', 'uni0E4D', 'uni0E4D0E49', 'zero']
+2026-10-16 15:23:12,597 INFO [fontTools.subset] Glyph IDs:   [0, 1, 2, 3, 31, 74, 211, 245, 251, 283, 312, 314, 324, 432, 433, 435, 438, 439, 441, 442, 457, 458, 459, 460, 461, 462, 463, 464, 467, 470, 471, 472, 475, 478, 479, 480, 481, 482, 485, 487, 488, 490, 491, 492, 494, 497, 498, 499, 500, 501, 502, 503, 504, 505, 506, 547, 549, 556, 560, 572, 574, 643, 733, 735, 736, 738, 739, 744, 746, 749, 752, 754, 758, 760, 762, 767, 769]
+2026-10-16 15:23:12,597 INFO [fontTools.subset] Retaining 77 glyphs
+2026-10-16 15:23:12,597 INFO [fontTools.subset] head subsetting not needed
+2026-10-16 15:23:12,597 INFO [fontTools.subset] hhea subsetting not needed
+2026-10-16 15:23:12,597 INFO [fontTools.subset] maxp subsetting not needed
+2026-10-16 15:23:12,597 INFO [fontTools.subset] OS/2 subsetting not needed
+2026-10-16 15:23:12,597 INFO [fontTools.subset] hmtx subsetted
+2026-10-16 15:23:12,597 INFO [fontTools.subset] cmap subsetted
+2026-10-16 15:23:12,597 INFO [fontTools.subset] loca subsetting not needed
+2026-10-16 15:23:12,597 INFO [fontTools.subset] post subsetted
+2026-10-16 15:23:12,597 INFO [fontTools.subset] gasp subsetting not needed
+2026-10-16 15:23:12,597 INFO [fontTools.subset] name subsetting not needed
+2026-10-16 15:23:12,597 INFO [fontTools.subset] glyf subsetted
+2026-10-16 15:23:12,597 INFO [fontTools.subset] head pruned
+2026-10-16 15:23:12,597 INFO [fontTools.subset] OS/2 Unicode ranges pruned: [0, 1, 24]
+2026-10-16 15:23:12,597 INFO [fontTools.subset] OS/2 CodePage ranges pruned: [0]
+2026-10-16 15:23:12,597 INFO [fontTools.subset] glyf pruned
+2026-10-16 15:23:12,597 INFO [fontTools.subset] name pruned
+2026-10-16 15:23:12,628 INFO [fontTools.subset] maxp pruned
+2026-10-16 15:23:12,628 INFO [fontTools.subset] cmap pruned
+2026-10-16 15:23:12,628 INFO [fontTools.subset] post pruned
+2026-10-16 15:23:12,628 INFO [fontTools.subset] DSIG dropped
+2026-10-16 15:23:12,628 INFO [fontTools.subset] GDEF dropped
+2026-10-16 15:23:12,628 INFO [fontTools.subset] GPOS dropped
+2026-10-16 15:23:12,628 INFO [fontTools.subset] GSUB dropped
+2026-10-16 15:23:12,628 INFO [fontTools.subset] glyf pruned
+2026-10-16 15:23:12,628 INFO [fontTools.subset] Added gid0 to subset
+2026-10-16 15:23:12,628 INFO [fontTools.subset] Added first four glyphs to subset
+2026-10-16 15:23:12,628 INFO [fontTools.subset] Closing glyph list over 'glyf': 45 glyphs before
+2026-10-16 15:23:12,628 INFO [fontTools.subset] Glyph names: ['.notdef', 'C', 'I', 'NULL', 'four', 'hyphen', 'nonmarkingreturn', 'one', 'periodcentered', 'space', 'uni0E01', 'uni0E02', 'uni0E07', 'uni0E08', 'uni0E14', 'uni0E15', 'uni0E16', 'uni0E17', 'uni0E19', 'uni0E1A', 'uni0E1B', 'uni0E20', 'uni0E21', 'uni0E22', 'uni0E23', 'uni0E25', 'uni0E27', 'uni0E28', 'uni0E2A', 'uni0E2B', 'uni0E2D', 'uni0E30', 'uni0E31', 'uni0E32', 'uni0E34', 'uni0E35', 'uni0E36', 'uni0E38', 'uni0E40', 'uni0E41', 'uni0E48', 'uni0E48.small', 'uni0E49', 'uni0E4D', 'zero']
+2026-10-16 15:23:12,628 INFO [fontTools.subset] Glyph IDs:   [0, 1, 2, 3, 31, 74, 432, 433, 438, 439, 457, 458, 459, 460, 462, 463, 464, 469, 470, 471, 472, 475, 478, 479, 481, 482, 485, 487, 488, 490, 491, 497, 498, 501, 556, 572, 733, 735, 736, 738, 752, 754, 756, 760, 767]
+2026-10-16 15:23:12,628 INFO [fontTools.subset] Closed glyph list over 'glyf': 45 glyphs after
+2026-10-16 15:23:12,628 INFO [fontTools.subset] Glyph names: ['.notdef', 'C', 'I', 'NULL', 'four', 'hyphen', 'nonmarkingreturn', 'one', 'periodcentered', 'space', 'uni0E01', 'uni0E02', 'uni0E07', 'uni0E08', 'uni0E14', 'uni0E15', 'uni0E16', 'uni0E17', 'uni0E19', 'uni0E1A', 'uni0E1B', 'uni0E20', 'uni0E21', 'uni0E22', 'uni0E23', 'uni0E25', 'uni0E27', 'uni0E28', 'uni0E2A', 'uni0E2B', 'uni0E2D', 'uni0E30', 'uni0E31', 'uni0E32', 'uni0E34', 'uni0E35', 'uni0E36', 'uni0E38', 'uni0E40', 'uni0E41', 'uni0E48', 'uni0E48.small', 'uni0E49', 'uni0E4D', 'zero']
+2026-10-16 15:23:12,628 INFO [fontTools.subset] Glyph IDs:   [0, 1, 2, 3, 31, 74, 432, 433, 438, 439, 457, 458, 459, 460, 462, 463, 464, 469, 470, 471, 472, 475, 478, 479, 481, 482, 485, 487, 488, 490, 491, 497, 498, 501, 556, 572, 733, 735, 736, 738, 752, 754, 756, 760, 767]
+2026-10-16 15:23:12,628 INFO [fontTools.subset] Retaining 45 glyphs
+2026-10-16 15:23:12,628 INFO [fontTools.subset] head subsetting not needed
+2026-10-16 15:23:12,628 INFO [fontTools.subset] hhea subsetting not needed
+2026-10-16 15:23:12,628 INFO [fontTools.subset] maxp subsetting not needed
+2026-10-16 15:23:12,628 INFO [fontTools.subset] OS/2 subsetting not needed
+2026-10-16 15:23:12,628 INFO [fontTools.subset] hmtx subsetted
+2026-10-16 15:23:12,628 INFO [fontTools.subset] cmap subsetted
+2026-10-16 15:23:12,628 INFO [fontTools.subset] loca subsetting not needed
+2026-10-16 15:23:12,628 INFO [fontTools.subset] post subsetted
+2026-10-16 15:23:12,628 INFO [fontTools.subset] gasp subsetting not needed
+2026-10-16 15:23:12,628 INFO [fontTools.subset] name subsetting not needed
+2026-10-16 15:23:12,628 INFO [fontTools.subset] glyf subsetted
+2026-10-16 15:23:12,628 INFO [fontTools.subset] head pruned
+2026-10-16 15:23:12,628 INFO [fontTools.subset] OS/2 Unicode ranges pruned: [0, 1, 24]
+2026-10-16 15:23:12,628 INFO [fontTools.subset] OS/2 CodePage ranges pruned: [0]
+2026-10-16 15:23:12,628 INFO [fontTools.subset] glyf pruned
+2026-10-16 15:23:12,628 INFO [fontTools.subset] name pruned
