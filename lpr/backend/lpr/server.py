@@ -32,7 +32,7 @@ def setup_logging(paths: Paths, console: bool = True) -> None:
         sh = logging.StreamHandler()
         sh.setFormatter(fmt)
         root.addHandler(sh)
-    for noisy in ("uvicorn.access", "httpx", "multipart"):
+    for noisy in ("uvicorn.access", "httpx", "multipart", "alembic", "fontTools", "PIL"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
 
 

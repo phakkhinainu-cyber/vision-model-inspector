@@ -1,5 +1,7 @@
 # Vision Model Inspector
 
+> รีโปนี้มี 2 โปรแกรม: **Vision Model Inspector** (ด้านล่าง) และ **[LPR บ้าน — ระบบตรวจป้ายทะเบียนรถ](lpr/README.md)** ในโฟลเดอร์ `lpr/`
+
 โปรแกรม Desktop (Windows 10/11 x64) สำหรับเปิดโมเดลตรวจจับวัตถุที่ผู้ใช้ฝึกไว้ (Ultralytics YOLOv8 / YOLO11 `.pt` และ ONNX)
 วิเคราะห์ภาพ วิดีโอ และกล้อง พร้อม Grad-CAM ต่อวัตถุ (detection instance) — UI แบบ C ภาษาไทย
 
