@@ -1,0 +1,16 @@
+onedir MB: 321
+
+Name                                      Length
+----                                      ------
+LPR-Portable-1.0.0-windows-x64-GPU.zip 160730222
+LPR-Setup-1.0.0-GPU.exe                131723750
+
+
+Algorithm : SHA256
+Hash      : 0F5DCD9C49261B98AE732CADC3E4FCEBF51C91AF61B646EA487C727CE7E2BF1D
+Path      : D:\a\vision-model-inspector\vision-model-inspector\lpr\Output\LPR-Portable-1.0.0-windows-x64-GPU.zip
+
+Algorithm : SHA256
+Hash      : C615A31AF651B8262E2AB87073570B90970CF994F0ABD4D85E5ED41322219E0D
+Path      : D:\a\vision-model-inspector\vision-model-inspector\lpr\Output\LPR-Setup-1.0.0-GPU.exe
+
