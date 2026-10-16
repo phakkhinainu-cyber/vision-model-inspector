@@ -1,0 +1,25 @@
+2026-10-16 15:29:28,335 INFO [lpr] LPR บ้าน เปิดที่ http://127.0.0.1:8765  (LAN: http://10.1.0.101:8765, http://172.17.64.1:8765)  ข้อมูล: C:\LPRdata
+2026-10-16 15:29:28,351 INFO [uvicorn.error] Started server process [1192]
+2026-10-16 15:29:28,351 INFO [uvicorn.error] Waiting for application startup.
+2026-10-16 15:29:28,366 INFO [uvicorn.error] Application startup complete.
+2026-10-16 15:29:28,366 INFO [uvicorn.error] Uvicorn running on http://0.0.0.0:8765 (Press CTRL+C to quit)
+2026-10-16 15:29:33,826 INFO [lpr.camera.manager] เริ่มกล้อง 1 (CI demo)
+2026-10-16 15:29:34,342 INFO [lpr.vision.runtime] โหลดโมเดล vehicle_yolo11n.onnx ใช้ CPUExecutionProvider
+2026-10-16 15:29:34,436 INFO [lpr.vision.runtime] โหลดโมเดล plate_yolo.onnx ใช้ CPUExecutionProvider
+2026-10-16 15:29:34,592 INFO [lpr.vision.runtime] โหลดโมเดล th_PP-OCRv5_mobile_rec.onnx ใช้ CPUExecutionProvider
+2026-10-16 15:29:34,717 INFO [lpr.vision.runtime] โหลดโมเดล PP-OCRv5_mobile_det.onnx ใช้ CPUExecutionProvider
+2026-10-16 15:29:46,053 ERROR [lpr.camera.manager] handler failed
+Traceback (most recent call last):
+  File "shutil.py", line 847, in move
+PermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\LPRdata\\data\\tmp\\8657e111de6e45538c853dd3f498d9d6.webm' -> 'C:\\LPRdata\\data\\images\\2026\\10\\16\\1_clip.webm'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "lpr\camera\manager.py", line 181, in _safe
+  File "lpr\events\service.py", line 273, in attach_clip
+  File "lpr\events\service.py", line 263, in _move_clip
+  File "shutil.py", line 868, in move
+PermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\LPRdata\\data\\tmp\\8657e111de6e45538c853dd3f498d9d6.webm'
+2026-10-16 15:29:48,814 INFO [lpr.maintenance] สำรองฐานข้อมูลไปที่ C:\LPRdata\backup\lpr-20261016-222948.db
+2026-10-16 15:29:48,892 INFO [lpr.maintenance] ลบข้อมูลเก่า: ไฟล์ 0, แถว 0

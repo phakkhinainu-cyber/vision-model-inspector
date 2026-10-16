@@ -1,0 +1,91 @@
+{
+ "version": "1.0.0",
+ "python": "3.12.10",
+ "platform": "Windows-2022Server-10.0.20348-SP0",
+ "frozen": true,
+ "ok": true,
+ "steps": {
+  "load_models_s": 0.39,
+  "video_frames": 472,
+  "video_s": 24.22,
+  "api_health": {
+   "ok": true,
+   "app": "LPR บ้าน",
+   "version": "1.0.0",
+   "ts": 1792164476.5246367
+  },
+  "index_bytes": 1213
+ },
+ "providers": [
+  "AzureExecutionProvider",
+  "CPUExecutionProvider"
+ ],
+ "models": {
+  "vehicle": "D:\\a\\vision-model-inspector\\vision-model-inspector\\lpr\\dist\\LPR\\_internal\\models\\vehicle_yolo11n.onnx",
+  "plate": "D:\\a\\vision-model-inspector\\vision-model-inspector\\lpr\\dist\\LPR\\_internal\\models\\plate_yolo.onnx",
+  "ocr_rec": "D:\\a\\vision-model-inspector\\vision-model-inspector\\lpr\\dist\\LPR\\_internal\\models\\th_PP-OCRv5_mobile_rec.onnx",
+  "ocr_dict": "D:\\a\\vision-model-inspector\\vision-model-inspector\\lpr\\dist\\LPR\\_internal\\models\\th_PP-OCRv5_mobile_rec.dict.txt",
+  "ocr_det": "D:\\a\\vision-model-inspector\\vision-model-inspector\\lpr\\dist\\LPR\\_internal\\models\\PP-OCRv5_mobile_det.onnx"
+ },
+ "frontend": true,
+ "webview": true,
+ "model_info": {
+  "ocr": "PP-OCRv5 th (ONNX)",
+  "plate_detector": "yolo",
+  "device": "CPUExecutionProvider"
+ },
+ "events": [
+  {
+   "plate": "จพ 1543",
+   "province": "ราชบุรี",
+   "direction": "เข้า",
+   "type": "รถเก๋ง",
+   "conf": 0.692,
+   "review": "รอตรวจสอบ"
+  },
+  {
+   "plate": "4อร 969",
+   "province": "ศรีสะเกษ",
+   "direction": "เข้า",
+   "type": "รถเก๋ง",
+   "conf": 0.943,
+   "review": "ปกติ"
+  },
+  {
+   "plate": "งต 764",
+   "province": "อุดรธานี",
+   "direction": "เข้า",
+   "type": "รถเก๋ง",
+   "conf": 0.973,
+   "review": "ปกติ"
+  },
+  {
+   "plate": "83-6054",
+   "province": "ตราด",
+   "direction": "เข้า",
+   "type": "แท็กซี่/รับจ้าง",
+   "conf": 0.988,
+   "review": "ปกติ"
+  },
+  {
+   "plate": "2ง 3375",
+   "province": "ร้อยเอ็ด",
+   "direction": "เข้า",
+   "type": "รถเก๋ง",
+   "conf": 0.944,
+   "review": "ปกติ"
+  },
+  {
+   "plate": "3ถ 1342",
+   "province": "ยะลา",
+   "direction": "เข้า",
+   "type": "รถเก๋ง",
+   "conf": 0.947,
+   "review": "ปกติ"
+  }
+ ],
+ "accuracy": {
+  "cars": 6,
+  "plate_ok": 5
+ }
+}

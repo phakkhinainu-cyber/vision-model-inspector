@@ -1,0 +1,10 @@
+2026-10-16 15:29:24,265 DEBUG - Starting WinSW in console mode
+2026-10-16 15:29:24,298 INFO  - Installing service 'LPR บ้าน (ระบบตรวจป้ายทะเบียน) (LPRService)'...
+2026-10-16 15:29:24,348 INFO  - Service 'LPR บ้าน (ระบบตรวจป้ายทะเบียน) (LPRService)' was installed successfully.
+2026-10-16 15:29:24,963 DEBUG - Starting WinSW in console mode
+2026-10-16 15:29:25,994 INFO  - Starting service 'LPR บ้าน (ระบบตรวจป้ายทะเบียน) (LPRService)'...
+2026-10-16 15:29:26,518 DEBUG - Starting WinSW in service mode
+2026-10-16 15:29:26,554 INFO  - Service 'LPR บ้าน (ระบบตรวจป้ายทะเบียน) (LPRService)' started successfully.
+2026-10-16 15:29:26,679 INFO  - Starting C:\Program Files\LPR\LPR.exe --server
+2026-10-16 15:29:26,706 INFO  - Started process 1192
+2026-10-16 15:29:26,717 DEBUG - Forwarding logs of the process System.Diagnostics.Process (LPR) to WinSW.SizeBasedRollingLogAppender
