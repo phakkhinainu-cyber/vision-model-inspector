@@ -1,0 +1,12 @@
+install exit: 0
+
+Name      : LPRService
+Status    : Running
+StartType : Automatic
+
+
+home pointer: C:\LPRdata
+firewall rule: Private
+service check exit: 0
+db exists: True
+uninstall exit: 0; service removed: True; data kept: True
