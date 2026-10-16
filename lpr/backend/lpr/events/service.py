@@ -117,7 +117,11 @@ class EventService:
             v.first_seen = min(v.first_seen or ts, ts)
             v.last_seen = max(v.last_seen or ts, ts)
             if not v.type_locked and vtype and vtype != C.VT_OTHER:
-                v.vehicle_type = vtype
+                # ประเภทรถ = ผลส่วนใหญ่จาก 20 ครั้งล่าสุด (กันผลตรวจจับที่แกว่งในบางเฟรม)
+                recent = [t for (t,) in s.execute(select(Event.vehicle_type).where(
+                    Event.vehicle_id == v.id, Event.vehicle_type != C.VT_OTHER).order_by(Event.ts.desc()).limit(19))]
+                recent.append(vtype)
+                v.vehicle_type = max(set(recent), key=recent.count)
         return v
 
     # ------------------------------------------------------------------ visits
