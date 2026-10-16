@@ -53,7 +53,7 @@ def explore(out: Path) -> dict:
                     m = YOLO(p)
                     log("YOLO", repo, "task", m.task, "names", m.names)
                     f = m.export(format="onnx", imgsz=640, opset=12, simplify=True)
-                    dst = out / f"thai_{repo.split('/')[0]}.onnx"
+                    dst = out / f"thai_{repo.replace('/', '__')}.onnx"
                     shutil.move(f, dst)
                     (dst.with_suffix(".names.json")).write_text(json.dumps(m.names, ensure_ascii=False), "utf-8")
                     info[repo]["onnx"] = dst.name
@@ -121,6 +121,19 @@ def testdata(out: Path) -> None:
     log("testdata images", len(plates))
 
 
+FONTS = ["ofl/sarabun/Sarabun-Regular.ttf", "ofl/sarabun/Sarabun-Bold.ttf", "ofl/sarabun/OFL.txt"]
+
+
+def fonts(out: Path) -> None:
+    """ฟอนต์ Sarabun (OFL) สำหรับฝังในรายงาน PDF"""
+    import urllib.request
+
+    for f in FONTS:
+        name = Path(f).name if not f.endswith("OFL.txt") else "Sarabun-OFL.txt"
+        urllib.request.urlretrieve(f"https://github.com/google/fonts/raw/main/{f}", out / name)
+        log("font", name, (out / name).stat().st_size)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="out_testdata")
@@ -128,6 +141,10 @@ def main() -> int:
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     info = {}
+    try:
+        fonts(out)
+    except Exception:  # noqa: BLE001
+        traceback.print_exc()
     try:
         info = explore(out)
     except Exception:  # noqa: BLE001
