@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lpr-ban"
+version = "1.0.0"
+description = "ระบบตรวจป้ายทะเบียนรถสำหรับบ้านพัก (Thai license plate recognition, logbook UI, PWA)"
+requires-python = ">=3.10"
+license = { text = "AGPL-3.0-or-later" }
+
+[tool.setuptools.packages.find]
+where = ["backend"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["backend"]
+addopts = "-ra -q"

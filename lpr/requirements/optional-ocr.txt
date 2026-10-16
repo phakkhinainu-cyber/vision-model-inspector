@@ -1,0 +1,4 @@
+# OCR engine ทางเลือก (ใหญ่ ติดตั้งเฉพาะเมื่อต้องการ) — ค่าเริ่มต้นใช้ PP-OCRv5 ภาษาไทยผ่าน ONNX Runtime อยู่แล้ว
+# paddlepaddle>=3.0
+# paddleocr>=3.1
+# easyocr>=1.7

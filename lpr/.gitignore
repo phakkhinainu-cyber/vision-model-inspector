@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+models/*.onnx
+models/*.json
+models/*.txt
+models/*.log
+frontend/node_modules/
+frontend/dist/
+build/
+dist/
+Output/
+work/
+_home/
+packaging/*.ico
+packaging/WinSW*.exe
