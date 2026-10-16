@@ -3,7 +3,7 @@ name: lpr-models
 # สร้างไฟล์โมเดล ONNX ของโปรแกรมตรวจป้ายทะเบียน (LPR) แล้วเผยแพร่เป็น release "lpr-models-v1"
 on:
   push:
-    paths: ["lpr/tools/models/**", ".github/workflows/lpr-models.yml"]
+    paths: ["lpr/tools/models/build_models.py", ".github/workflows/lpr-models.yml"]
   workflow_dispatch:
 
 permissions:
