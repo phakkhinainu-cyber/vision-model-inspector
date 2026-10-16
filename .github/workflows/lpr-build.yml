@@ -1,0 +1,174 @@
+name: lpr-build
+
+# สร้างโปรแกรมสำเร็จรูป LPR บ้าน: ตัวติดตั้ง Windows (LPR-Setup.exe) + แบบพกพา Windows/Linux/macOS
+# ทดสอบ: unit test, self-test ของไฟล์ที่ build แล้ว, ติดตั้งจริงเป็น Windows service แล้วเรียก API, ถอนการติดตั้ง
+on:
+  push:
+    paths: ["lpr/**", ".github/workflows/lpr-build.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONUTF8: "1"
+  PYTHONIOENCODING: "utf-8"
+  APP_VERSION: "1.0.0"
+
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: lpr
+    outputs:
+      tag: ${{ steps.rel.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Frontend
+        working-directory: lpr/frontend
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+      - name: Python dependencies
+        run: |
+          New-Item -ItemType Directory -Force ci_results | Out-Null
+          python -m pip install --upgrade pip
+          pip install -r requirements/runtime.txt -r requirements/desktop.txt -r requirements/dev.txt
+          pip freeze | Out-File -Encoding utf8 ci_results/lock-windows.txt
+          python -c "import onnxruntime, cv2, fastapi, webview; print('ort', onnxruntime.__version__, onnxruntime.get_available_providers(), 'cv2', cv2.__version__, 'fastapi', fastapi.__version__)" | Tee-Object ci_results/versions.txt
+      - name: Models
+        run: python tools/fetch_models.py
+      - name: Unit + integration tests
+        run: |
+          python -m pytest -q -p no:cacheprovider *> ci_results/pytest.txt
+          $code = $LASTEXITCODE
+          Get-Content ci_results/pytest.txt -Tail 25
+          if ($code -ne 0) { exit $code }
+      - name: Third-party notices
+        run: |
+          pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --with-urls --output-file THIRD_PARTY_NOTICES.txt
+          Add-Content THIRD_PARTY_NOTICES.txt "`n`n=== Fonts: Anuphan, Sarabun, JetBrains Mono — SIL Open Font License 1.1 ===`n"
+          Get-Content backend/lpr/resources/fonts/Sarabun-OFL.txt | Add-Content THIRD_PARTY_NOTICES.txt
+          Add-Content THIRD_PARTY_NOTICES.txt "`n=== Models ===`nYOLO11n (Ultralytics) AGPL-3.0; license-plate-finetune-v1n (morsetechlab) AGPL-3.0; PaddleOCR PP-OCRv5 th_PP-OCRv5_mobile_rec / PP-OCRv5_mobile_det Apache-2.0`n=== WinSW === MIT`n"
+          pip-licenses --from=mixed --format=markdown --with-urls | Out-File -Encoding utf8 ci_results/licenses_python.md
+      - name: PyInstaller
+        run: |
+          pyinstaller --noconfirm --clean packaging/lpr.spec *> ci_results/pyinstaller.txt
+          if ($LASTEXITCODE -ne 0) { Get-Content ci_results/pyinstaller.txt -Tail 60; exit 1 }
+          "onedir MB: {0:N0}" -f ((Get-ChildItem dist/LPR -Recurse | Measure-Object Length -Sum).Sum / 1MB) | Tee-Object ci_results/sizes.txt
+      - name: Self-test frozen build (Thai path)
+        run: |
+          $h = "C:\ทดสอบ LPR"
+          $p = Start-Process dist\LPR\LPR.exe -ArgumentList @("--selftest", "`"$pwd\ci_results\selftest_frozen.json`"", "--home", "`"$h`"") -Wait -PassThru
+          "frozen selftest exit: $($p.ExitCode)" | Tee-Object ci_results/selftest_summary.txt
+          Get-Content ci_results\selftest_frozen.json -Encoding utf8 | Select-Object -First 60
+          if ($p.ExitCode -ne 0) { exit 1 }
+      - name: Inno Setup installer
+        run: |
+          curl.exe -sSL --retry 3 -o packaging\WinSW-x64.exe https://github.com/winsw/winsw/releases/download/v2.12.0/WinSW-x64.exe
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress | Out-Null }
+          & $iscc /Qp "/DAppVersion=$env:APP_VERSION" packaging\installer.iss *> ci_results/iscc.txt
+          if ($LASTEXITCODE -ne 0) { Get-Content ci_results/iscc.txt -Tail 40; exit 1 }
+          Compress-Archive -Path dist\LPR -DestinationPath "Output\LPR-Portable-$env:APP_VERSION-windows-x64.zip"
+          Get-ChildItem Output | Format-Table Name, Length -AutoSize | Out-File -Append -Encoding utf8 ci_results/sizes.txt
+          Get-FileHash Output\* -Algorithm SHA256 | Format-List | Out-File -Append -Encoding utf8 ci_results/sizes.txt
+      - name: Install as Windows service, use it through the API, uninstall
+        run: |
+          $setup = (Get-ChildItem Output\LPR-Setup-*.exe)[0].FullName
+          $p = Start-Process $setup -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/DATADIR=C:\LPRdata','/LOG=C:\lpr-install.log' -Wait -PassThru
+          "install exit: $($p.ExitCode)" | Tee-Object ci_results/installer_test.txt
+          Start-Sleep 5
+          (Get-Service LPRService | Format-List Name,Status,StartType | Out-String) | Tee-Object -Append ci_results/installer_test.txt
+          "home pointer: $(Get-Content C:\ProgramData\LPR\home.txt)" | Tee-Object -Append ci_results/installer_test.txt
+          "firewall rule: $((Get-NetFirewallRule -DisplayName 'LPR-ban LAN' -ErrorAction SilentlyContinue).Profile)" | Tee-Object -Append ci_results/installer_test.txt
+          python tools/ci_service_check.py ci_results/service_check.json --wait 240
+          $chk = $LASTEXITCODE
+          "service check exit: $chk" | Tee-Object -Append ci_results/installer_test.txt
+          "db exists: $(Test-Path C:\LPRdata\data\lpr.db)" | Tee-Object -Append ci_results/installer_test.txt
+          Copy-Item C:\LPRdata\logs\lpr.log ci_results\service_lpr.log -ErrorAction SilentlyContinue
+          Copy-Item C:\lpr-install.log ci_results\ -ErrorAction SilentlyContinue
+          Get-ChildItem C:\ProgramData\LPR\service-logs -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item $_.FullName ci_results\ }
+          $u = Start-Process "C:\Program Files\LPR\unins000.exe" -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Wait -PassThru
+          Start-Sleep 5
+          "uninstall exit: $($u.ExitCode); service removed: $((Get-Service LPRService -ErrorAction SilentlyContinue) -eq $null); data kept: $(Test-Path C:\LPRdata\data\lpr.db)" | Tee-Object -Append ci_results/installer_test.txt
+          if ($p.ExitCode -ne 0 -or $chk -ne 0) { exit 1 }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lpr-windows
+          path: lpr/Output/*
+          retention-days: 30
+          compression-level: 0
+      - name: Publish CI results branch
+        if: always()
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          $dst = "$env:RUNNER_TEMP\results"
+          New-Item -ItemType Directory -Force $dst | Out-Null
+          Copy-Item -Recurse ci_results\* $dst
+          Set-Location $dst
+          git init -q -b results
+          git config user.name "ci"
+          git config user.email "ci@users.noreply.github.com"
+          git add -A
+          git commit -q -m "LPR CI results run ${{ github.run_number }} (${{ github.sha }})"
+          git push -q -f "https://x-access-token:$env:TOKEN@github.com/${{ github.repository }}.git" "HEAD:refs/heads/ci-results/lpr-run-${{ github.run_number }}"
+      - name: Release
+        id: rel
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "lpr-v$env:APP_VERSION-build.${{ github.run_number }}"
+          gh release create $tag (Get-ChildItem Output\*).FullName --target $env:GITHUB_SHA --prerelease --title "LPR บ้าน $env:APP_VERSION build ${{ github.run_number }}" --notes "ตัวติดตั้ง Windows 10/11 x64 (LPR-Setup) และแบบพกพา สร้างและทดสอบโดย CI จาก ${{ github.sha }} — ผลทดสอบอยู่ใน branch ci-results/lpr-run-${{ github.run_number }}"
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+
+  portable:
+    needs: windows
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            name: linux-x64
+          - os: macos-14
+            name: macos-arm64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: lpr
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Build
+        run: |
+          (cd frontend && npm ci --no-audit --no-fund && npm run build)
+          python -m pip install --upgrade pip
+          pip install -r requirements/runtime.txt -r requirements/dev.txt
+          python tools/fetch_models.py
+          mkdir -p ci_results
+          python -m pytest -q -p no:cacheprovider 2>&1 | tee ci_results/pytest-${{ matrix.name }}.txt | tail -5
+          test "${PIPESTATUS[0]}" = "0"
+          pyinstaller --noconfirm --clean packaging/lpr.spec > ci_results/pyinstaller-${{ matrix.name }}.txt 2>&1
+          ./dist/LPR/LPR --selftest ci_results/selftest-${{ matrix.name }}.json --home "$RUNNER_TEMP/lpr-st"
+          cat ci_results/selftest-${{ matrix.name }}.json | head -40
+          tar -C dist -czf "LPR-Portable-${APP_VERSION}-${{ matrix.name }}.tar.gz" LPR
+      - name: Upload to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ needs.windows.outputs.tag }}" "LPR-Portable-${APP_VERSION}-${{ matrix.name }}.tar.gz" --clobber

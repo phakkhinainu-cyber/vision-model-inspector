@@ -1,0 +1,20 @@
+<!-- WinSW: ให้ระบบตรวจป้ายทำงานเป็น Windows service (เปิดเองตอนบูต, รีสตาร์ตเองเมื่อหยุดทำงาน) -->
+<service>
+  <id>LPRService</id>
+  <name>LPR บ้าน (ระบบตรวจป้ายทะเบียน)</name>
+  <description>ต่อกล้อง อ่านป้ายทะเบียน และบันทึกเหตุการณ์เข้า-ออก ทำงานเบื้องหลังตลอด 24 ชั่วโมง</description>
+  <executable>%BASE%\LPR.exe</executable>
+  <arguments>--server</arguments>
+  <startmode>Automatic</startmode>
+  <delayedAutoStart>true</delayedAutoStart>
+  <stoptimeout>20 sec</stoptimeout>
+  <onfailure action="restart" delay="10 sec"/>
+  <onfailure action="restart" delay="30 sec"/>
+  <onfailure action="restart" delay="60 sec"/>
+  <resetfailure>1 hour</resetfailure>
+  <logpath>%ProgramData%\LPR\service-logs</logpath>
+  <log mode="roll-by-size">
+    <sizeThreshold>10240</sizeThreshold>
+    <keepFiles>5</keepFiles>
+  </log>
+</service>

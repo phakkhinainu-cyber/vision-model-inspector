@@ -109,7 +109,10 @@ def run_desktop(home: Path | None = None, browser: bool = False, start_cameras: 
         pass
     icon = _tray(url, lambda: (win.show(), win.restore()), do_quit, embedded)
     try:
-        webview.start(private_mode=False, storage_path=str(Paths(home).data / "webview"))
+        import os
+
+        kw = {"gui": "edgechromium"} if os.name == "nt" else {}  # Windows 10/11 มี WebView2 อยู่แล้ว
+        webview.start(private_mode=False, storage_path=str(Paths(home).data / "webview"), **kw)
     except Exception as e:  # noqa: BLE001
         log.warning("เปิดหน้าต่างไม่ได้ (%s) ใช้เบราว์เซอร์แทน", e)
         webbrowser.open(url)

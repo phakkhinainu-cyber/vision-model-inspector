@@ -46,6 +46,12 @@ def run_selftest(out: Path, video: Path | None = None, home: Path | None = None)
         res["providers"] = available_providers()
         res["models"] = {k: str(find_model(paths, k)) if find_model(paths, k) else None for k in MODEL_FILES}
         res["frontend"] = (frontend_dist() / "index.html").exists()
+        try:
+            import webview  # noqa: F401
+
+            res["webview"] = True
+        except Exception as e:  # noqa: BLE001
+            res["webview"] = f"ไม่มี ({type(e).__name__}) จะเปิดผ่านเบราว์เซอร์แทน"
         ctx = AppContext(home, start_cameras=False)
         params = {d.key: d.default for d in DEFS}
         t0 = time.time()
