@@ -1,0 +1,16 @@
+onedir MB: 295
+
+Name                                  Length
+----                                  ------
+LPR-Portable-1.0.0-windows-x64.zip 150388057
+LPR-Setup-1.0.0.exe                122822751
+
+
+Algorithm : SHA256
+Hash      : 0E5966BF949C845CA4FD887FEBEAB7D0313CCA49E7D578FA9F092D7AD593A51B
+Path      : D:\a\vision-model-inspector\vision-model-inspector\lpr\Output\LPR-Portable-1.0.0-windows-x64.zip
+
+Algorithm : SHA256
+Hash      : 2FCBA0679A47F2B6BC3EB5AF93AB67C3BDD7537C15CEB323D35DD84BC9A76B04
+Path      : D:\a\vision-model-inspector\vision-model-inspector\lpr\Output\LPR-Setup-1.0.0.exe
+

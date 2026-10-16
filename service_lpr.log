@@ -1,0 +1,10 @@
+2026-10-16 19:29:08,081 INFO [lpr] LPR บ้าน เปิดที่ http://127.0.0.1:8765  (LAN: http://10.1.0.133:8765)  ข้อมูล: C:\LPRdata
+2026-10-16 19:29:08,112 INFO [uvicorn.error] Started server process [5192]
+2026-10-16 19:29:08,112 INFO [uvicorn.error] Waiting for application startup.
+2026-10-16 19:29:08,112 INFO [uvicorn.error] Application startup complete.
+2026-10-16 19:29:08,112 INFO [uvicorn.error] Uvicorn running on http://0.0.0.0:8765 (Press CTRL+C to quit)
+2026-10-16 19:29:13,476 INFO [lpr.camera.manager] เริ่มกล้อง 1 (CI demo)
+2026-10-16 19:29:13,945 INFO [lpr.vision.runtime] โหลดโมเดล vehicle_yolo11n.onnx ใช้ CPU
+2026-10-16 19:29:14,039 INFO [lpr.vision.runtime] โหลดโมเดล plate_yolo.onnx ใช้ CPU
+2026-10-16 19:29:14,196 INFO [lpr.vision.runtime] โหลดโมเดล th_PP-OCRv5_mobile_rec.onnx ใช้ CPU
+2026-10-16 19:29:14,289 INFO [lpr.vision.runtime] โหลดโมเดล PP-OCRv5_mobile_det.onnx ใช้ CPU
