@@ -209,6 +209,9 @@ jobs:
     needs: [windows, portable]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
+    concurrency:
+      group: lpr-release
+      cancel-in-progress: false
     timeout-minutes: 30
     env:
       GH_TOKEN: ${{ github.token }}

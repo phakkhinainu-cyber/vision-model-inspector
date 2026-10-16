@@ -1,6 +1,8 @@
-"""ดาวน์โหลดไฟล์ที่ไม่ใช่ข้อความ (ฟอนต์ ไอคอน วิดีโอตัวอย่าง ภาพหน้าจอ) จาก GitHub
+"""ดาวน์โหลดไฟล์ที่ไม่มีในสำเนาซอร์สบน Google Drive จาก GitHub
 
-ใช้เมื่อได้ซอร์สโค้ดมาจากสำเนาใน Google Drive (ซึ่งเก็บเฉพาะไฟล์ข้อความ) แล้วต้องการ build หรือรันโปรแกรม
+สำเนาใน Google Drive เก็บเฉพาะไฟล์ข้อความที่เขียนเอง ส่วนไฟล์ด้านล่างนี้ (ฟอนต์ ไอคอน วิดีโอตัวอย่าง ภาพหน้าจอ
+package-lock.json ที่มีค่า hash ยาว ๆ, LICENSE ฉบับเต็ม, prompt ต้นฉบับ) ให้ดาวน์โหลดด้วยสคริปต์นี้ก่อน build หรือรันโปรแกรม
+(สคริปต์จะสร้างไฟล์ __init__.py ที่ว่างเปล่าให้ด้วย เพราะ Google Drive เก็บไฟล์ว่างไม่ได้)
 
   python tools/fetch_assets.py              # ดาวน์โหลดไฟล์ที่ยังไม่มี
   python tools/fetch_assets.py --models     # + ไฟล์โมเดล ONNX (เรียก tools/fetch_models.py)
@@ -21,6 +23,9 @@ REPO = "phakkhinainu-cyber/vision-model-inspector"
 ROOT = Path(__file__).resolve().parents[1]  # โฟลเดอร์ lpr/
 
 ASSETS = [
+    "LICENSE",
+    "frontend/package-lock.json",
+    "docs/prompt-แบบ4.md",
     "backend/lpr/resources/fonts/Sarabun-Regular.ttf",
     "backend/lpr/resources/fonts/Sarabun-Bold.ttf",
     "backend/lpr/resources/icon.png",
@@ -46,6 +51,13 @@ ASSETS = [
     "docs/screenshots/tablet-logbook.png",
 ]
 
+# ไฟล์ว่าง (Google Drive ไม่รับไฟล์ขนาด 0 byte)
+EMPTY = [
+    "backend/lpr/camera/__init__.py",
+    "backend/lpr/events/__init__.py",
+    "backend/lpr/vision/__init__.py",
+]
+
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -53,12 +65,16 @@ def main() -> int:
     ap.add_argument("--force", action="store_true", help="ดาวน์โหลดทับไฟล์ที่มีอยู่แล้ว")
     ap.add_argument("--models", action="store_true", help="ดาวน์โหลดไฟล์โมเดลด้วย")
     a = ap.parse_args()
-    ok = missing = 0
+    ok = missing = skipped = 0
+    for rel in EMPTY:
+        (ROOT / rel).parent.mkdir(parents=True, exist_ok=True)
+        (ROOT / rel).touch(exist_ok=True)
     for rel in ASSETS:
         dst = ROOT / rel
         if dst.exists() and dst.stat().st_size > 0 and not a.force:
+            skipped += 1
             continue
-        url = f"https://raw.githubusercontent.com/{REPO}/{urllib.parse.quote(a.ref)}/lpr/{rel}"
+        url = f"https://raw.githubusercontent.com/{REPO}/{urllib.parse.quote(a.ref)}/lpr/{urllib.parse.quote(rel)}"
         try:
             req = urllib.request.Request(url, headers={"User-Agent": "lpr-fetch-assets"})
             with urllib.request.urlopen(req, timeout=120) as r:
@@ -71,7 +87,7 @@ def main() -> int:
         dst.write_bytes(data)
         print(f"  ✓ {rel} ({len(data):,} bytes)")
         ok += 1
-    print(f"ดาวน์โหลด {ok} ไฟล์" + (f", ไม่สำเร็จ {missing} ไฟล์" if missing else "") + " — ไฟล์อื่นมีอยู่แล้ว")
+    print(f"ดาวน์โหลด {ok} ไฟล์, มีอยู่แล้ว {skipped} ไฟล์" + (f", ไม่สำเร็จ {missing} ไฟล์" if missing else ""))
     if a.models:
         code = subprocess.call([sys.executable, str(ROOT / "tools" / "fetch_models.py")])
         if code:

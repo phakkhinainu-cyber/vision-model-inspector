@@ -59,7 +59,8 @@ def run_selftest(out: Path, video: Path | None = None, home: Path | None = None)
         models = Models({k: v for k, v in res["models"].items()}, params)
         res["steps"]["load_models_s"] = round(time.time() - t0, 2)
         res["model_info"] = models.info()
-        if any(p != "CPUExecutionProvider" for p in res["providers"]) and find_model(paths, "vehicle"):
+        gpu_eps = {"CUDAExecutionProvider", "DmlExecutionProvider"} & set(res["providers"])
+        if gpu_eps and find_model(paths, "vehicle"):
             vm = find_model(paths, "vehicle")
             res["gpu_probe"] = {d: probe(vm, d) for d in ("cpu", "auto", "dml" if "DmlExecutionProvider" in
                                                             res["providers"] else "cuda")}
