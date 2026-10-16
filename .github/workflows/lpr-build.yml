@@ -260,8 +260,23 @@ jobs:
             echo "ลิงก์ในตารางนี้ (release lpr-latest) จะชี้ไปที่ build ล่าสุดเสมอ"
           } > notes.md
           cat notes.md
-          gh release create "$tag" dist/* --target "$GITHUB_SHA" --prerelease \
-            --title "LPR บ้าน ${APP_VERSION} build ${{ github.run_number }}" --notes-file notes.md
+          for i in 1 2 3; do
+            if gh release view "$tag" > /dev/null 2>&1; then
+              gh release upload "$tag" dist/* --clobber && break
+            else
+              gh release create "$tag" dist/* --target "$GITHUB_SHA" --prerelease \
+                --title "LPR บ้าน ${APP_VERSION} build ${{ github.run_number }}" --notes-file notes.md && break
+            fi
+            echo "สร้าง release ไม่สำเร็จ ลองใหม่ ($i)"; sleep 30
+          done
+          gh release view "$tag" > /dev/null
+          # ถ้า lpr-latest ชี้ไปที่ commit ที่ใหม่กว่าแล้ว (build อื่นเสร็จก่อน) ไม่ย้อนกลับ
+          cur=$(gh api "repos/${GH_REPO}/git/refs/tags/lpr-latest" -q .object.sha 2>/dev/null || true)
+          if [ -n "$cur" ] && [ "$cur" != "$GITHUB_SHA" ] && \
+             [ "$(gh api "repos/${GH_REPO}/compare/${GITHUB_SHA}...${cur}" -q .status 2>/dev/null || true)" = "ahead" ]; then
+            echo "lpr-latest ชี้ไปที่ build ที่ใหม่กว่าแล้ว (${cur}) — ไม่อัปเดต"
+            exit 0
+          fi
           # lpr-latest: ย้าย tag มาที่ commit นี้ แล้วแทนไฟล์ทั้งหมด (ชื่อไฟล์ไม่มีเลขเวอร์ชัน ลิงก์จึงไม่เปลี่ยน)
           if gh api "repos/${GH_REPO}/git/refs/tags/lpr-latest" > /dev/null 2>&1; then
             gh api -X PATCH "repos/${GH_REPO}/git/refs/tags/lpr-latest" -f sha="$GITHUB_SHA" -F force=true > /dev/null
