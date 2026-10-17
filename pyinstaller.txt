@@ -1,0 +1,165 @@
+250 INFO: PyInstaller: 6.22.3, contrib hooks: 2026.8
+250 INFO: Python: 3.12.10
+265 INFO: Platform: Windows-2022Server-10.0.20348-SP0
+265 INFO: Python environment: C:\hostedtoolcache\windows\Python\3.12.10\x64
+265 INFO: Removing temporary files and cleaning cache in C:\Users\runneradmin\AppData\Local\pyinstaller
+969 INFO: Module search paths (PYTHONPATH):
+['C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Scripts\\pyinstaller.exe',
+ 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\python312.zip',
+ 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\DLLs',
+ 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib',
+ 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64',
+ 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages',
+ 'D:\\a\\vision-model-inspector\\vision-model-inspector\\lpr\\packaging',
+ 'D:\\a\\vision-model-inspector\\vision-model-inspector\\lpr\\backend']
+1235 INFO: Appending 'binaries' from .spec
+1235 INFO: Appending 'datas' from .spec
+1235 INFO: checking Analysis
+1235 INFO: Building Analysis because Analysis-00.toc is non existent
+1235 INFO: Looking for Python shared library...
+1235 INFO: Using Python shared library: C:\hostedtoolcache\windows\Python\3.12.10\x64\python312.dll
+1235 INFO: Running Analysis Analysis-00.toc
+1235 INFO: Target bytecode optimization level: 0
+1235 INFO: Initializing module dependency graph...
+1235 INFO: Initializing module graph hook caches...
+1251 INFO: Analyzing modules for base_library.zip ...
+1876 INFO: Processing standard module hook 'hook-heapq.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+2236 INFO: Processing standard module hook 'hook-encodings.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+2509 INFO: Processing standard module hook 'hook-math.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+3409 INFO: Processing standard module hook 'hook-pickle.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+4510 INFO: Caching module dependency graph...
+4535 INFO: Analyzing D:\a\vision-model-inspector\vision-model-inspector\lpr\packaging\launcher.py
+4550 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+4675 INFO: Processing standard module hook 'hook-xml.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+4863 INFO: Processing standard module hook 'hook-_ctypes.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+4925 INFO: Processing standard module hook 'hook-platform.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+5113 INFO: Processing standard module hook 'hook-cv2.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+5394 INFO: Processing standard module hook 'hook-numpy.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+5707 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+5707 INFO: SetuptoolsInfo: initializing cached setuptools info...
+6833 INFO: Processing standard module hook 'hook-sysconfig.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+6958 INFO: Processing standard module hook 'hook-webbrowser.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+8099 INFO: Processing standard module hook 'hook-difflib.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+8694 INFO: Processing standard module hook 'hook-charset_normalizer.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+9131 INFO: Processing standard module hook 'hook-onnxruntime.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+9194 INFO: Processing pre-safe-import-module hook 'hook-tensorflow.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\pre_safe_import_module'
+9241 INFO: Processing standard module hook 'hook-argon2.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+9397 INFO: Processing standard module hook 'hook-anyio.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+9960 INFO: Processing standard module hook 'hook-pydantic.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+10514 INFO: Processing standard module hook 'hook-zoneinfo.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+11446 INFO: Processing standard module hook 'hook-opentelemetry.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+11711 INFO: Processing standard module hook 'hook-sqlalchemy.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+14590 INFO: Processing pre-safe-import-module hook 'hook-tomli.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+14590 INFO: Setuptools: 'tomli' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.tomli'!
+14590 INFO: Processing standard module hook 'hook-setuptools.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+14590 INFO: Processing pre-safe-import-module hook 'hook-distutils.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+14621 INFO: Processing pre-safe-import-module hook 'hook-jaraco.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+14621 INFO: Setuptools: 'jaraco' appears to be a partial setuptools-vendored copy - extending search paths to ['C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\jaraco', 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\setuptools\\_vendor\\jaraco']!
+14621 INFO: Processing pre-safe-import-module hook 'hook-jaraco.functools.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+14621 INFO: Processing pre-safe-import-module hook 'hook-more_itertools.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+14730 INFO: Processing standard module hook 'hook-_osx_support.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+14746 INFO: Processing pre-safe-import-module hook 'hook-packaging.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+14996 INFO: Processing pre-safe-import-module hook 'hook-jaraco.text.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+14996 INFO: Setuptools: 'jaraco.text' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco.text'!
+15012 INFO: Processing standard module hook 'hook-setuptools._vendor.jaraco.text.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+15012 INFO: Processing pre-safe-import-module hook 'hook-importlib_resources.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+15012 INFO: Processing pre-safe-import-module hook 'hook-jaraco.context.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+15012 INFO: Processing pre-safe-import-module hook 'hook-backports.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+15012 INFO: Setuptools: 'backports' appears to be a full setuptools-vendored copy - creating alias to 'setuptools._vendor.backports'!
+15592 INFO: Processing pre-safe-import-module hook 'hook-wheel.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+15592 INFO: Setuptools: 'wheel' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.wheel'!
+15888 INFO: Processing standard module hook 'hook-mako.codegen.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+15967 INFO: Processing standard module hook 'hook-pygments.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+17687 INFO: Processing standard module hook 'hook-sqlite3.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+17890 INFO: Processing standard module hook 'hook-keyring.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+18234 INFO: Processing pre-safe-import-module hook 'hook-importlib_metadata.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+18234 INFO: Setuptools: 'importlib_metadata' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.importlib_metadata'!
+18250 INFO: Processing standard module hook 'hook-setuptools._vendor.importlib_metadata.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+18265 INFO: Processing pre-safe-import-module hook 'hook-zipp.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+18265 INFO: Setuptools: 'zipp' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.zipp'!
+18281 INFO: Processing standard module hook 'hook-cryptography.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+19205 INFO: hook-cryptography: cryptography does not seem to be using dynamically linked OpenSSL.
+20206 INFO: Processing standard module hook 'hook-urllib3.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+20487 INFO: Processing standard module hook 'hook-certifi.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+21316 INFO: Processing standard module hook 'hook-webview.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\webview\\__pyinstaller'
+21613 INFO: Processing pre-safe-import-module hook 'hook-gi.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+21707 INFO: Processing standard module hook 'hook-clr.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\pythonnet\\_pyinstaller'
+21722 INFO: Processing standard module hook 'hook-clr_loader.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+21785 INFO: Processing standard module hook 'hook-pycparser.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+22175 INFO: Processing standard module hook 'hook-xml.etree.cElementTree.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+22222 INFO: Processing standard module hook 'hook-uvicorn.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+22598 INFO: Processing standard module hook 'hook-websockets.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+23114 INFO: Processing standard module hook 'hook-openpyxl.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+23192 INFO: Processing standard module hook 'hook-xml.dom.domreg.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+23692 INFO: Processing standard module hook 'hook-PIL.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+23786 INFO: Processing standard module hook 'hook-PIL.Image.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+24099 INFO: Processing standard module hook 'hook-PIL.ImageFilter.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+27212 INFO: Processing standard module hook 'hook-pystray.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+27415 INFO: Processing pre-safe-import-module hook 'hook-six.moves.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+27493 INFO: Analyzing hidden import 'uvicorn.__main__'
+27493 INFO: Analyzing hidden import 'uvicorn.lifespan'
+27493 INFO: Analyzing hidden import 'uvicorn.lifespan.off'
+27493 INFO: Analyzing hidden import 'uvicorn.lifespan.on'
+27493 INFO: Analyzing hidden import 'uvicorn.loops'
+27493 INFO: Analyzing hidden import 'uvicorn.loops.asyncio'
+27493 INFO: Analyzing hidden import 'uvicorn.loops.auto'
+27493 INFO: Analyzing hidden import 'uvicorn.loops.zuvloop'
+27493 INFO: Analyzing hidden import 'uvicorn.protocols.http.auto'
+27509 INFO: Analyzing hidden import 'uvicorn.protocols.websockets.auto'
+27509 INFO: Analyzing hidden import 'uvicorn.workers'
+27509 INFO: Analyzing hidden import 'keyring.backends.SecretService'
+27509 INFO: Analyzing hidden import 'keyring.backends.Windows'
+27524 INFO: Processing standard module hook 'hook-win32ctypes.core.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+28041 INFO: Analyzing hidden import 'keyring.backends.chainer'
+28041 INFO: Analyzing hidden import 'keyring.backends.kwallet'
+28041 INFO: Analyzing hidden import 'keyring.backends.libsecret'
+28041 INFO: Analyzing hidden import 'keyring.backends.macOS'
+28056 INFO: Analyzing hidden import 'keyring.backends.null'
+28056 INFO: Analyzing hidden import 'sqlalchemy.dialects.sqlite'
+28103 INFO: Analyzing hidden import 'tzdata'
+28103 INFO: Processing module hooks (post-graph stage)...
+28244 WARNING: Hidden import "pycparser.lextab" not found!
+28244 WARNING: Hidden import "pycparser.yacctab" not found!
+28338 INFO: Processing standard module hook 'hook-tzdata.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+28948 INFO: Processing standard module hook 'hook-PIL.SpiderImagePlugin.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+30167 INFO: Processing standard module hook 'hook-sqlalchemy.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks'
+30448 WARNING: Hidden import "pysqlite2" not found!
+30448 WARNING: Hidden import "MySQLdb" not found!
+30511 INFO: Performing binary vs. data reclassification (836 entries)
+30542 INFO: Looking for ctypes DLLs
+30604 INFO: Analyzing run-time hooks ...
+30620 INFO: Including run-time hook 'pyi_rth_inspect.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+30620 INFO: Including run-time hook 'pyi_rth_pkgutil.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+30620 INFO: Including run-time hook 'pyi_rth_cryptography_openssl.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\rthooks'
+30620 INFO: Including run-time hook 'pyi_rth_setuptools.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+30620 INFO: Including run-time hook 'pyi_rth_multiprocessing.py' from 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+30682 INFO: Creating base_library.zip...
+30698 INFO: Looking for dynamic libraries
+32543 INFO: Extra DLL search directories (AddDllDirectory): ['C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\numpy.libs', 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\rapidfuzz.libs', 'C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\cv2\\../../x64/vc17/bin']
+32543 INFO: Extra DLL search directories (PATH): ['C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\site-packages\\cv2\\../../x64/vc17/bin']
+33766 INFO: Warnings written to D:\a\vision-model-inspector\vision-model-inspector\lpr\build\lpr\warn-lpr.txt
+33937 INFO: Graph cross-reference written to D:\a\vision-model-inspector\vision-model-inspector\lpr\build\lpr\xref-lpr.html
+34000 INFO: checking PYZ
+34000 INFO: Building PYZ because PYZ-00.toc is non existent
+34000 INFO: Building PYZ (ZlibArchive) D:\a\vision-model-inspector\vision-model-inspector\lpr\build\lpr\PYZ-00.pyz
+35798 INFO: Building PYZ (ZlibArchive) D:\a\vision-model-inspector\vision-model-inspector\lpr\build\lpr\PYZ-00.pyz completed successfully.
+35844 INFO: checking PKG
+35844 INFO: Building PKG because PKG-00.toc is non existent
+35844 INFO: Building PKG (CArchive) LPR.pkg
+35860 INFO: Building PKG (CArchive) LPR.pkg completed successfully.
+35860 INFO: Bootloader C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\site-packages\PyInstaller\bootloader\Windows-64bit-intel\runw.exe
+35860 INFO: checking EXE
+35860 INFO: Building EXE because EXE-00.toc is non existent
+35860 INFO: Building EXE from EXE-00.toc
+35860 INFO: Copying bootloader EXE to D:\a\vision-model-inspector\vision-model-inspector\lpr\build\lpr\LPR.exe
+35891 INFO: Copying icon to EXE
+35891 INFO: Copying 0 resources to EXE
+35891 INFO: Embedding manifest in EXE
+35891 INFO: Appending PKG archive to EXE
+35891 INFO: Fixing EXE headers
+36048 INFO: Building EXE from EXE-00.toc completed successfully.
+36063 INFO: checking COLLECT
+36063 INFO: Building COLLECT because COLLECT-00.toc is non existent
+36063 INFO: Building COLLECT COLLECT-00.toc
+36548 INFO: Building COLLECT COLLECT-00.toc completed successfully.
+36564 INFO: Build complete! The results are available in: D:\a\vision-model-inspector\vision-model-inspector\lpr\dist
