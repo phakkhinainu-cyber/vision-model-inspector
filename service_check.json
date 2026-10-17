@@ -1,0 +1,99 @@
+{
+ "ok": true,
+ "steps": [
+  "health after 0s",
+  "4 events after 21s"
+ ],
+ "health": {
+  "ok": true,
+  "app": "LPR บ้าน",
+  "version": "1.0.0",
+  "ts": 1792201001.6264932
+ },
+ "system": {
+  "home": "C:\\LPRdata",
+  "credentials": "Windows Credential Manager",
+  "providers": [
+   "DmlExecutionProvider",
+   "CPUExecutionProvider"
+  ],
+  "models": {
+   "vehicle": true,
+   "plate": true,
+   "ocr_rec": true,
+   "ocr_dict": true,
+   "ocr_det": true
+  },
+  "demo_video": "C:\\Program Files\\LPR\\_internal\\demo\\demo.mp4",
+  "version": "1.0.0"
+ },
+ "camera_status": {
+  "camera_id": 1,
+  "state": "online",
+  "error": "",
+  "fps": 16.2,
+  "size": [
+   960,
+   540
+  ],
+  "size_main": [
+   960,
+   540
+  ],
+  "night": false,
+  "ir": false,
+  "brightness": 120.5,
+  "motion": 0.2446,
+  "tracks": 1,
+  "reconnects": 0,
+  "events": 4,
+  "last_event_ts": 1792201020.4518116,
+  "stats": {
+   "detect_runs": 93,
+   "ocr_runs": 55,
+   "events": 4
+  },
+  "ts": 1792201021.7717173,
+  "state_th": "ออนไลน์",
+  "restarts": 0,
+  "ocr": "PP-OCRv5 th (ONNX)",
+  "plate_detector": "yolo",
+  "device": "CPUExecutionProvider"
+ },
+ "events": [
+  {
+   "plate": "83-6054",
+   "province": "ตราด",
+   "direction": "เข้า",
+   "review": "ปกติ",
+   "has_full": true,
+   "has_clip": false
+  },
+  {
+   "plate": "งต 764",
+   "province": "อุดรธานี",
+   "direction": "เข้า",
+   "review": "ปกติ",
+   "has_full": true,
+   "has_clip": false
+  },
+  {
+   "plate": "4อร 969",
+   "province": "ศรีสะเกษ",
+   "direction": "เข้า",
+   "review": "ปกติ",
+   "has_full": true,
+   "has_clip": true
+  },
+  {
+   "plate": "จพ 1543",
+   "province": "ราชบุรี",
+   "direction": "เข้า",
+   "review": "รอตรวจสอบ",
+   "has_full": true,
+   "has_clip": true
+  }
+ ],
+ "pdf_bytes": 17761,
+ "snapshot_bytes": 27503
+}
