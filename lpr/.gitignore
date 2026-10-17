@@ -16,3 +16,4 @@ _home/
 packaging/WinSW*.exe
 !docs/screenshots/
 *.tsbuildinfo
+docs/user-manual.pdf

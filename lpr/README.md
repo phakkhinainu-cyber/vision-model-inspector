@@ -31,7 +31,7 @@
    (ยังไม่มีกล้อง? กด **ใช้วิดีโอตัวอย่าง (โหมดจำลอง)** เพื่อลองระบบ)
 3. ปล่อยให้ระบบอ่านป้ายรถจริงสัก 1–2 วัน แล้วปรับค่าความไวและเวลากันบันทึกซ้ำในหน้า **ตั้งค่า**
 
-คู่มือ: [คู่มือผู้ใช้](docs/user-manual.md) · [ดูผ่านมือถือ/นอกบ้าน (Tailscale)](docs/mobile-setup.md) ·
+คู่มือ: [คู่มือผู้ใช้](docs/user-manual.md) ([PDF](https://github.com/phakkhinainu-cyber/vision-model-inspector/releases/download/lpr-latest/LPR-Manual-TH.pdf)) · [ดูผ่านมือถือ/นอกบ้าน (Tailscale)](docs/mobile-setup.md) ·
 [ฝึกโมเดลด้วยภาพป้ายของคุณ](docs/fine-tune.md) · [คู่มือนักพัฒนา](docs/developer.md) · [ไลเซนส์](docs/licenses.md) ·
 [prompt ต้นฉบับ (สเปกของงาน)](docs/prompt-แบบ4.md)
 

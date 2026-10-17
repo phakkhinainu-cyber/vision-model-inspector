@@ -79,7 +79,8 @@ Name: "{commonappdata}\LPR"; Permissions: users-modify
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"
 Name: "{group}\เปิดในเบราว์เซอร์"; Filename: "{app}\{#AppExe}"; Parameters: "--browser"
-Name: "{group}\คู่มือผู้ใช้"; Filename: "{app}\docs\user-manual.md"; Check: FileExists(ExpandConstant('{app}\docs\user-manual.md'))
+Name: "{group}\คู่มือผู้ใช้"; Filename: "{app}\docs\user-manual.pdf"; Check: FileExists(ExpandConstant('{app}\docs\user-manual.pdf'))
+Name: "{group}\คู่มือผู้ใช้"; Filename: "{app}\docs\user-manual.md"; Check: not FileExists(ExpandConstant('{app}\docs\user-manual.pdf')) and FileExists(ExpandConstant('{app}\docs\user-manual.md'))
 Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
 Name: "{userstartup}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: startup

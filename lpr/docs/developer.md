@@ -103,6 +103,8 @@ python tools/make_demo_video.py --images <โฟลเดอร์ภาพร�
 - CUDA (NVIDIA): รันจากซอร์สด้วย `pip uninstall onnxruntime && pip install "onnxruntime-gpu[cuda,cudnn]"` — ระบบเรียก
   `onnxruntime.preload_dlls()` ให้เอง (build เป็น .exe ได้โดยคัดลอก DLL ของ CUDA/cuDNN ไปไว้ที่ `_internal\nvidia\`)
 - build เองบน Windows: `powershell -ExecutionPolicy Bypass -File packaging\build_windows.ps1`
+- คู่มือ PDF: `python tools/build_manual_pdf.py` (ใช้ Edge/Chrome ที่มีในเครื่องพิมพ์ `docs/user-manual.md` + `mobile-setup.md`
+  เป็น `docs/user-manual.pdf` พร้อมฟอนต์ Sarabun และภาพหน้าจอ) — CI สร้างใหม่ทุก build ใส่ในตัวติดตั้ง และแนบเป็น `LPR-Manual-TH.pdf`
 - เปลี่ยนเวอร์ชัน: `backend/lpr/__init__.py`, `pyproject.toml`, `frontend/package.json`, `APP_VERSION` ใน workflow
 - สร้างโมเดลใหม่: แก้ `tools/models/build_models.py` แล้ว push (workflow `lpr-models.yml`)
 

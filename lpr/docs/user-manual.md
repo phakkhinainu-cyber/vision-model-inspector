@@ -1,6 +1,6 @@
 # คู่มือผู้ใช้ LPR บ้าน
 
-ระบบตรวจป้ายทะเบียนรถสำหรับบ้านพัก · เวอร์ชัน 1.0.0
+ระบบตรวจป้ายทะเบียนรถสำหรับบ้านพัก · เวอร์ชัน 1.0.0 · [ดาวน์โหลดคู่มือนี้เป็น PDF](https://github.com/phakkhinainu-cyber/vision-model-inspector/releases/download/lpr-latest/LPR-Manual-TH.pdf)
 
 ## 1. สิ่งที่ต้องมี
 

@@ -9,6 +9,7 @@ Invoke-Expression "$Python -m venv .venv-build"
 python -m pip install --upgrade pip
 pip install -r requirements\runtime.txt -r requirements\desktop.txt -r requirements\dev.txt
 python tools\fetch_models.py
+python tools\build_manual_pdf.py
 pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --with-urls --output-file THIRD_PARTY_NOTICES.txt
 pyinstaller --noconfirm --clean packaging\lpr.spec
 if (-not (Test-Path packaging\WinSW-x64.exe)) {

@@ -88,6 +88,12 @@ jobs:
           "frozen selftest exit: $($p.ExitCode)" | Tee-Object ci_results/selftest_summary.txt
           Get-Content ci_results\selftest_frozen.json -Encoding utf8 | Select-Object -First 60
           if ($p.ExitCode -ne 0) { exit 1 }
+      - name: User manual PDF
+        run: |
+          python tools/build_manual_pdf.py *> ci_results/manual_pdf.txt
+          $code = $LASTEXITCODE
+          Get-Content ci_results/manual_pdf.txt
+          if ($code -ne 0) { exit $code }
       - name: Inno Setup installer
         run: |
           curl.exe -sSL --retry 3 -o packaging\WinSW-x64.exe https://github.com/winsw/winsw/releases/download/v2.12.0/WinSW-x64.exe
@@ -98,6 +104,7 @@ jobs:
           & $iscc /Qp @defs packaging\installer.iss *> ci_results/iscc.txt
           if ($LASTEXITCODE -ne 0) { Get-Content ci_results/iscc.txt -Tail 40; exit 1 }
           Compress-Archive -Path dist\LPR -DestinationPath "Output\LPR-Portable-$env:APP_VERSION-windows-x64${{ matrix.suffix }}.zip"
+          if ("${{ matrix.edition }}" -eq "cpu") { Copy-Item docs\user-manual.pdf Output\LPR-Manual-TH.pdf }
           Get-ChildItem Output | Format-Table Name, Length -AutoSize | Out-File -Append -Encoding utf8 ci_results/sizes.txt
           Get-FileHash Output\* -Algorithm SHA256 | Format-List | Out-File -Append -Encoding utf8 ci_results/sizes.txt
       - name: Install as Windows service, use it through the API, uninstall
@@ -250,6 +257,7 @@ jobs:
                 LPR-Portable-linux-arm64.tar.gz) w="Linux ARM64 (Raspberry Pi 5 / mini PC ARM, 64-bit OS)";;
                 LPR-Portable-macos-arm64.tar.gz) w="Mac ชิป Apple (M1/M2/M3/M4)";;
                 LPR-Portable-macos-x64.tar.gz) w="Mac ชิป Intel";;
+                LPR-Manual-TH.pdf) w="คู่มือผู้ใช้ภาษาไทย (PDF) — ติดตั้ง ตั้งค่ากล้อง ใช้งาน ดูผ่านมือถือ";;
                 SHA256SUMS.txt) w="ค่า SHA-256 สำหรับตรวจไฟล์";;
                 *) w="";;
               esac
