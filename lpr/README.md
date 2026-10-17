@@ -33,7 +33,8 @@
 
 คู่มือ: [คู่มือผู้ใช้](docs/user-manual.md) ([PDF](https://github.com/phakkhinainu-cyber/vision-model-inspector/releases/download/lpr-latest/LPR-Manual-TH.pdf)) · [ดูผ่านมือถือ/นอกบ้าน (Tailscale)](docs/mobile-setup.md) ·
 [ฝึกโมเดลด้วยภาพป้ายของคุณ](docs/fine-tune.md) · [คู่มือนักพัฒนา](docs/developer.md) · [ไลเซนส์](docs/licenses.md) ·
-[prompt ต้นฉบับ (สเปกของงาน)](docs/prompt-แบบ4.md)
+[prompt ต้นฉบับ (สเปกของงาน)](docs/prompt-แบบ4.md) ·
+[ผังการต่อใช้งานกล้อง](docs/diagrams/camera-setup.png) · [Roadmap](docs/diagrams/roadmap.png)
 
 ## ความสามารถ
 

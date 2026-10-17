@@ -119,6 +119,12 @@ python tools/make_demo_video.py --images <โฟลเดอร์ภาพร�
 
 (โปรแกรมไม่แสดงข้อความในหน้าต่าง ตรวจผลได้โดยล็อกอินด้วยรหัสใหม่ — รันจากซอร์สจะพิมพ์ผลให้เห็น)
 
+## Roadmap
+
+![Roadmap](diagrams/roadmap.png)
+
+ผังทั้งหมดอยู่ใน `docs/diagrams/*.html` (HTML + SVG แก้ข้อความได้ตรง ๆ) สร้างรูป PNG ใหม่ด้วย `python tools/render_diagrams.py`
+
 ## สถานะตามสเปก (prompt แบบ 4)
 
 | เฟส | สิ่งที่ทำแล้ว | ควรพัฒนาต่อ |

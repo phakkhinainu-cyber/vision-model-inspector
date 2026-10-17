@@ -36,6 +36,8 @@ ASSETS = [
     "frontend/public/icons/maskable-512.png",
     "packaging/app.ico",
     "demo/demo.mp4",
+    "docs/diagrams/camera-setup.png",
+    "docs/diagrams/roadmap.png",
     "docs/screenshots/desktop-camera-editor.png",
     "docs/screenshots/desktop-cameras.png",
     "docs/screenshots/desktop-inside.png",

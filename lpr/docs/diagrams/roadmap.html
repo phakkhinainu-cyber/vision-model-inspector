@@ -1,0 +1,141 @@
+<!doctype html>
+<!-- Roadmap — แก้ไฟล์นี้แล้วรัน: python tools/render_diagrams.py  (ได้ roadmap.png) -->
+<html lang="th"><head><meta charset="utf-8"><meta name="render-size" content="1600x1400">
+<title>Roadmap — LPR บ้าน</title>
+<style>
+@font-face { font-family: Sarabun; font-weight: 400; src: url(../../backend/lpr/resources/fonts/Sarabun-Regular.ttf); }
+@font-face { font-family: Sarabun; font-weight: 700; src: url(../../backend/lpr/resources/fonts/Sarabun-Bold.ttf); }
+:root { --ink:#1d2433; --muted:#5b6475; --line:#c9d0da; --done:#0f6e5a; --done-bg:#e8f4f0; --next:#2563eb; --next-bg:#eef3fe;
+  --later:#7c3aed; --later-bg:#f3effe; --zone:#f4f6f9; }
+* { box-sizing: border-box; }
+body { margin: 0; width: 1600px; background: #fff; color: var(--ink); font-family: Sarabun, sans-serif; }
+.page { padding: 44px 48px 36px; }
+h1 { font-size: 40px; line-height: 1.35; margin: 0; }
+.sub { font-size: 20px; color: var(--muted); margin: 2px 0 30px; }
+
+.track { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.rail { position: absolute; left: 40px; right: 40px; top: 21px; height: 6px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--done) 0 23%, var(--line) 23% 100%); }
+.stage { position: relative; }
+.node { position: relative; z-index: 1; width: 48px; height: 48px; border-radius: 50%; background: #fff; border: 5px solid var(--line);
+  display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; color: var(--muted); margin-left: 16px; }
+.done .node { background: var(--done); border-color: var(--done); color: #fff; }
+.here { position: absolute; z-index: 2; top: -8px; left: calc(25% - 128px); background: var(--ink); color: #fff; font-size: 15px;
+  font-weight: 700; padding: 6px 12px; border-radius: 999px; white-space: nowrap; }
+.here::after { content: ""; position: absolute; left: 50%; bottom: -7px; margin-left: -7px; border: 7px solid transparent;
+  border-bottom: 0; border-top-color: var(--ink); }
+.card { margin-top: 18px; border-radius: 16px; padding: 18px 20px 16px; background: var(--zone); border-top: 6px solid var(--line);
+  min-height: 700px; display: flex; flex-direction: column; }
+.done .card { background: var(--done-bg); border-top-color: var(--done); }
+.s1 .card, .s2 .card { background: var(--next-bg); border-top-color: var(--next); }
+.s3 .card { background: var(--later-bg); border-top-color: var(--later); }
+.when { font-size: 15px; font-weight: 700; letter-spacing: .2px; }
+.done .when { color: var(--done); } .s1 .when, .s2 .when { color: var(--next); } .s3 .when { color: var(--later); }
+.card h3 { font-size: 23px; line-height: 1.35; margin: 4px 0 2px; }
+.ver { display: inline-block; font-size: 14px; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: #fff;
+  border: 1.5px solid currentColor; margin-bottom: 12px; align-self: flex-start; }
+.done .ver { color: var(--done); } .s2 .ver { color: var(--next); } .s3 .ver { color: var(--later); }
+ul { list-style: none; padding: 0; margin: 0; }
+li { position: relative; padding-left: 26px; font-size: 16.5px; line-height: 1.5; margin: 0 0 9px; }
+li::before { position: absolute; left: 0; top: 0; font-weight: 700; }
+.done li::before { content: "✓"; color: var(--done); }
+.s1 li::before, .s2 li::before { content: "→"; color: var(--next); }
+.s3 li::before { content: "○"; color: var(--later); }
+li b { font-weight: 700; }
+li small { display: block; font-size: 14.5px; color: var(--muted); }
+.out { margin-top: auto; background: #fff; border-radius: 12px; padding: 12px 14px; font-size: 15.5px; line-height: 1.5; }
+.out b { display: block; font-size: 14px; color: var(--muted); letter-spacing: .3px; }
+.metrics { margin-top: 26px; border: 1.5px solid var(--line); border-radius: 16px; padding: 16px 22px; display: grid;
+  grid-template-columns: 220px repeat(4, 1fr); gap: 16px; align-items: center; }
+.metrics h4 { margin: 0; font-size: 19px; line-height: 1.35; }
+.metric { font-size: 15.5px; line-height: 1.45; border-left: 3px solid var(--line); padding-left: 12px; }
+.metric b { display: block; font-size: 16.5px; }
+.foot { margin-top: 18px; font-size: 15.5px; color: var(--muted); display: flex; justify-content: space-between; }
+</style></head><body><div class="page">
+
+<h1>Roadmap — LPR บ้าน</h1>
+<p class="sub">จากโปรแกรมเวอร์ชัน 1.0 ที่เสร็จแล้ว ไปสู่การใช้งานจริงที่บ้าน ปรับความแม่นยำด้วยภาพจากกล้องของคุณ และพร้อมใช้งานระยะยาว</p>
+
+<div class="track">
+  <div class="rail"></div>
+  <div class="here">คุณอยู่ตรงนี้</div>
+
+  <section class="stage done">
+    <div class="node">✓</div>
+    <div class="card">
+      <div class="when">เสร็จแล้ว · ตุลาคม 2569</div>
+      <h3>สร้างโปรแกรมครบ 6 เฟส</h3>
+      <span class="ver">v1.0.0</span>
+      <ul>
+        <li><b>เฟส 1–2 จับภาพ + อ่านป้าย</b><small>RTSP ต่อใหม่เองเมื่อหลุด, ตรวจรถ/ป้าย, OCR ไทย PP-OCRv5, โหวตหลายเฟรม, กลางคืน/IR</small></li>
+        <li><b>เฟส 3–4 หน้าจอ</b><small>สมุดบันทึกแบบ 4, ทะเบียนรถ, กล้อง (เส้นเสมือน/ROI), รอตรวจสอบ, รายงาน, ส่งออก CSV/Excel/PDF</small></li>
+        <li><b>เฟส 5 มือถือ</b><small>แอป PWA, ล็อกอิน, Web Push / Telegram / LINE, ดูนอกบ้านผ่าน Tailscale</small></li>
+        <li><b>เฟส 6 ติดตั้ง</b><small>ตัวติดตั้ง .exe, Windows service, สำรองข้อมูลทุกวัน, คู่มือ PDF</small></li>
+        <li><b>เพิ่มเติม</b><small>รุ่น GPU, แบบพกพา 6 ระบบ, ทดสอบอัตโนมัติ 157 รายการทุก build</small></li>
+      </ul>
+      <div class="out"><b>ผลวัดตอนนี้ (ภาพรถจริง 40 ภาพ + ป้ายไทยจำลอง)</b>พบป้าย 100% · ทะเบียนถูก 90% · จังหวัดถูก 92.5%</div>
+    </div>
+  </section>
+
+  <section class="stage s1">
+    <div class="node">1</div>
+    <div class="card">
+      <div class="when">ขั้นถัดไป · สัปดาห์ที่ 1–2</div>
+      <h3>ติดตั้งจริงและเก็บข้อมูล</h3>
+      <span class="ver" style="color:var(--next)">ใช้ v1.0</span>
+      <ul>
+        <li><b>ติดกล้องตามผัง</b><small>ห่างป้าย 3–8 m, เอียงไม่เกิน 30°, วาดเส้นเสมือนและ ROI</small></li>
+        <li><b>เปิด "เก็บภาพป้ายไว้ฝึกโมเดล"</b><small>ตั้งค่า → การจับภาพ · เปิดทั้งกลางวันและกลางคืน</small></li>
+        <li><b>แก้ผลที่อ่านผิดทุกวัน</b><small>หน้า รอตรวจสอบ (Enter = ยืนยัน) — ได้เฉลยไว้ฝึกโมเดลไปในตัว</small></li>
+        <li><b>ปรับค่าให้เข้ากับหน้าบ้าน</b><small>เกณฑ์ความมั่นใจ, เวลากันบันทึกซ้ำ, ความไวการเคลื่อนไหว</small></li>
+        <li><b>ลงทะเบียนรถของบ้าน</b><small>หน้า ทะเบียนรถ หรือนำเข้าจาก Excel</small></li>
+      </ul>
+      <div class="out"><b>ผลลัพธ์ที่ได้</b>ภาพป้ายจริง 300–1,000 ป้าย และความแม่นยำจริงของบ้านคุณ (กลางวัน/กลางคืน)</div>
+    </div>
+  </section>
+
+  <section class="stage s2">
+    <div class="node">2</div>
+    <div class="card">
+      <div class="when">สัปดาห์ที่ 3–6</div>
+      <h3>ปรับความแม่นยำด้วยภาพจริง</h3>
+      <span class="ver">v1.1</span>
+      <ul>
+        <li><b>ติดป้ายกำกับ</b><small>แก้ labels.tsv · กรอบป้ายด้วย Label Studio / CVAT</small></li>
+        <li><b>ฝึกตัวตรวจจับป้าย (YOLO)</b><small>tools/train_plate_detector.py · ควรใช้เครื่องที่มีการ์ด NVIDIA</small></li>
+        <li><b>ฝึก OCR ไทย (PP-OCRv5)</b><small>tools/prepare_ocr_dataset.py แล้วฝึกด้วย PaddleOCR</small></li>
+        <li><b>วัดผลก่อน/หลัง</b><small>eval_accuracy.py และ eval_video.py กับชุดภาพที่ไม่ได้ใช้ฝึก</small></li>
+        <li><b>ใช้โมเดลใหม่</b><small>วางไฟล์ที่ &lt;ที่เก็บข้อมูล&gt;\models แล้ว<span style="white-space:nowrap">รีสตาร์ตกล้อง</span> ไม่ต้องติดตั้งใหม่</small></li>
+      </ul>
+      <div class="out"><b>เป้าหมาย</b>อ่านทะเบียนถูกมากขึ้นเทียบกับค่าที่วัดในขั้นที่ 1 โดยเฉพาะตอนกลางคืนและพยัญชนะที่พบน้อย (ฬ ฎ ภ)</div>
+    </div>
+  </section>
+
+  <section class="stage s3">
+    <div class="node">3</div>
+    <div class="card">
+      <div class="when">เดือนที่ 2–3</div>
+      <h3>พร้อมใช้งานระยะยาว</h3>
+      <span class="ver">v1.2</span>
+      <ul>
+        <li><b>ทดสอบรุ่น GPU กับการ์ดจอจริง</b><small>วัดจำนวนกล้องต่อเครื่อง (ตอนนี้ทดสอบได้เฉพาะเครื่องที่ไม่มีการ์ดจอ)</small></li>
+        <li><b>ลงลายเซ็นดิจิทัลตัวติดตั้ง</b><small>ซื้อ code signing certificate เพื่อไม่ให้ Windows SmartScreen เตือน</small></li>
+        <li><b>ซ้อมกู้คืนข้อมูลจากไฟล์สำรอง</b><small>และเก็บสำเนา D:\LPR\backup ไว้อีกไดรฟ์</small></li>
+        <li><b>ทบทวนไลเซนส์ถ้าจะใช้เชิงพาณิชย์</b><small>โมเดล YOLO เป็น AGPL — ซื้อไลเซนส์ หรือเปลี่ยนเป็นโมเดล Apache-2.0</small></li>
+        <li><b>ทางเลือก</b><small>เร่งความเร็วบน Mac ด้วย CoreML</small></li>
+      </ul>
+      <div class="out"><b>ผลลัพธ์ที่ได้</b>ระบบที่ทำงานต่อเนื่อง ติดตั้งง่ายขึ้น รู้ขีดความสามารถของเครื่อง และกู้ข้อมูลได้เมื่อมีปัญหา</div>
+    </div>
+  </section>
+</div>
+
+<div class="metrics">
+  <h4>ตัวชี้วัดที่ควรดู<br>ทุกขั้น</h4>
+  <div class="metric"><b>อ่านทะเบียนถูก (%)</b>แยกกลางวัน / กลางคืน</div>
+  <div class="metric"><b>รายการรอตรวจสอบต่อวัน</b>ยิ่งน้อยยิ่งแม่น</div>
+  <div class="metric"><b>ความเร็วต่อกล้อง</b>fps ในหน้า กล้อง · CPU/GPU ใน Task Manager</div>
+  <div class="metric"><b>พื้นที่ดิสก์ + การสำรอง</b>หน้า ตั้งค่า → ระบบ</div>
+</div>
+
+<div class="foot"><span>ระยะเวลาเป็นประมาณการ ขึ้นกับจำนวนรถที่ผ่านและเวลาที่มี · วิธีทำแต่ละขั้น: docs/fine-tune.md และ docs/developer.md</span><span>LPR บ้าน v1.0.0</span></div>
+</div></body></html>

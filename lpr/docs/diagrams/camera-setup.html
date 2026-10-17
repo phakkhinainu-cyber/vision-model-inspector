@@ -1,0 +1,265 @@
+<!doctype html>
+<!-- ผังการต่อใช้งานกล้อง — แก้ไฟล์นี้แล้วรัน: python tools/render_diagrams.py  (ได้ camera-setup.png) -->
+<html lang="th"><head><meta charset="utf-8"><meta name="render-size" content="1600x1720">
+<title>ผังการต่อใช้งานกล้อง — LPR บ้าน</title>
+<style>
+@font-face { font-family: Sarabun; font-weight: 400; src: url(../../backend/lpr/resources/fonts/Sarabun-Regular.ttf); }
+@font-face { font-family: Sarabun; font-weight: 700; src: url(../../backend/lpr/resources/fonts/Sarabun-Bold.ttf); }
+:root { --ink:#1d2433; --muted:#5b6475; --line:#c9d0da; }
+* { box-sizing: border-box; }
+body { margin: 0; width: 1600px; background: #fff; color: var(--ink); font-family: Sarabun, sans-serif; }
+.page { padding: 44px 48px 36px; }
+h1 { font-size: 40px; line-height: 1.35; margin: 0; }
+.sub { font-size: 20px; color: var(--muted); margin: 2px 0 26px; }
+h2 { font-size: 24px; line-height: 1.4; margin: 0 0 10px; display: flex; align-items: center; gap: 12px; }
+h2 .n { width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 19px;
+  display: inline-flex; align-items: center; justify-content: center; }
+.panel { border: 1.5px solid var(--line); border-radius: 18px; padding: 22px 24px 18px; margin-bottom: 26px; }
+svg { display: block; width: 100%; height: auto; font-family: Sarabun, sans-serif; }
+.legend { display: flex; gap: 30px; font-size: 16.5px; color: var(--muted); margin-top: 8px; flex-wrap: wrap; }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { width: 38px; height: 0; border-top: 4px solid; display: inline-block; }
+.foot { font-size: 16px; color: var(--muted); display: flex; justify-content: space-between; }
+</style></head><body><div class="page">
+
+<h1>ผังการต่อใช้งานกล้อง — LPR บ้าน</h1>
+<p class="sub">ต่อกล้องเข้าคอมตรวจป้ายผ่านสาย LAN ภาพทั้งหมดอยู่ในวง LAN บ้าน มือถือดูได้ทั้งในบ้านและนอกบ้านโดยไม่ต้องเปิดพอร์ตเราเตอร์</p>
+
+<!-- ═════════ แผง 1: การต่อสายและเส้นทางข้อมูล ═════════ -->
+<section class="panel">
+<h2><span class="n">1</span>การต่อสายและเส้นทางข้อมูล</h2>
+<svg viewBox="0 0 1504 640" role="img" aria-label="กล้องส่งภาพผ่าน PoE switch เข้าคอมตรวจป้าย คอมส่งหน้าเว็บและการแจ้งเตือนผ่านเราเตอร์ไปยังมือถือในบ้านและนอกบ้าน">
+  <defs>
+    <marker id="aV" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker>
+    <marker id="aW" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0f6e5a"/></marker>
+    <marker id="aN" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/></marker>
+    <symbol id="cam" viewBox="0 0 64 40"><rect x="2" y="6" width="44" height="26" rx="6" fill="#fff" stroke="#1d2433" stroke-width="3"/><path d="M46 13 L62 6 L62 32 L46 25 z" fill="#fff" stroke="#1d2433" stroke-width="3" stroke-linejoin="round"/><circle cx="16" cy="19" r="6" fill="#1d2433"/></symbol>
+    <symbol id="phone" viewBox="0 0 28 46"><rect x="2" y="2" width="24" height="42" rx="5" fill="#fff" stroke="#1d2433" stroke-width="3"/><line x1="10" y1="38" x2="18" y2="38" stroke="#1d2433" stroke-width="3" stroke-linecap="round"/></symbol>
+  </defs>
+
+  <!-- p1-zones -->
+  <rect x="0" y="0" width="290" height="640" rx="14" fill="#f4f6f9"/>
+  <rect x="310" y="0" width="760" height="640" rx="14" fill="#f4f6f9"/>
+  <rect x="1090" y="0" width="414" height="640" rx="14" fill="#f4f6f9"/>
+  <text x="20" y="34" font-size="18" font-weight="700" fill="#5b6475">หน้าประตู (นอกอาคาร)</text>
+  <text x="330" y="34" font-size="18" font-weight="700" fill="#5b6475">ในบ้าน (จุดตั้งคอม)</text>
+  <text x="1110" y="34" font-size="18" font-weight="700" fill="#5b6475">ผู้ใช้</text>
+  <text x="1110" y="78" font-size="15" fill="#5b6475">ข้อมูลทั้งหมดเก็บที่คอมในบ้าน</text>
+  <text x="1110" y="100" font-size="15" fill="#5b6475">มือถือแค่เปิดดู คอมต้องเปิดไว้ตลอด</text>
+
+  <!-- p1-cameras -->
+  <rect x="20" y="64" width="250" height="100" rx="12" fill="#fff" stroke="#c9d0da" stroke-width="1.5"/>
+  <use href="#cam" x="34" y="86" width="64" height="40"/>
+  <text x="110" y="104" font-size="19" font-weight="700">กล้อง 1</text>
+  <text x="110" y="130" font-size="16" fill="#5b6475">ทางเข้า · RTSP</text>
+  <rect x="20" y="190" width="250" height="100" rx="12" fill="#fff" stroke="#c9d0da" stroke-width="1.5"/>
+  <use href="#cam" x="34" y="212" width="64" height="40"/>
+  <text x="110" y="230" font-size="19" font-weight="700">กล้อง 2</text>
+  <text x="110" y="256" font-size="16" fill="#5b6475">ทางออก · RTSP</text>
+  <text x="24" y="322" font-size="15" fill="#5b6475">เพิ่มได้ถึง 8 กล้อง (จุดละ 1 ตัว)</text>
+  <rect x="20" y="344" width="250" height="78" rx="12" fill="#fff" stroke="#8a94a6" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="38" y="376" font-size="17" font-weight="700">NVR เดิม (ถ้ามี)</text>
+  <text x="38" y="402" font-size="15" fill="#5b6475">ดึงภาพผ่าน RTSP ได้เหมือนกัน</text>
+  <text font-size="15" fill="#1d2433">
+    <tspan x="24" y="470" font-weight="700">สเปกกล้องอ่านป้าย</tspan>
+    <tspan x="24" dy="26">• 2MP (1080p) ขึ้นไป</tspan>
+    <tspan x="24" dy="24">• เลนส์ซูม 2.8–12 mm (varifocal)</tspan>
+    <tspan x="24" dy="24">• มี IR และ WDR</tspan>
+    <tspan x="24" dy="24">• ตั้งชัตเตอร์ได้ ≥ 1/1000 วินาที</tspan>
+    <tspan x="24" dy="24">  หรือมีโหมด LPR</tspan>
+  </text>
+
+  <!-- p1-camera-cables -->
+  <path d="M270 114 C 320 114, 330 170, 372 178" fill="none" stroke="#d97706" stroke-width="4" marker-end="url(#aV)"/>
+  <path d="M270 240 C 320 240, 330 200, 372 196" fill="none" stroke="#d97706" stroke-width="4" marker-end="url(#aV)"/>
+  <path d="M270 383 C 330 383, 340 230, 380 214" fill="none" stroke="#d97706" stroke-width="3" stroke-dasharray="7 6" marker-end="url(#aV)"/>
+  <text x="330" y="96" font-size="15" fill="#d97706" font-weight="700">สาย LAN Cat6 ภายนอก</text>
+  <text x="330" y="118" font-size="15" fill="#d97706">≤ 100 m · ภาพ + ไฟ PoE</text>
+
+  <!-- p1-switch -->
+  <rect x="378" y="140" width="190" height="96" rx="12" fill="#fff" stroke="#1d2433" stroke-width="2"/>
+  <text x="473" y="176" font-size="19" font-weight="700" text-anchor="middle">PoE switch</text>
+  <text x="473" y="202" font-size="15" fill="#5b6475" text-anchor="middle">จ่ายไฟกล้อง + รับภาพ</text>
+  <g fill="#1d2433"><rect x="404" y="214" width="16" height="10" rx="2"/><rect x="426" y="214" width="16" height="10" rx="2"/><rect x="448" y="214" width="16" height="10" rx="2"/><rect x="470" y="214" width="16" height="10" rx="2"/><rect x="492" y="214" width="16" height="10" rx="2"/><rect x="514" y="214" width="16" height="10" rx="2"/></g>
+
+  <!-- p1-switch-pc -->
+  <line x1="568" y1="176" x2="682" y2="176" stroke="#d97706" stroke-width="4" marker-end="url(#aV)"/>
+  <line x1="682" y1="204" x2="572" y2="204" stroke="#0f6e5a" stroke-width="4" marker-end="url(#aW)"/>
+  <text x="625" y="166" font-size="14" fill="#d97706" text-anchor="middle">ภาพกล้อง</text>
+  <text x="625" y="228" font-size="14" fill="#0f6e5a" text-anchor="middle">เว็บ/แจ้งเตือน</text>
+
+  <!-- p1-pc -->
+  <rect x="688" y="60" width="364" height="300" rx="16" fill="#e8f4f0" stroke="#0f6e5a" stroke-width="3"/>
+  <rect x="708" y="80" width="56" height="40" rx="5" fill="#fff" stroke="#1d2433" stroke-width="3"/>
+  <line x1="724" y1="128" x2="748" y2="128" stroke="#1d2433" stroke-width="3" stroke-linecap="round"/>
+  <text x="778" y="98" font-size="22" font-weight="700">คอมตรวจป้าย</text>
+  <text x="778" y="122" font-size="15" fill="#0f6e5a">LPR บ้าน · Windows service</text>
+  <g font-size="15">
+    <circle cx="720" cy="160" r="11" fill="#0f6e5a"/><text x="720" y="165" fill="#fff" font-size="13" text-anchor="middle" font-weight="700">1</text>
+    <text x="740" y="158">รับภาพ: sub-stream ใช้ตรวจจับ</text><text x="740" y="178" fill="#5b6475">main-stream ใช้บันทึกภาพ</text>
+    <circle cx="720" cy="210" r="11" fill="#0f6e5a"/><text x="720" y="215" fill="#fff" font-size="13" text-anchor="middle" font-weight="700">2</text>
+    <text x="740" y="208">ตรวจรถ → หาป้าย → อ่านป้ายไทย</text><text x="740" y="228" fill="#5b6475">ตัวอักษร เลข และจังหวัด</text>
+    <circle cx="720" cy="260" r="11" fill="#0f6e5a"/><text x="720" y="265" fill="#fff" font-size="13" text-anchor="middle" font-weight="700">3</text>
+    <text x="740" y="258">โหวตหลายเฟรม → บันทึกเข้า-ออก</text><text x="740" y="278" fill="#5b6475">เมื่อรถข้ามเส้นเสมือน</text>
+    <circle cx="720" cy="310" r="11" fill="#0f6e5a"/><text x="720" y="315" fill="#fff" font-size="13" text-anchor="middle" font-weight="700">4</text>
+    <text x="740" y="308">เก็บที่ D:\LPR</text><text x="740" y="328" fill="#5b6475">ฐานข้อมูล · ภาพ · log · สำรองทุกวัน</text>
+  </g>
+
+  <!-- p1-router -->
+  <rect x="378" y="470" width="190" height="96" rx="12" fill="#fff" stroke="#1d2433" stroke-width="2"/>
+  <line x1="410" y1="470" x2="402" y2="448" stroke="#1d2433" stroke-width="3" stroke-linecap="round"/>
+  <line x1="536" y1="470" x2="544" y2="448" stroke="#1d2433" stroke-width="3" stroke-linecap="round"/>
+  <text x="473" y="508" font-size="19" font-weight="700" text-anchor="middle">เราเตอร์บ้าน</text>
+  <text x="473" y="534" font-size="15" fill="#5b6475" text-anchor="middle">Wi-Fi + อินเทอร์เน็ต</text>
+  <line x1="460" y1="236" x2="460" y2="466" stroke="#0f6e5a" stroke-width="4" marker-end="url(#aW)"/>
+  <line x1="488" y1="236" x2="488" y2="466" stroke="#7c3aed" stroke-width="4" marker-end="url(#aN)"/>
+  <text x="448" y="330" font-size="14" fill="#5b6475" text-anchor="end">สาย LAN</text>
+  <text x="448" y="350" font-size="14" fill="#5b6475" text-anchor="end">switch → เราเตอร์</text>
+
+  <!-- p1-ups -->
+  <rect x="688" y="404" width="220" height="70" rx="12" fill="#fff" stroke="#8a94a6" stroke-width="2"/>
+  <rect x="706" y="424" width="40" height="28" rx="4" fill="none" stroke="#1d2433" stroke-width="3"/><rect x="746" y="432" width="5" height="12" fill="#1d2433"/>
+  <text x="764" y="434" font-size="18" font-weight="700">UPS 650–1000 VA</text>
+  <text x="764" y="458" font-size="14" fill="#5b6475">กันไฟดับ/ไฟกระชาก</text>
+  <path d="M800 404 L800 362" stroke="#8a94a6" stroke-width="3" stroke-dasharray="7 6" fill="none"/>
+  <text x="812" y="390" font-size="14" fill="#8a94a6">ไฟสำรอง → คอม</text>
+  <path d="M688 426 L618 426 Q 600 426 600 408 L600 252 Q 600 236 584 236 L568 236" stroke="#8a94a6" stroke-width="3" stroke-dasharray="7 6" fill="none"/>
+  <text x="612" y="300" font-size="14" fill="#8a94a6">ไฟสำรอง</text>
+  <text x="612" y="318" font-size="14" fill="#8a94a6">→ switch</text>
+
+  <!-- p1-phones-home -->
+  <path d="M568 500 L1150 500" stroke="#0f6e5a" stroke-width="4" fill="none" marker-end="url(#aW)"/>
+  <text x="600" y="490" font-size="15" fill="#0f6e5a">Wi-Fi ในบ้าน: http://IP-คอม:8765 (หรือผ่าน Tailscale)</text>
+  <rect x="1156" y="456" width="284" height="90" rx="12" fill="#fff" stroke="#c9d0da" stroke-width="1.5"/>
+  <use href="#phone" x="1172" y="476" width="28" height="46"/>
+  <text x="1214" y="494" font-size="18" font-weight="700">มือถือ/แท็บเล็ต ในบ้าน</text>
+  <text x="1214" y="520" font-size="15" fill="#5b6475">แอป PWA · สมุดบันทึกสด</text>
+
+  <!-- p1-notify-away -->
+  <path d="M520 566 C 560 610, 640 612, 1000 612 L1150 612" stroke="#7c3aed" stroke-width="4" fill="none" marker-end="url(#aN)"/>
+  <text x="640" y="602" font-size="15" fill="#7c3aed">แจ้งเตือน: Web Push · Telegram · LINE (รถไม่รู้จัก / เฝ้าระวัง / จอดนาน)</text>
+  <rect x="1156" y="566" width="330" height="70" rx="12" fill="#fff" stroke="#c9d0da" stroke-width="1.5"/>
+  <use href="#phone" x="1172" y="578" width="28" height="46"/>
+  <text x="1214" y="596" font-size="18" font-weight="700">มือถือ นอกบ้าน</text>
+  <text x="1214" y="620" font-size="15" fill="#5b6475">รับแจ้งเตือน + เปิดแอป</text>
+
+  <!-- p1-tailscale -->
+  <rect x="1156" y="196" width="330" height="200" rx="14" fill="#fff" stroke="#0f6e5a" stroke-width="2" stroke-dasharray="8 6"/>
+  <text x="1176" y="230" font-size="19" font-weight="700" fill="#0f6e5a">ดูจากนอกบ้าน: Tailscale</text>
+  <text font-size="15" fill="#1d2433">
+    <tspan x="1176" y="260">• ติดตั้งแอป Tailscale ที่คอมและมือถือ</tspan>
+    <tspan x="1176" dy="24">• เปิด https://ชื่อคอม…ts.net</tspan>
+    <tspan x="1176" dy="24">• เข้ารหัสทั้งเส้นทาง เปิดได้เฉพาะเครื่อง</tspan>
+    <tspan x="1186" dy="22">ในบัญชีของคุณ</tspan>
+    <tspan x="1176" dy="26" font-weight="700">• ไม่ต้องเปิดพอร์ตเราเตอร์</tspan>
+  </text>
+  <path d="M1052 210 C 1100 210, 1110 260, 1150 262" stroke="#0f6e5a" stroke-width="4" fill="none" stroke-dasharray="9 7" marker-end="url(#aW)"/>
+  <path d="M1466 396 L1466 560" stroke="#0f6e5a" stroke-width="4" fill="none" stroke-dasharray="9 7" marker-end="url(#aW)"/>
+  <text x="1456" y="420" font-size="14" fill="#0f6e5a" text-anchor="end">ผ่านอินเทอร์เน็ต (อุโมงค์เข้ารหัส)</text>
+</svg>
+<div class="legend">
+  <span><i style="border-color:#d97706"></i>ภาพจากกล้อง (RTSP)</span>
+  <span><i style="border-color:#0f6e5a"></i>เปิดดูแอป/หน้าเว็บ</span>
+  <span><i style="border-color:#7c3aed"></i>แจ้งเตือน</span>
+  <span><i style="border-color:#8a94a6;border-top-style:dashed"></i>ไฟจาก UPS</span>
+  <span><i style="border-color:#5b6475;border-top-style:dashed"></i>เส้นประ = ทางเลือก / ผ่านอินเทอร์เน็ต</span>
+</div>
+</section>
+
+<!-- ═════════ แผง 2: ตำแหน่งติดกล้อง ═════════ -->
+<section class="panel">
+<h2><span class="n">2</span>ตำแหน่งติดกล้องหน้าประตู (มองจากด้านบน) และการตั้งค่าในโปรแกรม</h2>
+<svg viewBox="0 0 1504 610" role="img" aria-label="ติดกล้องในรั้วหันหาประตู ห่างป้าย 3 ถึง 8 เมตร มุมเอียงไม่เกิน 30 องศา วาดเส้นเสมือนขวางทางรถ และกรอบ ROI เฉพาะทางรถ">
+  <defs>
+    <marker id="bB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+    <marker id="bK" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1d2433"/></marker>
+    <marker id="bP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/></marker>
+    <marker id="bY" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a16207"/></marker>
+    <clipPath id="shotclip"><rect x="890" y="42" width="579" height="325" rx="10"/></clipPath>
+  </defs>
+
+  <!-- p2-ground (มาตราส่วนประมาณ 39 px = 1 m) -->
+  <rect x="0" y="0" width="860" height="610" rx="14" fill="#f4f6f9"/>
+  <rect x="20" y="20" width="820" height="420" rx="8" fill="#eef4ea"/>
+  <text x="40" y="54" font-size="17" fill="#5b6475" font-weight="700">ในรั้วบ้าน</text>
+  <rect x="300" y="20" width="250" height="420" fill="#e3e6eb"/>
+  <text x="312" y="48" font-size="15" fill="#5b6475">ทางรถ (ไปโรงจอด)</text>
+  <rect x="20" y="470" width="820" height="120" rx="8" fill="#d5d9e0"/>
+  <line x1="40" y1="530" x2="820" y2="530" stroke="#fff" stroke-width="4" stroke-dasharray="26 18"/>
+  <text x="40" y="502" font-size="17" fill="#5b6475" font-weight="700">ถนนหน้าบ้าน</text>
+  <line x1="20" y1="455" x2="300" y2="455" stroke="#1d2433" stroke-width="6"/>
+  <line x1="550" y1="455" x2="840" y2="455" stroke="#1d2433" stroke-width="6"/>
+  <rect x="290" y="444" width="14" height="22" fill="#1d2433"/><rect x="546" y="444" width="14" height="22" fill="#1d2433"/>
+  <text x="425" y="462" font-size="16" text-anchor="middle" font-weight="700">ประตูรั้ว</text>
+  <circle cx="575" cy="432" r="10" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+  <text x="594" y="438" font-size="14" fill="#5b6475">ไฟหน้าประตู (กลางคืน)</text>
+
+  <!-- p2-roi -->
+  <rect x="306" y="120" width="238" height="326" fill="rgba(124,58,237,.06)" stroke="#7c3aed" stroke-width="3" stroke-dasharray="10 7"/>
+  <text x="96" y="360" font-size="15" fill="#7c3aed" font-weight="700">โซน ROI (กรอบม่วง)</text>
+  <text x="96" y="380" font-size="14" fill="#5b6475">เฉพาะทางรถ ไม่รวมถนนหน้าบ้าน</text>
+  <line x1="262" y1="366" x2="302" y2="366" stroke="#7c3aed" stroke-width="2" marker-end="url(#bP)"/>
+
+  <!-- p2-car: มุมบน กำลังวิ่งเข้า หน้ารถหันขึ้น -->
+  <rect x="370" y="262" width="110" height="176" rx="26" fill="#fff" stroke="#1d2433" stroke-width="3"/>
+  <rect x="384" y="292" width="82" height="40" rx="8" fill="#cbd5e1"/>
+  <rect x="384" y="378" width="82" height="34" rx="8" fill="#cbd5e1"/>
+  <rect x="398" y="254" width="54" height="14" rx="3" fill="#fde047" stroke="#1d2433" stroke-width="2"/>
+  <line x1="560" y1="276" x2="460" y2="262" stroke="#1d2433" stroke-width="1.5" marker-end="url(#bK)"/>
+  <text x="566" y="281" font-size="14" font-weight="700">ป้ายหน้ารถ</text>
+
+  <!-- p2-view: กล้อง (550,24) → ป้าย (425,254) เอียง 28.5° จากทิศรถวิ่ง ระยะ ~6.7 m -->
+  <path d="M550 24 L 364 249 L 462 302 Z" fill="rgba(217,119,6,.13)"/>
+  <line x1="550" y1="24" x2="425" y2="254" stroke="#d97706" stroke-width="3" stroke-dasharray="4 5"/>
+
+  <!-- p2-line: เส้นเสมือน + ทิศเข้า -->
+  <line x1="310" y1="226" x2="540" y2="226" stroke="#eab308" stroke-width="7" stroke-linecap="round"/>
+  <line x1="338" y1="226" x2="338" y2="178" stroke="#2563eb" stroke-width="5" marker-end="url(#bB)"/>
+  <text x="314" y="166" font-size="15" fill="#2563eb" font-weight="700">ทิศ "เข้า"</text>
+  <text x="96" y="222" font-size="15" fill="#a16207" font-weight="700">เส้นเสมือน</text>
+  <text x="96" y="242" font-size="14" fill="#5b6475">รถทุกคันต้องขับผ่าน</text>
+  <line x1="246" y1="226" x2="304" y2="226" stroke="#a16207" stroke-width="2" marker-end="url(#bY)"/>
+
+  <!-- p2-angle: ระหว่างทิศที่รถวิ่ง (แนวตั้ง) กับแนวกล้อง -->
+  <line x1="425" y1="254" x2="425" y2="142" stroke="#1d2433" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <path d="M425 180 A 74 74 0 0 1 460.3 189.0" fill="none" stroke="#1d2433" stroke-width="2.5"/>
+  <text x="418" y="186" font-size="16" font-weight="700" text-anchor="end">≤ 30°</text>
+
+  <!-- p2-approach -->
+  <line x1="425" y1="586" x2="425" y2="476" stroke="#1d2433" stroke-width="3" stroke-dasharray="6 6" marker-end="url(#bK)"/>
+  <text x="440" y="572" font-size="14" fill="#1d2433">รถเลี้ยวเข้า ชะลอ/หยุดที่ประตู</text>
+
+  <!-- p2-camera -->
+  <circle cx="550" cy="24" r="5" fill="#1d2433"/>
+  <g transform="translate(550 28) rotate(118.5)">
+    <rect x="-18" y="-13" width="36" height="26" rx="6" fill="#fff" stroke="#1d2433" stroke-width="3"/>
+    <path d="M18 -8 L30 -14 L30 14 L18 8 z" fill="#fff" stroke="#1d2433" stroke-width="3" stroke-linejoin="round"/>
+  </g>
+  <text x="584" y="44" font-size="17" font-weight="700">กล้อง 1 (ทางเข้า)</text>
+  <text x="584" y="66" font-size="14" fill="#5b6475">ติดเสา/ผนังชิดขอบทางรถ</text>
+  <text x="584" y="86" font-size="14" fill="#5b6475">หันหาประตู อ่านป้ายหน้ารถ</text>
+  <text x="492" y="206" font-size="15" fill="#d97706" font-weight="700" transform="rotate(-61.5 492 206)">ห่างป้าย 3–8 m</text>
+  <text x="604" y="334" font-size="14" fill="#5b6475">กล้อง 2 (ทางออก): ติดแบบเดียวกัน</text>
+  <text x="604" y="354" font-size="14" fill="#5b6475">หันอ่านป้ายรถที่ขับออก</text>
+
+  <!-- p2-app: ส่วนหนึ่งของ screenshots/desktop-camera-editor.png -->
+  <text x="890" y="26" font-size="18" font-weight="700">ในโปรแกรม: เมนู กล้อง → ตั้งค่า/วาดโซน</text>
+  <image href="../screenshots/desktop-camera-editor.png" x="227" y="-226" width="1440" height="900" clip-path="url(#shotclip)"/>
+  <rect x="890" y="42" width="579" height="325" rx="10" fill="none" stroke="#c9d0da" stroke-width="1.5"/>
+  <text font-size="14.5" fill="#5b6475">
+    <tspan x="890" y="392"><tspan fill="#a16207" font-weight="700">เส้นเหลือง</tspan> = เส้นเสมือน · <tspan fill="#2563eb" font-weight="700">ลูกศรน้ำเงิน</tspan> = ทิศ "เข้า" · <tspan fill="#7c3aed" font-weight="700">กรอบม่วง</tspan> = ROI</tspan>
+  </text>
+  <g font-size="15.5">
+    <text x="890" y="434" font-weight="700" font-size="17">เช็กก่อนใช้งานจริง</text>
+    <g fill="#0f6e5a" font-weight="700"><text x="890" y="464">✓</text><text x="890" y="492">✓</text><text x="890" y="520">✓</text><text x="890" y="548">✓</text><text x="890" y="576">✓</text></g>
+    <text x="914" y="464">ห่างป้าย 3–8 m · มองป้ายเกือบตรง เอียงไม่เกิน ~30°</text>
+    <text x="914" y="492">ซูมให้ป้ายในภาพกว้าง ≥ 130–150 พิกเซล</text>
+    <text x="914" y="520">กลางคืน: ชัตเตอร์ ≥ 1/1000 s หรือโหมด LPR + เปิดไฟหน้าประตู</text>
+    <text x="914" y="548">ไม่หันกล้องสวนแสงแดด/ไฟหน้ารถ</text>
+    <text x="914" y="576">IP กล้องคงที่ · เปลี่ยนรหัสผ่านเริ่มต้น · เปิด sub-stream</text>
+  </g>
+</svg>
+</section>
+
+<div class="foot"><span>ห้ามเปิดพอร์ตจากอินเทอร์เน็ตเข้าคอมโดยตรง — ดูนอกบ้านผ่าน Tailscale เท่านั้น · รายละเอียด: คู่มือผู้ใช้ หัวข้อ 3, 9 และภาคผนวก ข</span><span>LPR บ้าน v1.0.0</span></div>
+</div></body></html>

@@ -81,12 +81,12 @@ def fix_body(h: str, shift: int = 0) -> str:
             return m.group(0)
         uri = image_uri(DOCS / html.unescape(src.group(1)))
         phone = 'width="' in attrs
-        cls = "phone" if phone else "shot"
+        cls = "phone" if phone else ("shot diagram" if "diagrams/" in src.group(1) else "shot")
         return f'<img class="{cls}" src="{uri}" alt="{alt.group(1) if alt else ""}">'
 
     h = re.sub(r"<img\s+([^>]*?)/?>", img, h)
     # ภาพเดี่ยวทั้งย่อหน้า → figure + คำบรรยาย
-    h = re.sub(r'<p>\s*(<img class="shot" src="[^"]+" alt="([^"]*)">)\s*</p>',
+    h = re.sub(r'<p>\s*(<img class="shot[^"]*" src="[^"]+" alt="([^"]*)">)\s*</p>',
                lambda m: f'<figure>{m.group(1)}<figcaption>{m.group(2)}</figcaption></figure>', h)
     # ภาพมือถือหลายภาพในย่อหน้าเดียว → แถวภาพ
     h = re.sub(r'<p>\s*((?:<img class="phone"[^>]+>\s*)+)</p>',
@@ -196,6 +196,7 @@ th {{ background: var(--code-bg); font-weight: 700; }}
 tr {{ break-inside: avoid; }}
 figure {{ margin: 2mm 0 5mm; text-align: center; break-inside: avoid; }}
 img.shot {{ max-width: 100%; max-height: 120mm; border: .5pt solid var(--line); border-radius: 2mm; }}
+img.diagram {{ max-height: 235mm; border: none; }}
 figure.row {{ display: flex; justify-content: center; gap: 6mm; align-items: flex-start; }}
 figure.row > div {{ width: 46%; }}
 figure.phones3 > div {{ width: 31%; }}
