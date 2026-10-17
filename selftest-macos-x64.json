@@ -1,0 +1,93 @@
+{
+ "version": "1.0.0",
+ "python": "3.12.10",
+ "platform": "macOS-15.7.9-x86_64-i386-64bit",
+ "frozen": true,
+ "ok": true,
+ "steps": {
+  "load_models_s": 0.49,
+  "video_frames": 472,
+  "video_s": 42.63,
+  "api_health": {
+   "ok": true,
+   "app": "LPR บ้าน",
+   "version": "1.0.0",
+   "ts": 1792199199.458838
+  },
+  "index_bytes": 1192
+ },
+ "providers": [
+  "CoreMLExecutionProvider",
+  "AzureExecutionProvider",
+  "CPUExecutionProvider"
+ ],
+ "gpu_adapters": [],
+ "models": {
+  "vehicle": "/Users/runner/work/vision-model-inspector/vision-model-inspector/lpr/dist/LPR/_internal/models/vehicle_yolo11n.onnx",
+  "plate": "/Users/runner/work/vision-model-inspector/vision-model-inspector/lpr/dist/LPR/_internal/models/plate_yolo.onnx",
+  "ocr_rec": "/Users/runner/work/vision-model-inspector/vision-model-inspector/lpr/dist/LPR/_internal/models/th_PP-OCRv5_mobile_rec.onnx",
+  "ocr_dict": "/Users/runner/work/vision-model-inspector/vision-model-inspector/lpr/dist/LPR/_internal/models/th_PP-OCRv5_mobile_rec.dict.txt",
+  "ocr_det": "/Users/runner/work/vision-model-inspector/vision-model-inspector/lpr/dist/LPR/_internal/models/PP-OCRv5_mobile_det.onnx"
+ },
+ "frontend": true,
+ "webview": "ไม่มี (ModuleNotFoundError) จะเปิดผ่านเบราว์เซอร์แทน",
+ "model_info": {
+  "ocr": "PP-OCRv5 th (ONNX)",
+  "plate_detector": "yolo",
+  "device": "CPUExecutionProvider"
+ },
+ "events": [
+  {
+   "plate": "จฬ 1543",
+   "province": "ราชบุรี",
+   "direction": "เข้า",
+   "type": "รถเก๋ง",
+   "conf": 0.498,
+   "review": "รอตรวจสอบ"
+  },
+  {
+   "plate": "4อร 969",
+   "province": "ศรีสะเกษ",
+   "direction": "เข้า",
+   "type": "รถบัส",
+   "conf": 0.939,
+   "review": "ปกติ"
+  },
+  {
+   "plate": "งต 764",
+   "province": "อุดรธานี",
+   "direction": "เข้า",
+   "type": "รถเก๋ง",
+   "conf": 0.957,
+   "review": "ปกติ"
+  },
+  {
+   "plate": "83-6054",
+   "province": "ตราด",
+   "direction": "เข้า",
+   "type": "แท็กซี่/รับจ้าง",
+   "conf": 0.993,
+   "review": "ปกติ"
+  },
+  {
+   "plate": "2ง 3375",
+   "province": "ร้อยเอ็ด",
+   "direction": "เข้า",
+   "type": "รถเก๋ง",
+   "conf": 0.977,
+   "review": "ปกติ"
+  },
+  {
+   "plate": "3ถ 1342",
+   "province": "ยะลา",
+   "direction": "เข้า",
+   "type": "รถเก๋ง",
+   "conf": 0.946,
+   "review": "ปกติ"
+  }
+ ],
+ "accuracy": {
+  "cars": 6,
+  "plate_ok": 6
+ }
+}
