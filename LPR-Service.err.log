@@ -1,0 +1,12 @@
+2026-10-17 01:04:18,730 INFO [lpr] LPR \u0e1a\u0e49\u0e32\u0e19 \u0e40\u0e1b\u0e34\u0e14\u0e17\u0e35\u0e48 http://127.0.0.1:8765  (LAN: http://10.1.0.203:8765, http://172.19.144.1:8765)  \u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25: C:\LPRdata
+2026-10-17 01:04:18,761 INFO [uvicorn.error] Started server process [5600]
+2026-10-17 01:04:18,761 INFO [uvicorn.error] Waiting for application startup.
+2026-10-17 01:04:18,761 INFO [uvicorn.error] Application startup complete.
+2026-10-17 01:04:18,761 INFO [uvicorn.error] Uvicorn running on http://0.0.0.0:8765 (Press CTRL+C to quit)
+2026-10-17 01:04:24,230 INFO [lpr.camera.manager] \u0e40\u0e23\u0e34\u0e48\u0e21\u0e01\u0e25\u0e49\u0e2d\u0e07 1 (CI demo)
+2026-10-17 01:04:24,746 INFO [lpr.vision.runtime] \u0e42\u0e2b\u0e25\u0e14\u0e42\u0e21\u0e40\u0e14\u0e25 vehicle_yolo11n.onnx \u0e43\u0e0a\u0e49 CPU
+2026-10-17 01:04:24,824 INFO [lpr.vision.runtime] \u0e42\u0e2b\u0e25\u0e14\u0e42\u0e21\u0e40\u0e14\u0e25 plate_yolo.onnx \u0e43\u0e0a\u0e49 CPU
+2026-10-17 01:04:24,949 INFO [lpr.vision.runtime] \u0e42\u0e2b\u0e25\u0e14\u0e42\u0e21\u0e40\u0e14\u0e25 th_PP-OCRv5_mobile_rec.onnx \u0e43\u0e0a\u0e49 CPU
+2026-10-17 01:04:25,027 INFO [lpr.vision.runtime] \u0e42\u0e2b\u0e25\u0e14\u0e42\u0e21\u0e40\u0e14\u0e25 PP-OCRv5_mobile_det.onnx \u0e43\u0e0a\u0e49 CPU
+2026-10-17 01:04:38,889 INFO [lpr.maintenance] \u0e2a\u0e33\u0e23\u0e2d\u0e07\u0e10\u0e32\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e44\u0e1b\u0e17\u0e35\u0e48 C:\LPRdata\backup\lpr-20261017-080438.db
+2026-10-17 01:04:38,889 INFO [lpr.maintenance] \u0e25\u0e1a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e40\u0e01\u0e48\u0e32: \u0e44\u0e1f\u0e25\u0e4c 0, \u0e41\u0e16\u0e27 0

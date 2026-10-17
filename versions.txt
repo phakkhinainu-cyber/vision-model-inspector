@@ -1,0 +1,1 @@
+ort 1.24.4 ['DmlExecutionProvider', 'CPUExecutionProvider'] cv2 5.0.0 fastapi 0.143.3
