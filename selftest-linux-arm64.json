@@ -1,0 +1,92 @@
+{
+ "version": "1.0.0",
+ "python": "3.12.15",
+ "platform": "Linux-6.8.0-1064-azure-aarch64-with-glibc2.35",
+ "frozen": true,
+ "ok": true,
+ "steps": {
+  "load_models_s": 0.17,
+  "video_frames": 472,
+  "video_s": 29.49,
+  "api_health": {
+   "ok": true,
+   "app": "LPR บ้าน",
+   "version": "1.0.0",
+   "ts": 1792200825.317843
+  },
+  "index_bytes": 1192
+ },
+ "providers": [
+  "AzureExecutionProvider",
+  "CPUExecutionProvider"
+ ],
+ "gpu_adapters": [],
+ "models": {
+  "vehicle": "/home/runner/work/vision-model-inspector/vision-model-inspector/lpr/dist/LPR/_internal/models/vehicle_yolo11n.onnx",
+  "plate": "/home/runner/work/vision-model-inspector/vision-model-inspector/lpr/dist/LPR/_internal/models/plate_yolo.onnx",
+  "ocr_rec": "/home/runner/work/vision-model-inspector/vision-model-inspector/lpr/dist/LPR/_internal/models/th_PP-OCRv5_mobile_rec.onnx",
+  "ocr_dict": "/home/runner/work/vision-model-inspector/vision-model-inspector/lpr/dist/LPR/_internal/models/th_PP-OCRv5_mobile_rec.dict.txt",
+  "ocr_det": "/home/runner/work/vision-model-inspector/vision-model-inspector/lpr/dist/LPR/_internal/models/PP-OCRv5_mobile_det.onnx"
+ },
+ "frontend": true,
+ "webview": "ไม่มี (ModuleNotFoundError) จะเปิดผ่านเบราว์เซอร์แทน",
+ "model_info": {
+  "ocr": "PP-OCRv5 th (ONNX)",
+  "plate_detector": "yolo",
+  "device": "CPUExecutionProvider"
+ },
+ "events": [
+  {
+   "plate": "จพ 1543",
+   "province": "ราชบุรี",
+   "direction": "เข้า",
+   "type": "รถเก๋ง",
+   "conf": 0.611,
+   "review": "รอตรวจสอบ"
+  },
+  {
+   "plate": "4อร 969",
+   "province": "ศรีสะเกษ",
+   "direction": "เข้า",
+   "type": "รถเก๋ง",
+   "conf": 0.934,
+   "review": "ปกติ"
+  },
+  {
+   "plate": "งต 764",
+   "province": "อุดรธานี",
+   "direction": "เข้า",
+   "type": "รถเก๋ง",
+   "conf": 0.955,
+   "review": "ปกติ"
+  },
+  {
+   "plate": "83-6054",
+   "province": "ตราด",
+   "direction": "เข้า",
+   "type": "แท็กซี่/รับจ้าง",
+   "conf": 0.985,
+   "review": "ปกติ"
+  },
+  {
+   "plate": "2ง 3375",
+   "province": "ร้อยเอ็ด",
+   "direction": "เข้า",
+   "type": "รถเก๋ง",
+   "conf": 0.946,
+   "review": "ปกติ"
+  },
+  {
+   "plate": "3ถ 1342",
+   "province": "ยะลา",
+   "direction": "เข้า",
+   "type": "รถเก๋ง",
+   "conf": 0.948,
+   "review": "ปกติ"
+  }
+ ],
+ "accuracy": {
+  "cars": 6,
+  "plate_ok": 5
+ }
+}
