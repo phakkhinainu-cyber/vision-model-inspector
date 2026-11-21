@@ -3071,6 +3071,16 @@ updateMuteIcon();
 updateGfxLabels();
 genScenery();
 goTitle();
+// ตัวเชื่อมกับแอป Android (ปุ่มย้อนกลับ / สลับแอป) — บนเว็บไม่มีผลอะไร
+window.SamanApp = {
+  back: function () {                              // คืนค่า true = เกมจัดการแล้ว, false = ให้แอปปิดได้
+    if (state === 'play' || state === 'count') { pause(); return true; }
+    if (state === 'paused') { resume(); return true; }
+    if (state === 'over') { goTitle(); return true; }
+    return state === 'dying';
+  },
+  pause: function () { autoPause(); lastT = 0; }
+};
 if (/debug/.test(location.hash)) {                // ตัวช่วยทดสอบ (เปิดด้วย #debug เท่านั้น)
   window.__saman = { get state() { return state; }, get dist() { return runDist; }, get abs() { return dist; }, get score() { return score; },
     hero: hero, obs: obs, coins: coins, act: act, mkObs: mkObs, au: AU, gfx: function () { return { mode: gfxMode(), W: W, H: H, vw: view.width, vh: view.height, resScale: resScale, glOk: GL3.ok, glErr: GL3.err, glScale: GL3.scale }; }, setGfx: setGfx, warp: function (m) { runStart -= m; runDist += m; },

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ไอคอนแอป: ฝาขวดซ่า (สัญลักษณ์ของซ่าแมน) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#DFE4EA" android:strokeColor="#2A2D33" android:strokeWidth="1.6" android:strokeLineJoin="round" android:pathData="M84.00,54.00 L79.15,59.74 L81.03,67.02 L74.17,70.09 L72.70,77.45 L65.19,77.24 L60.68,83.25 L54.00,79.80 L47.32,83.25 L42.81,77.24 L35.30,77.45 L33.83,70.09 L26.97,67.02 L28.85,59.74 L24.00,54.00 L28.85,48.26 L26.97,40.98 L33.83,37.91 L35.30,30.55 L42.81,30.76 L47.32,24.75 L54.00,28.20 L60.68,24.75 L65.19,30.76 L72.70,30.55 L74.17,37.91 L81.03,40.98 L79.15,48.26 Z"/>
+    <path android:fillColor="#E3261F" android:strokeColor="#6E0905" android:strokeWidth="1.2" android:pathData="M34.80,54.00 a19.20,19.20 0 1,0 38.40,0 a19.20,19.20 0 1,0 -38.40,0 Z"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M42.30,49.80 a4.50,4.50 0 1,0 9.00,0 a4.50,4.50 0 1,0 -9.00,0 Z M55.80,45.00 a3.00,3.00 0 1,0 6.00,0 a3.00,3.00 0 1,0 -6.00,0 Z M54.00,60.60 a3.60,3.60 0 1,0 7.20,0 a3.60,3.60 0 1,0 -7.20,0 Z"/>
+</vector>
