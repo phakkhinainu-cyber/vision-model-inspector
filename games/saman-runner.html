@@ -33,6 +33,10 @@ button:focus-visible{outline:3px solid #7fe3ff;outline-offset:2px}
 #hScore{display:inline-block;font-size:34px;color:#ffd84a;transform-origin:left center}
 #hDistRow{margin-top:6px;font-size:18px}
 #hBestRow{margin-top:5px;font-size:13px;color:#a8ecff}
+#hLives{margin-top:6px}
+#hLives .hrt{width:20px;height:18px;margin-right:4px;fill:#ff3b4f;stroke:#000;stroke-width:2.2;filter:drop-shadow(2px 2px 0 rgba(0,0,0,.45))}
+#hLives .hrt.lost{fill:#3a3442;opacity:.6}
+#hLives.hit .hrt{animation:bump .3s ease-out}
 .bump{animation:bump .2s ease-out}
 @keyframes bump{0%{transform:scale(1.35)}100%{transform:scale(1)}}
 #corner{position:absolute;z-index:30;display:flex;top:10px;right:12px;top:max(10px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right))}
@@ -61,6 +65,8 @@ button:focus-visible{outline:3px solid #7fe3ff;outline-offset:2px}
 .rows{margin:8px 0 4px;text-align:left}
 .rows div{display:flex;justify-content:space-between;align-items:baseline;padding:7px 2px;border-bottom:2px dashed rgba(255,255,255,.16);font-size:16px}
 .rows b{font-size:21px;color:#ffd84a}
+.rows .tot span{font-weight:900;color:#fff}.rows .tot b{font-size:27px;color:#7dffb0}
+.chip{display:inline-block;margin:2px 6px 4px 0;padding:3px 10px;background:#2b1f52;color:#ffd84a;font-weight:900;border:2px solid #ffd23f}
 .rec{display:inline-block;margin:2px 0 4px;padding:3px 12px;background:#ff3d6e;color:#fff;font-weight:900;border:2px solid #000;animation:blink .7s steps(2) infinite}
 @keyframes blink{50%{opacity:.4}}
 .help{font-size:13px;color:#ddd5ff;margin-top:10px;line-height:1.6}
@@ -99,6 +105,8 @@ button:focus-visible{outline:3px solid #7fe3ff;outline-offset:2px}
   .rows{margin:4px 0 2px}
   .rows div{padding:3px 2px;font-size:14px}
   .rows b{font-size:17px}
+  .rows .tot b{font-size:21px}
+  .chip{padding:1px 8px;font-size:14px}
   .rec{padding:1px 10px;font-size:14px}
   .card .help{margin-top:6px}
   #hScore{font-size:28px}
@@ -128,7 +136,8 @@ noscript{position:absolute;top:40%;left:0;right:0;text-align:center;font-size:18
       <span id="hScore" class="num">0</span>
     </div>
     <div id="hDistRow" class="hs out"><span id="hDist" class="num">0</span>&nbsp;ม.</div>
-    <div id="hBestRow" class="hs out">สถิติ&nbsp;<span id="hBest" class="num">0</span><span id="hHitsWrap" class="hidden">&nbsp;· ชน&nbsp;<span id="hHits" class="num">0</span></span></div>
+    <div id="hBestRow" class="hs out">สถิติ&nbsp;<span id="hBest" class="num">0</span></div>
+    <div id="hLives" class="hs hidden" aria-label="ชีวิตที่เหลือ"><svg class="hrt" viewBox="0 0 24 22" aria-hidden="true"><path d="M12 20.5C5.2 15 1.2 11.4 1.2 7.1A5.4 5.4 0 0 1 12 4.6a5.4 5.4 0 0 1 10.8 2.5c0 4.3-4 7.9-10.8 13.4z"/></svg><svg class="hrt" viewBox="0 0 24 22" aria-hidden="true"><path d="M12 20.5C5.2 15 1.2 11.4 1.2 7.1A5.4 5.4 0 0 1 12 4.6a5.4 5.4 0 0 1 10.8 2.5c0 4.3-4 7.9-10.8 13.4z"/></svg><svg class="hrt" viewBox="0 0 24 22" aria-hidden="true"><path d="M12 20.5C5.2 15 1.2 11.4 1.2 7.1A5.4 5.4 0 0 1 12 4.6a5.4 5.4 0 0 1 10.8 2.5c0 4.3-4 7.9-10.8 13.4z"/></svg></div>
   </div>
 
   <div id="corner">
@@ -153,8 +162,8 @@ noscript{position:absolute;top:40%;left:0;right:0;text-align:center;font-size:18
     </div>
     <div class="tpanel">
       <button id="btnStart" class="btn pulse">▶ เริ่มเกม</button>
-      <div class="trow"><button id="btnGfx" class="btn tog">ภาพ: สมจริง 3D ⇄</button><button id="btnMode" class="btn tog">โหมด: ไม่รู้จบ ⇄</button></div>
-      <div class="tmode out" id="tModeHelp">โหมดไม่รู้จบ: ชนแล้ววิ่งต่อได้ ระยะทางนับไปเรื่อย ๆ · กดหยุดเพื่อจบรอบ</div>
+      <div class="trow"><button id="btnGfx" class="btn tog">ภาพ: สมจริง 3D ⇄</button><button id="btnMode" class="btn tog">โหมด: 3 ชีวิต ⇄</button></div>
+      <div class="tmode out" id="tModeHelp">ชนได้สูงสุด 3 ครั้ง ครบ 3 ครั้งจบเกม</div>
       <div class="tbest out">สถิติสูงสุด <b class="num" id="tBest">0</b> แต้ม · <b class="num" id="tBestD">0</b> ม.</div>
       <div class="help out" id="helpKeys"><span class="k">←</span> <span class="k">→</span> เปลี่ยนเลน · <span class="k">↑</span>/<span class="k">Space</span> กระโดด · <span class="k">↓</span> สไลด์ · <span class="k">P</span> หยุด · <span class="k">M</span> เสียง</div>
       <div class="help out" id="helpTouch">ปัดซ้าย/ขวา = เปลี่ยนเลน · ปัดขึ้น = กระโดด · ปัดลง = สไลด์</div>
@@ -175,11 +184,11 @@ noscript{position:absolute;top:40%;left:0;right:0;text-align:center;font-size:18
   <section id="scrOver" class="screen dim hidden">
     <div class="card">
       <h2 class="out">จบเกม!</h2>
-      <div id="newRec" class="rec hidden">★ สถิติใหม่! ★</div>
+      <div><span id="oReason" class="chip hidden">ชนครบ 3 ครั้ง</span><span id="newRec" class="rec hidden">★ สถิติใหม่! ★</span></div>
       <div class="rows">
-        <div><span>คะแนน</span><b class="num" id="oScore">0</b></div>
-        <div><span>ระยะทาง</span><b class="num" id="oDist">0 ม.</b></div>
-        <div><span>กระป๋องที่เก็บได้</span><b class="num" id="oCans">0</b></div>
+        <div><span id="oCansL">กระป๋อง 0 ใบ</span><b class="num" id="oCans">0</b></div>
+        <div><span id="oDistL">ระยะทาง 0 ม.</span><b class="num" id="oDist">0</b></div>
+        <div class="tot"><span>คะแนนรวม</span><b class="num" id="oScore">0</b></div>
         <div><span>สถิติสูงสุด</span><b class="num" id="oBest">0</b></div>
       </div>
       <button id="btnRetry" class="btn">↻ เล่นอีกครั้ง</button>
@@ -212,7 +221,7 @@ function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floo
 
 /* ---------------- บันทึกสถิติ (localStorage + try/catch) ---------------- */
 var STORE_KEY = 'saman-runner-v1';
-var save = { bestScore: 0, bestDist: 0, muted: false, gfx: 'real', gfxV: 3, mode: 'endless', bestScoreE: 0, bestDistE: 0 };
+var save = { bestScore: 0, bestDist: 0, muted: false, gfx: 'real', gfxV: 3, mode: 'lives', bestScore3: 0, bestDist3: 0 };
 function loadSave() {
   try {
     var s = window.localStorage.getItem(STORE_KEY);
@@ -222,8 +231,8 @@ function loadSave() {
         save.bestScore = Math.max(0, Math.floor(+o.bestScore || 0));
         save.bestDist = Math.max(0, Math.floor(+o.bestDist || 0));
         save.muted = !!o.muted;
-        save.mode = o.mode === 'classic' ? 'classic' : 'endless';
-        save.bestScoreE = Math.max(0, Math.floor(+o.bestScoreE || 0)); save.bestDistE = Math.max(0, Math.floor(+o.bestDistE || 0));
+        save.mode = o.mode === 'classic' ? 'classic' : 'lives';
+        save.bestScore3 = Math.max(0, Math.floor(+o.bestScore3 || 0)); save.bestDist3 = Math.max(0, Math.floor(+o.bestDist3 || 0));
         if (o.gfxV === 3 && (o.gfx === 'real' || o.gfx === 'hd' || o.gfx === 'ps1')) save.gfx = o.gfx;
       }
     }
@@ -497,7 +506,8 @@ var dist = 0, runStart = 0, runDist = 0, speed = 0, introT = 1, camBlend = 0;
 var score = 0, cans = 0, nextMile = 500, overT = 0, countT = 0, countShown = 0;
 var newBest = false, newDist = false;
 var curve = 0, curveTarget = 0, nextCurve = 300, skyScroll = 0;
-var shake = 0, flash = 0, runEndless = true, invuln = 0, hits = 0, speedMul = 1;
+var shake = 0, flash = 0, runLives = 3, invuln = 0, hits = 0, speedMul = 1, finalTotal = 0;
+var MAX_LIVES = 3;
 var obs = [], coins = [], scen = [], parts = [];
 var nextRow = 90, nextB = [-30, -30], nextLamp = -24, nextPalm = [-20, -6];
 
@@ -1243,7 +1253,7 @@ function hitTest() {
     if (o.t === 'barrier') hit = hero.y < 0.84;
     else if (o.t === 'beam') hit = hero.y + hh > 1.2 && hero.y < 1.85;
     else hit = true;
-    if (hit) { if (runEndless) { if (invuln <= 0) stumble(); } else die(); return; }
+    if (hit) { if (invuln > 0) return; hits++; if (hits >= runLives) die(); else stumble(); return; }
   }
 }
 function coinTest() {
@@ -1294,30 +1304,24 @@ function step(h) {
   skyScroll += curve * speed * h * 0.03 * UNIT;
   while (nextRow < dist + DRAW_DIST) spawnRow(nextRow);
 }
-function stumble() {                               // โหมดไม่รู้จบ: ชนแล้วเซ ช้าลง หักแต้ม แล้ววิ่งต่อ
-  hits++; invuln = 2.0; speedMul = 0.4;
-  score = Math.max(0, score - 30);
+function stumble() {                               // ชนยังไม่ครบ: เซ ช้าลง กะพริบ 2 วินาที แล้ววิ่งต่อ
+  invuln = 2.0; speedMul = 0.4;
   AU.crash(); shake = 0.6; flash = 0.55;
   try { if (navigator.vibrate) navigator.vibrate(80); } catch (e) {}
   burst(hero.x, 1.0, 0.4, 12, ['#ffffff', '#ffd23a', '#ff5a1f', '#ffb070'], 3.0, 'spark');
-  showToast('ชน! -30 แต้ม');
+  var left = runLives - hits;
+  showToast('ชน! เหลืออีก ' + left + ' ครั้ง');
+  var hl = $('hLives'); hl.classList.remove('hit'); void hl.offsetWidth; hl.classList.add('hit');
 }
+function totalScore() { return score + Math.floor(runDist); }   // กระป๋อง + ระยะทาง 1 แต้ม/เมตร
 function heroVisible() { return !(invuln > 0 && state === 'play' && Math.floor(invuln * 10) % 2 === 0); }
 function recordBests() {
-  var d = Math.floor(runDist);
-  if (runEndless) {
-    newBest = score > save.bestScoreE; newDist = d > save.bestDistE;
-    if (newBest) save.bestScoreE = score; if (newDist) save.bestDistE = d;
-  } else {
-    newBest = score > save.bestScore; newDist = d > save.bestDist;
-    if (newBest) save.bestScore = score; if (newDist) save.bestDist = d;
-  }
+  var d = Math.floor(runDist), t = totalScore(), k = runLives > 1 ? '3' : '';
+  finalTotal = t;
+  newBest = t > save['bestScore' + k]; newDist = d > save['bestDist' + k];
+  if (newBest) save['bestScore' + k] = t;
+  if (newDist) save['bestDist' + k] = d;
   if (newBest || newDist) writeSave();
-}
-function endRun() {                                // จบรอบเอง (โหมดไม่รู้จบ)
-  if (state !== 'paused') return;
-  recordBests();
-  showOver();
 }
 function die() {
   setState('dying');
@@ -2835,12 +2839,17 @@ function loop(now) {
 /* ---------------- หน้าจอ / HUD ---------------- */
 var hudScore = -1, hudDist = -1, hudBest = -1, hudHits = -1;
 function updateHUD() {
-  if (score !== hudScore) { hudScore = score; elScore.textContent = score; }
+  var tot = state === 'over' ? finalTotal : totalScore();
+  if (tot !== hudScore) { hudScore = tot; elScore.textContent = tot; }
   var dm = Math.floor(runDist);
   if (dm !== hudDist) { hudDist = dm; elDist.textContent = dm; }
-  var b = Math.max(runEndless ? save.bestScoreE : save.bestScore, score);
+  var b = Math.max(runLives > 1 ? save.bestScore3 : save.bestScore, tot);
   if (b !== hudBest) { hudBest = b; elBest.textContent = b; }
-  if (hits !== hudHits) { hudHits = hits; $('hHits').textContent = hits; }
+  if (hits !== hudHits) {
+    hudHits = hits;
+    var hs = $('hLives').getElementsByTagName('svg');
+    for (var i = 0; i < hs.length; i++) hs[i].setAttribute('class', i < runLives - hits ? 'hrt' : 'hrt lost');
+  }
 }
 function bumpScore() { elScore.classList.remove('bump'); void elScore.offsetWidth; elScore.classList.add('bump'); }
 function showToast(t) { elToast.textContent = t; elToast.classList.remove('show'); void elToast.offsetWidth; elToast.classList.add('show'); }
@@ -2873,9 +2882,8 @@ function startGame() {
   rebaseWorld();
   obs.length = 0; coins.length = 0; parts.length = 0;
   runStart = dist; runDist = 0; score = 0; cans = 0; speed = 0; introT = 0; nextMile = 500;
-  runEndless = save.mode !== 'classic'; invuln = 0; hits = 0; speedMul = 1; hudHits = -1;
-  $('hHitsWrap').classList.toggle('hidden', !runEndless);
-  $('btnRestart').textContent = runEndless ? 'จบรอบนี้ (ดูผล)' : 'เริ่มใหม่';
+  runLives = save.mode === 'classic' ? 1 : MAX_LIVES; invuln = 0; hits = 0; speedMul = 1; hudHits = -1; finalTotal = 0;
+  $('hLives').classList.toggle('hidden', runLives < 2);
   nextRow = dist + 95; curveTarget = 0; nextCurve = dist + 250;
   resetHero();
   for (var i = 0; i < 8; i++) addCoin(0, 0.5, dist + 28 + i * 2.6, false);
@@ -2894,10 +2902,15 @@ function goTitle() {
 }
 function showOver() {
   setState('over'); overT = 0;
-  $('oScore').textContent = score;
-  $('oDist').textContent = Math.floor(runDist) + ' ม.';
-  $('oCans').textContent = runEndless ? cans + ' · ชน ' + hits : cans;
-  $('oBest').textContent = runEndless ? save.bestScoreE + ' / ' + save.bestDistE + ' ม.' : save.bestScore + ' / ' + save.bestDist + ' ม.';
+  var dm = Math.floor(runDist), k = runLives > 1 ? '3' : '';
+  $('oCansL').textContent = 'กระป๋อง ' + cans + ' ใบ';
+  $('oCans').textContent = score + ' แต้ม';
+  $('oDistL').textContent = 'ระยะทาง ' + dm + ' ม.';
+  $('oDist').textContent = dm + ' แต้ม';
+  $('oScore').textContent = finalTotal;
+  $('oBest').textContent = save['bestScore' + k] + ' แต้ม · ' + save['bestDist' + k] + ' ม.';
+  $('oReason').textContent = 'ชนครบ ' + runLives + ' ครั้ง';
+  $('oReason').classList.toggle('hidden', runLives < 2);
   $('newRec').classList.toggle('hidden', !(newBest || newDist));
   AU.over();
 }
@@ -2947,14 +2960,14 @@ function bindBtn(el, fn) {
 }
 bindBtn($('btnStart'), startGame);
 bindBtn($('btnResume'), resume);
-bindBtn($('btnRestart'), function () { if (runEndless && state === 'paused') endRun(); else startGame(); });
+bindBtn($('btnRestart'), startGame);
 function updateModeUI() {
   var e = save.mode !== 'classic';
-  $('btnMode').textContent = e ? 'โหมด: ไม่รู้จบ ⇄' : 'โหมด: ปกติ ⇄';
-  $('tModeHelp').textContent = e ? 'โหมดไม่รู้จบ: ชนแล้ววิ่งต่อได้ ระยะทางนับไปเรื่อย ๆ · กดหยุดเพื่อจบรอบ' : 'โหมดปกติ: ชนเมื่อไหร่จบเกม';
-  $('tBest').textContent = e ? save.bestScoreE : save.bestScore; $('tBestD').textContent = e ? save.bestDistE : save.bestDist;
+  $('btnMode').textContent = e ? 'โหมด: 3 ชีวิต ⇄' : 'โหมด: 1 ชีวิต ⇄';
+  $('tModeHelp').textContent = e ? 'ชนได้สูงสุด 3 ครั้ง ครบ 3 ครั้งจบเกม · คะแนน = กระป๋อง + ระยะทาง (1 แต้ม/ม.)' : 'ชนครั้งเดียวจบเกม · คะแนน = กระป๋อง + ระยะทาง (1 แต้ม/ม.)';
+  $('tBest').textContent = e ? save.bestScore3 : save.bestScore; $('tBestD').textContent = e ? save.bestDist3 : save.bestDist;
 }
-bindBtn($('btnMode'), function () { save.mode = save.mode === 'classic' ? 'endless' : 'classic'; writeSave(); updateModeUI(); });
+bindBtn($('btnMode'), function () { save.mode = save.mode === 'classic' ? 'lives' : 'classic'; writeSave(); updateModeUI(); });
 bindBtn($('btnHomeP'), goTitle);
 bindBtn($('btnRetry'), function () { if (overT > 0.3) startGame(); });
 bindBtn($('btnHomeO'), function () { if (overT > 0.3) goTitle(); });
