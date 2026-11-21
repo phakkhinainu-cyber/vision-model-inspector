@@ -55,6 +55,7 @@ button:focus-visible{outline:3px solid #7fe3ff;outline-offset:2px}
   box-shadow:inset 3px 3px 0 rgba(255,255,255,.55),inset -3px -3px 0 rgba(0,0,0,.22),4px 4px 0 #000}
 .btn:active{transform:translate(3px,3px);box-shadow:inset 3px 3px 0 rgba(255,255,255,.55),inset -3px -3px 0 rgba(0,0,0,.22),1px 1px 0 #000}
 .btn.sec{background:linear-gradient(#b4e9ff,#4b8fe0);color:#001634;font-size:17px;padding:9px 16px}
+.btn.tog{background:linear-gradient(#efe9ff,#a99cff);color:#1b0f40;font-size:15px;padding:7px 14px;margin-top:10px}
 .rows{margin:8px 0 4px;text-align:left}
 .rows div{display:flex;justify-content:space-between;align-items:baseline;padding:7px 2px;border-bottom:2px dashed rgba(255,255,255,.16);font-size:16px}
 .rows b{font-size:21px;color:#ffd84a}
@@ -90,6 +91,7 @@ button:focus-visible{outline:3px solid #7fe3ff;outline-offset:2px}
   .card h2{font-size:24px;margin-bottom:2px}
   .btn{margin-top:8px;padding:7px 14px;font-size:17px}
   .btn.sec{padding:6px 14px;font-size:15px}
+  .btn.tog{padding:5px 12px;font-size:13px;margin-top:7px}
   .rows{margin:4px 0 2px}
   .rows div{padding:3px 2px;font-size:14px}
   .rows b{font-size:17px}
@@ -146,6 +148,7 @@ noscript{position:absolute;top:40%;left:0;right:0;text-align:center;font-size:18
     </div>
     <div class="tpanel">
       <button id="btnStart" class="btn pulse">▶ เริ่มเกม</button>
+      <button id="btnGfx" class="btn tog">ภาพ: คมชัด HD ⇄</button>
       <div class="tbest out">สถิติสูงสุด <b class="num" id="tBest">0</b> แต้ม · <b class="num" id="tBestD">0</b> ม.</div>
       <div class="help out" id="helpKeys"><span class="k">←</span> <span class="k">→</span> เปลี่ยนเลน · <span class="k">↑</span>/<span class="k">Space</span> กระโดด · <span class="k">↓</span> สไลด์ · <span class="k">P</span> หยุด · <span class="k">M</span> เสียง</div>
       <div class="help out" id="helpTouch">ปัดซ้าย/ขวา = เปลี่ยนเลน · ปัดขึ้น = กระโดด · ปัดลง = สไลด์</div>
@@ -158,6 +161,7 @@ noscript{position:absolute;top:40%;left:0;right:0;text-align:center;font-size:18
       <button id="btnResume" class="btn">▶ เล่นต่อ</button>
       <button id="btnRestart" class="btn sec">เริ่มใหม่</button>
       <button id="btnHomeP" class="btn sec">หน้าหลัก</button>
+      <button id="btnGfxP" class="btn tog">ภาพ: คมชัด HD ⇄</button>
       <div class="help">กด <span class="k">P</span> หรือ <span class="k">Esc</span> เพื่อเล่นต่อ</div>
     </div>
   </section>
@@ -202,7 +206,7 @@ function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floo
 
 /* ---------------- บันทึกสถิติ (localStorage + try/catch) ---------------- */
 var STORE_KEY = 'saman-runner-v1';
-var save = { bestScore: 0, bestDist: 0, muted: false };
+var save = { bestScore: 0, bestDist: 0, muted: false, gfx: 'hd' };
 function loadSave() {
   try {
     var s = window.localStorage.getItem(STORE_KEY);
@@ -212,6 +216,7 @@ function loadSave() {
         save.bestScore = Math.max(0, Math.floor(+o.bestScore || 0));
         save.bestDist = Math.max(0, Math.floor(+o.bestDist || 0));
         save.muted = !!o.muted;
+        save.gfx = o.gfx === 'ps1' ? 'ps1' : 'hd';
       }
     }
   } catch (e) { /* storage ไม่พร้อมใช้งาน: เล่นต่อได้ตามปกติ */ }
@@ -354,6 +359,7 @@ var vctx = view.getContext('2d');
 var low = D.createElement('canvas');
 var g = low.getContext('2d', { alpha: false }) || low.getContext('2d');
 var cssW = 320, cssH = 240, dpr = 1, W = 320, H = 240, UNIT = 1;
+var MAX_PIX = 2.6e6, resScale = 1, perfSum = 0, perfN = 0, QB = 3;
 var ditherPat = null, needRender = true;
 
 function makeDither() {
@@ -380,13 +386,32 @@ function resize() {
   dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 3));
   view.width = Math.max(1, Math.round(w * dpr));
   view.height = Math.max(1, Math.round(h * dpr));
-  var pix = Math.max(1, Math.min(w, h) / 240);       // ด้านสั้นสุด ≈ 240 พิกเซล (แบบ PS1)
-  W = Math.max(120, Math.round(w / pix));
-  H = Math.max(120, Math.round(h / pix));
+  if (save.gfx === 'ps1') {                          // โหมดย้อนยุค: ด้านสั้นสุด ≈ 240 พิกเซล ขยายแบบพิกเซลคม
+    var pix = Math.max(1, Math.min(w, h) / 240);
+    W = Math.max(120, Math.round(w / pix));
+    H = Math.max(120, Math.round(h / pix));
+    QB = 3;
+  } else {                                           // โหมดคมชัด: วาดที่ความละเอียดจริงของจอ (จำกัดจำนวนพิกเซลเพื่อความลื่น)
+    var nw = w * dpr * resScale, nh = h * dpr * resScale;
+    if (nw * nh > MAX_PIX) { var kk = Math.sqrt(MAX_PIX / (nw * nh)); nw *= kk; nh *= kk; }
+    W = Math.max(160, Math.round(nw));
+    H = Math.max(120, Math.round(nh));
+    QB = 2;
+  }
   low.width = W; low.height = H;
   UNIT = Math.min(W, H) / 240;
+  CC = new Array(1 << (3 * (8 - QB)));
   makeDither();
   needRender = true;
+}
+function setGfx(m) {
+  save.gfx = m === 'ps1' ? 'ps1' : 'hd'; writeSave();
+  resScale = 1; perfSum = 0; perfN = 0;
+  resize(); updateGfxLabels();
+}
+function updateGfxLabels() {
+  var t = save.gfx === 'ps1' ? 'ภาพ: ย้อนยุค PS1 ⇄' : 'ภาพ: คมชัด HD ⇄';
+  $('btnGfx').textContent = t; $('btnGfxP').textContent = t;
 }
 
 /* ---------------- ค่าคงที่ของเกม ---------------- */
@@ -463,19 +488,20 @@ var TR = 1, TG = 1, TB = 1, AMB = 0.5, FR = 0, FGc = 0, FB = 0, FOG0 = 20, FOGK 
 var baseTint = [1, 1, 1];
 
 var P = new Float64Array(64 * 3), CS = new Float64Array(64 * 3), CL = new Float64Array(66 * 3);
-var pool = [], polyCount = 0, lastArea = 0;
+var pool = [], polyCount = 0, lastArea = 0, ADDITIVE = false;
 var CC = new Array(32768);
 
 function colStr(r, gg, b) {
   r = r < 0 ? 0 : (r > 255 ? 255 : r); gg = gg < 0 ? 0 : (gg > 255 ? 255 : gg); b = b < 0 ? 0 : (b > 255 ? 255 : b);
-  var R = r >> 3, G = gg >> 3, B = b >> 3, k = (R << 10) | (G << 5) | B;   // สี 15 บิตแบบ PS1
+  var q = QB, bits = 8 - q, e = bits - q;           // PS1: 5 บิต/สี (15 บิต), HD: 6 บิต/สี
+  var R = r >> q, G = gg >> q, B = b >> q, k = (R << (bits * 2)) | (G << bits) | B;
   var s = CC[k];
-  if (s === undefined) { s = 'rgb(' + ((R << 3) | (R >> 2)) + ',' + ((G << 3) | (G >> 2)) + ',' + ((B << 3) | (B >> 2)) + ')'; CC[k] = s; }
+  if (s === undefined) { s = 'rgb(' + ((R << q) | (R >> e)) + ',' + ((G << q) | (G >> e)) + ',' + ((B << q) | (B >> e)) + ')'; CC[k] = s; }
   return s;
 }
 function getPoly() {
   var p = pool[polyCount];
-  if (!p) { p = { x: new Float32Array(68), y: new Float32Array(68), n: 0, key: 0, col: '#000', a: 1 }; pool[polyCount] = p; }
+  if (!p) { p = { x: new Float32Array(68), y: new Float32Array(68), n: 0, key: 0, col: '#000', a: 1, add: false }; pool[polyCount] = p; }
   return p;
 }
 function clipNear(n) {
@@ -535,7 +561,7 @@ function emit(n, col, flags, key, col2, alpha) {
   if (flags & F_EMIS) f *= 0.6;
   r += (FR - r) * f; gg += (FGc - gg) * f; b += (FB - b) * f;
   p.col = colStr(r, gg, b);
-  p.n = m; p.key = key === undefined ? depth : key; p.a = alpha || 1;
+  p.n = m; p.key = key === undefined ? depth : key; p.a = alpha || 1; p.add = ADDITIVE;
   polyCount++;
   return p;
 }
@@ -552,10 +578,12 @@ function flush(start, sort) {
     p = pool[i];
     g.fillStyle = p.col;
     if (p.a < 1) g.globalAlpha = p.a;
+    if (p.add) g.globalCompositeOperation = 'lighter';
     g.beginPath(); g.moveTo(p.x[0], p.y[0]);
     for (j = 1; j < p.n; j++) g.lineTo(p.x[j], p.y[j]);
     g.closePath(); g.fill();
     if (p.a < 1) g.globalAlpha = 1;
+    if (p.add) g.globalCompositeOperation = 'source-over';
   }
   polyCount = start;
 }
@@ -675,11 +703,12 @@ function drawSkyline(L, off, col, hy, winA) {
   }
   if (winA > 0.05) {
     g.globalAlpha = winA; g.fillStyle = '#ffd27a';
+    var ws = Math.max(1, Math.round(UNIT * 0.8));
     x = -(((off % total) + total) % total); guard = 0;
     while (x < W && guard++ < 6) {
       for (var j = 0; j < L.blocks.length; j++) {
         var bb = L.blocks[j], w2 = bb.w * UNIT, h2 = bb.h * UNIT;
-        if (x + w2 >= 0 && x <= W) for (var k = 0; k < bb.wins.length; k += 2) g.fillRect(Math.floor(x + 1 + bb.wins[k] * (w2 - 2)), Math.floor(hy - h2 + 1 + bb.wins[k + 1] * (h2 - 2)), 1, 1);
+        if (x + w2 >= 0 && x <= W) for (var k = 0; k < bb.wins.length; k += 2) g.fillRect(Math.floor(x + 1 + bb.wins[k] * (w2 - 2)), Math.floor(hy - h2 + 1 + bb.wins[k + 1] * (h2 - 2)), ws, ws);
         x += w2; if (x > W) break;
       }
     }
@@ -693,38 +722,46 @@ function drawSky(hy) {
   g.fillStyle = colStr(pal.fog[0], pal.fog[1], pal.fog[2]);
   g.fillRect(0, 0, W, H);
   if (hy <= 0) return;
-  var bot = Math.min(H, hy), bands = 22;
+  var bot = Math.min(H, hy), bands = save.gfx === 'ps1' ? 22 : 0;
+  if (!bands) {
+    var gr = g.createLinearGradient(0, 0, 0, bot);
+    gr.addColorStop(0, mix(pal.skyTop, pal.skyTop, 0)); gr.addColorStop(0.62, mix(pal.skyMid, pal.skyMid, 0)); gr.addColorStop(1, mix(pal.fog, pal.fog, 0));
+    g.fillStyle = gr; g.fillRect(0, 0, W, Math.ceil(bot) + 1);
+  }
   for (var i = 0; i < bands; i++) {
     var t = i / (bands - 1), a = Math.floor(bot * i / bands), b = Math.floor(bot * (i + 1) / bands) + 1;
     g.fillStyle = t < 0.62 ? mix(pal.skyTop, pal.skyMid, t / 0.62) : mix(pal.skyMid, pal.fog, (t - 0.62) / 0.38);
     g.fillRect(0, a, W, b - a);
   }
+  var dotS = Math.max(1, Math.round(UNIT * 0.7));
   if (pal.stars > 0.02) {
     g.fillStyle = '#ffffff';
     for (var s = 0; s < STARS.length; s += 3) {
       var tw = 0.5 + 0.5 * Math.sin(T * 3 + STARS[s + 2] * 20);
       g.globalAlpha = pal.stars * (0.35 + 0.65 * tw);
-      g.fillRect(Math.floor(STARS[s] * W), Math.floor(STARS[s + 1] * (hy - 12) * 0.9), 1, 1);
+      g.fillRect(Math.floor(STARS[s] * W), Math.floor(STARS[s + 1] * (hy - 12) * 0.9), dotS, dotS);
     }
     g.globalAlpha = 1;
   }
   var S = Math.min(W, H), sr = pal.sunR * S;
   var sx = W * 0.5 - curve * 3 * UNIT, sy = hy - Math.min(pal.sunY * S + sr * 0.35, hy - sr - 4);
   g.fillStyle = colStr(pal.sun[0], pal.sun[1], pal.sun[2]);
-  g.globalAlpha = 0.14; circle(sx, sy, sr * 1.9, 20);
-  g.globalAlpha = 0.22; circle(sx, sy, sr * 1.35, 20);
-  g.globalAlpha = 1; circle(sx, sy, sr, 20);
+  var sn = save.gfx === 'ps1' ? 20 : 48;
+  g.globalAlpha = 0.14; circle(sx, sy, sr * 1.9, sn);
+  g.globalAlpha = 0.22; circle(sx, sy, sr * 1.35, sn);
+  g.globalAlpha = 1; circle(sx, sy, sr, sn);
   drawSkyline(SKY_FAR, skyScroll * 0.4, mix(pal.skyline, pal.fog, 0.55), hy + 1, 0);
   drawSkyline(SKY_NEAR, skyScroll * 0.8 + 37, mix(pal.skyline, pal.fog, 0.18), hy + 1, pal.stars * 0.85);
 }
 function drawGround(hy) {
   var y0 = Math.max(0, Math.floor(hy)), gr = pal.ground;
-  for (var y = y0; y < H; y += 2) {
+  var stp = Math.max(2, Math.round(UNIT));
+  for (var y = y0; y < H; y += stp) {
     var v = (cam.cy - (y + 1)) / cam.F, den = cam.sp - v * cam.cp;
     var depth = den > 1e-4 ? cam.y / den : 1e5;
     var f = clamp((depth - FOG0) * FOGK, 0, 1);
     g.fillStyle = colStr(lerp(gr[0] * TR, FR, f), lerp(gr[1] * TG, FGc, f), lerp(gr[2] * TB, FB, f));
-    g.fillRect(0, y, W, 2);
+    g.fillRect(0, y, W, stp);
   }
 }
 function drawRoad() {
@@ -751,7 +788,13 @@ function drawRoad() {
       var zr = o.z - dist;
       if (zr < cam.z + 1 || zr > 120) continue;
       var ga = 0.24 * pal.glow * clamp((zr - cam.z - 1) / 7, 0, 1);
-      if (ga > 0.02) ellipseY(o.side * 3.3, 0.01, zr, 2.3, 3.2, 10, C.glow, F_EMIS, 0, ga);
+      if (ga > 0.02) {                             // แสงไฟแบบบวกสี ไล่ความสว่างจากกลางออกขอบ
+        var gs = save.gfx === 'ps1' ? 10 : 20;
+        ADDITIVE = true;
+        ellipseY(o.side * 3.3, 0.01, zr, 2.6, 3.6, gs, C.glow, F_EMIS, 0, ga * 0.45);
+        ellipseY(o.side * 3.3, 0.01, zr, 1.5, 2.1, gs, C.glow, F_EMIS, 0, ga * 0.55);
+        ADDITIVE = false;
+      }
     }
     flush(s2, false);
   }
@@ -772,7 +815,7 @@ function winCol(b, r, c) {
 function drawChunk(c) {
   var b = c.b, z0 = c.z0 - dist, z1 = c.z1 - dist + 0.3, s = b.side, h = b.h, xi = s * b.xIn;
   var p = quadX(xi, -s, z0, 0, z1, h, b.col, F_CULL | F_LIT);
-  var near = z0 < 115, r, k, lit;
+  var near = z0 < (save.gfx === 'ps1' ? 115 : 145), r, k, lit;
   if (p && near) {
     var cl = c.z1 - c.z0, cw = (cl - 0.8) / c.cols;
     for (r = 0; r < b.rows; r++) {
@@ -950,7 +993,7 @@ function capEmblem(map, R, key) {      // สัญลักษณ์ฝาข�
 function drawHero() {
   var p = pose, i;
   var sh = 1 - Math.min(hero.y, 2.2) / 3;
-  ellipseY(hero.x, 0.015, 0.05, 0.42 * sh, 0.36 * sh, 10, C.shadow, 0, 1e6, 0.38);
+  ellipseY(hero.x, 0.015, 0.05, 0.42 * sh, 0.36 * sh, save.gfx === 'ps1' ? 10 : 20, C.shadow, 0, 1e6, 0.38);
   var root = mT(MI, hero.x, hero.y + p[BOB], 0);
   root = mRY(root, hero.yaw);
   root = mRZ(root, p[ROLL]);
@@ -1291,10 +1334,12 @@ function render() {
     TR = baseTint[0]; TG = baseTint[1]; TB = baseTint[2];
   }
   drawParticles();
-  g.fillStyle = ditherPat; g.fillRect(0, 0, W, H);
+  if (save.gfx === 'ps1') { g.fillStyle = ditherPat; g.fillRect(0, 0, W, H); }   // dithering เฉพาะโหมด PS1
   if (flash > 0) { g.globalAlpha = Math.min(1, flash) * 0.7; g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.globalAlpha = 1; }
-  if ('imageSmoothingEnabled' in vctx) vctx.imageSmoothingEnabled = false;
-  else { vctx.webkitImageSmoothingEnabled = false; vctx.mozImageSmoothingEnabled = false; vctx.msImageSmoothingEnabled = false; }
+  // PS1: ขยายแบบ nearest-neighbor (พิกเซลคม) · HD: ถ้าต้องย่อความละเอียดลงจะขยายกลับแบบนุ่มคุณภาพสูง
+  var sm = save.gfx !== 'ps1' && (W !== view.width || H !== view.height);
+  if ('imageSmoothingEnabled' in vctx) { vctx.imageSmoothingEnabled = sm; if (sm && 'imageSmoothingQuality' in vctx) vctx.imageSmoothingQuality = 'high'; }
+  else { vctx.webkitImageSmoothingEnabled = sm; vctx.mozImageSmoothingEnabled = sm; vctx.msImageSmoothingEnabled = sm; }
   vctx.drawImage(low, 0, 0, W, H, 0, 0, view.width, view.height);
 }
 
@@ -1347,7 +1392,18 @@ function loop(now) {
   if (!(dt >= 0)) dt = 0;
   if (dt > 0.1) dt = 0.1;           // กันกระตุกเมื่อเฟรมหน่วง (ใช้ delta time + substep 120Hz)
   update(dt);
-  if (state !== 'paused' || needRender) { render(); needRender = false; }
+  if (state !== 'paused' || needRender) {
+    var t0 = performance.now();
+    render(); needRender = false;
+    // เครื่องช้า: ลดความละเอียดลงทีละขั้นอัตโนมัติ (เฉพาะโหมด HD ระหว่างเล่น)
+    if (save.gfx !== 'ps1' && state === 'play' && dt > 0) {
+      perfSum += performance.now() - t0; perfN++;
+      if (perfN >= 90) {
+        if (perfSum / perfN > 14 && resScale > 0.45) { resScale = Math.max(0.45, resScale * 0.8); resize(); }
+        perfSum = 0; perfN = 0;
+      }
+    }
+  }
 }
 
 /* ---------------- หน้าจอ / HUD ---------------- */
@@ -1456,6 +1512,9 @@ bindBtn($('btnRetry'), function () { if (overT > 0.3) startGame(); });
 bindBtn($('btnHomeO'), function () { if (overT > 0.3) goTitle(); });
 bindBtn(btnPause, pause);
 bindBtn(btnMute, toggleMute);
+function toggleGfx() { setGfx(save.gfx === 'ps1' ? 'hd' : 'ps1'); }
+bindBtn($('btnGfx'), toggleGfx);
+bindBtn($('btnGfxP'), toggleGfx);
 
 window.addEventListener('keydown', function (e) {
   var k = e.key, c = e.code, a = null;
@@ -1543,11 +1602,12 @@ if (window.visualViewport) window.visualViewport.addEventListener('resize', resi
 /* ---------------- เริ่มต้น ---------------- */
 resize();
 updateMuteIcon();
+updateGfxLabels();
 genScenery();
 goTitle();
 if (/debug/.test(location.hash)) {                // ตัวช่วยทดสอบ (เปิดด้วย #debug เท่านั้น)
   window.__saman = { get state() { return state; }, get dist() { return runDist; }, get abs() { return dist; }, get score() { return score; },
-    hero: hero, obs: obs, coins: coins, act: act, mkObs: mkObs, au: AU, warp: function (m) { runStart -= m; runDist += m; },
+    hero: hero, obs: obs, coins: coins, act: act, mkObs: mkObs, au: AU, gfx: function () { return { mode: save.gfx, W: W, H: H, vw: view.width, vh: view.height, resScale: resScale }; }, setGfx: setGfx, warp: function (m) { runStart -= m; runDist += m; },
     freeze: function (on) { STEP_FREEZE = !!on; } };
 }
 raf(loop);
