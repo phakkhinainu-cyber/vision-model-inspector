@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#140b26">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<title>ซ่าแมน: วิ่งซ่าทะลุเมือง</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;overflow:hidden;background:#07040f;color:#fff;
+  overscroll-behavior:none;touch-action:none;-ms-touch-action:none;
+  -webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;
+  -webkit-touch-callout:none;-webkit-tap-highlight-color:rgba(0,0,0,0);-webkit-text-size-adjust:100%;text-size-adjust:100%;
+  font-family:"Sukhumvit Set","Thonburi","Leelawadee UI","Leelawadee","Tahoma","Noto Sans Thai","Noto Sans",system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+#game{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;touch-action:none}
+#view{position:absolute;top:0;left:0;width:100%;height:100%;display:block;touch-action:none}
+.hidden{display:none!important}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation;-webkit-appearance:none;-moz-appearance:none;appearance:none;outline:none}
+button:focus-visible{outline:3px solid #7fe3ff;outline-offset:2px}
+.num{font-family:"Courier New",Courier,ui-monospace,Menlo,Consolas,monospace;font-weight:900}
+.out{text-shadow:2px 0 0 #000,-2px 0 0 #000,0 2px 0 #000,0 -2px 0 #000,2px 2px 0 #000,-2px 2px 0 #000,2px -2px 0 #000,-2px -2px 0 #000,3px 4px 0 rgba(0,0,0,.5)}
+
+/* ---------- HUD ---------- */
+#hud{position:absolute;top:0;left:0;right:0;pointer-events:none;z-index:5;
+  padding:10px 120px 0 12px;
+  padding-top:max(10px,env(safe-area-inset-top));padding-left:max(12px,env(safe-area-inset-left))}
+.hs{display:flex;align-items:center;line-height:1;font-weight:900}
+.hs svg{width:22px;height:30px;margin-right:7px;flex:none}
+#hScore{display:inline-block;font-size:34px;color:#ffd84a;transform-origin:left center}
+#hDistRow{margin-top:6px;font-size:18px}
+#hBestRow{margin-top:5px;font-size:13px;color:#a8ecff}
+.bump{animation:bump .2s ease-out}
+@keyframes bump{0%{transform:scale(1.35)}100%{transform:scale(1)}}
+#corner{position:absolute;z-index:30;display:flex;top:10px;right:12px;top:max(10px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right))}
+.ib{width:46px;height:46px;margin-left:8px;display:flex;align-items:center;justify-content:center;border-radius:6px;
+  background:linear-gradient(#4a3488,#1e1240);border:2px solid #ffd23f;box-shadow:0 0 0 2px #000,3px 3px 0 2px rgba(0,0,0,.55)}
+.ib:active{transform:translate(2px,2px)}
+.ib svg{width:24px;height:24px;display:block}
+
+/* ---------- screens ---------- */
+.screen{position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:16px;padding-top:max(16px,env(safe-area-inset-top));padding-bottom:max(16px,env(safe-area-inset-bottom));
+  padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+.dim{background:rgba(10,5,24,.62)}
+.card{width:100%;max-width:360px;padding:18px 20px 16px;border-radius:4px;
+  background:linear-gradient(180deg,rgba(54,32,116,.97),rgba(18,9,44,.97));
+  border:3px solid #ffd23f;box-shadow:0 0 0 3px #000,8px 8px 0 3px rgba(0,0,0,.45)}
+.card h2{font-size:32px;font-weight:900;color:#ffcf3a;margin-bottom:6px}
+.btn{display:block;width:100%;margin-top:12px;padding:11px 16px;font-size:20px;font-weight:900;color:#2a1000;border-radius:4px;
+  background:linear-gradient(#fff07a,#ffb21f 55%,#ff7a12);border:3px solid #000;
+  box-shadow:inset 3px 3px 0 rgba(255,255,255,.55),inset -3px -3px 0 rgba(0,0,0,.22),4px 4px 0 #000}
+.btn:active{transform:translate(3px,3px);box-shadow:inset 3px 3px 0 rgba(255,255,255,.55),inset -3px -3px 0 rgba(0,0,0,.22),1px 1px 0 #000}
+.btn.sec{background:linear-gradient(#b4e9ff,#4b8fe0);color:#001634;font-size:17px;padding:9px 16px}
+.rows{margin:8px 0 4px;text-align:left}
+.rows div{display:flex;justify-content:space-between;align-items:baseline;padding:7px 2px;border-bottom:2px dashed rgba(255,255,255,.16);font-size:16px}
+.rows b{font-size:21px;color:#ffd84a}
+.rec{display:inline-block;margin:2px 0 4px;padding:3px 12px;background:#ff3d6e;color:#fff;font-weight:900;border:2px solid #000;animation:blink .7s steps(2) infinite}
+@keyframes blink{50%{opacity:.4}}
+.help{font-size:13px;color:#ddd5ff;margin-top:10px;line-height:1.6}
+.k{display:inline-block;min-width:20px;padding:0 5px;border:1px solid #a99bff;border-radius:3px;background:rgba(255,255,255,.1);font-size:12px;line-height:18px;text-align:center}
+
+#scrTitle{justify-content:space-between;
+  background:linear-gradient(180deg,rgba(10,5,30,.6),rgba(10,5,30,0) 30%,rgba(10,5,30,0) 66%,rgba(10,5,30,.75))}
+.logo{margin-top:1vh}
+.logo .capi{width:56px;height:56px;width:clamp(44px,11vmin,84px);height:clamp(44px,11vmin,84px);display:inline-block;vertical-align:middle;animation:spin 7s linear infinite}
+.logo .capi svg{width:100%;height:100%;display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.logo h1{display:inline-block;vertical-align:middle;font-size:58px;font-size:clamp(44px,13vmin,104px);line-height:1.1;font-weight:900;color:#ffd23a;
+  transform:skewX(-8deg);padding:0 .08em;
+  text-shadow:0 3px 0 #ff7a12,0 6px 0 #c2370a,0 9px 0 #6b1404,4px 13px 0 rgba(0,0,0,.65)}
+.logo .sub{margin-top:6px;font-size:15px;font-size:clamp(13px,3.3vmin,22px);font-weight:900;letter-spacing:.05em}
+.logo .sub span{color:#ffd84a}
+.tpanel{width:100%;max-width:380px}
+.tbest{margin-top:10px;font-size:15px;font-weight:800}
+.tbest b{color:#ffd84a}
+.pulse{animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.045)}}
+@media (orientation:landscape){
+  #scrTitle{align-items:flex-start;justify-content:center;text-align:left;padding-left:max(5vw,env(safe-area-inset-left));
+    background:linear-gradient(90deg,rgba(10,5,30,.78),rgba(10,5,30,.4) 42%,rgba(10,5,30,0) 58%)}
+  #scrTitle .logo{margin-top:0}
+  #scrTitle .tpanel{max-width:330px;margin-top:3vh}
+}
+@media (max-height:520px){
+  .card{padding:10px 16px 10px;max-width:420px}
+  .card h2{font-size:24px;margin-bottom:2px}
+  .btn{margin-top:8px;padding:7px 14px;font-size:17px}
+  .btn.sec{padding:6px 14px;font-size:15px}
+  .rows{margin:4px 0 2px}
+  .rows div{padding:3px 2px;font-size:14px}
+  .rows b{font-size:17px}
+  .rec{padding:1px 10px;font-size:14px}
+  .card .help{margin-top:6px}
+  #hScore{font-size:28px}
+  #hDistRow{font-size:15px;margin-top:4px}
+}
+@media (max-height:360px){
+  .card .help{display:none}
+  .tpanel .help{font-size:12px;margin-top:6px;line-height:1.4}
+  #scrOver .rows{display:flex;flex-wrap:wrap;justify-content:space-between}
+  #scrOver .rows div{width:48%}
+}
+#count{position:absolute;left:0;right:0;top:36%;text-align:center;z-index:8;pointer-events:none;font-size:96px;font-weight:900;color:#ffd84a;line-height:1}
+#toast{position:absolute;left:0;right:0;top:22%;text-align:center;z-index:8;pointer-events:none;font-size:30px;font-weight:900;color:#fff;opacity:0}
+#toast.show{animation:toast 1.3s ease-out forwards}
+@keyframes toast{0%{opacity:0;transform:scale(.6)}15%{opacity:1;transform:scale(1.12)}25%{transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:translateY(-18px)}}
+noscript{position:absolute;top:40%;left:0;right:0;text-align:center;font-size:18px}
+</style>
+</head>
+<body>
+<div id="game">
+  <canvas id="view" aria-label="เกมซ่าแมน"></canvas>
+
+  <div id="hud" class="hidden">
+    <div class="hs out">
+      <svg viewBox="0 0 20 28" aria-hidden="true"><rect x="2" y="3.5" width="16" height="22.5" rx="3" fill="#ff7c00" stroke="#000" stroke-width="2"/><rect x="3" y="11" width="14" height="6" fill="#ffe85a"/><rect x="4" y="1" width="12" height="3.5" rx="1" fill="#d6d6dc" stroke="#000" stroke-width="1.5"/></svg>
+      <span id="hScore" class="num">0</span>
+    </div>
+    <div id="hDistRow" class="hs out"><span id="hDist" class="num">0</span>&nbsp;ม.</div>
+    <div id="hBestRow" class="hs out">สถิติ&nbsp;<span id="hBest" class="num">0</span></div>
+  </div>
+
+  <div id="corner">
+    <button id="btnPause" class="ib hidden" aria-label="หยุดชั่วคราว (P)" title="หยุดชั่วคราว (P)">
+      <svg viewBox="0 0 24 24"><rect x="5" y="4" width="5" height="16" fill="#fff" stroke="#000" stroke-width="1"/><rect x="14" y="4" width="5" height="16" fill="#fff" stroke="#000" stroke-width="1"/></svg>
+    </button>
+    <button id="btnMute" class="ib" aria-label="ปิด/เปิดเสียง (M)" title="ปิด/เปิดเสียง (M)">
+      <svg viewBox="0 0 24 24"><path d="M3 9h4l5-4v14l-5-4H3z" fill="#fff" stroke="#000" stroke-width="1"/>
+        <g id="icoOn"><path d="M15 8.5a5 5 0 0 1 0 7M17.6 6a8.6 8.6 0 0 1 0 12" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></g>
+        <g id="icoOff"><path d="M15.5 9l5.5 6M21 9l-5.5 6" stroke="#ff5a5a" stroke-width="2.6" stroke-linecap="round"/></g>
+      </svg>
+    </button>
+  </div>
+
+  <div id="toast" class="out"></div>
+  <div id="count" class="out num hidden">3</div>
+
+  <section id="scrTitle" class="screen">
+    <div class="logo">
+      <span class="capi" id="logoCap"></span><h1>ซ่าแมน</h1>
+      <div class="sub out">SA-MAN · <span>วิ่งซ่าทะลุเมือง</span></div>
+    </div>
+    <div class="tpanel">
+      <button id="btnStart" class="btn pulse">▶ เริ่มเกม</button>
+      <div class="tbest out">สถิติสูงสุด <b class="num" id="tBest">0</b> แต้ม · <b class="num" id="tBestD">0</b> ม.</div>
+      <div class="help out" id="helpKeys"><span class="k">←</span> <span class="k">→</span> เปลี่ยนเลน · <span class="k">↑</span>/<span class="k">Space</span> กระโดด · <span class="k">↓</span> สไลด์ · <span class="k">P</span> หยุด · <span class="k">M</span> เสียง</div>
+      <div class="help out" id="helpTouch">ปัดซ้าย/ขวา = เปลี่ยนเลน · ปัดขึ้น = กระโดด · ปัดลง = สไลด์</div>
+    </div>
+  </section>
+
+  <section id="scrPause" class="screen dim hidden">
+    <div class="card">
+      <h2 class="out">หยุดชั่วคราว</h2>
+      <button id="btnResume" class="btn">▶ เล่นต่อ</button>
+      <button id="btnRestart" class="btn sec">เริ่มใหม่</button>
+      <button id="btnHomeP" class="btn sec">หน้าหลัก</button>
+      <div class="help">กด <span class="k">P</span> หรือ <span class="k">Esc</span> เพื่อเล่นต่อ</div>
+    </div>
+  </section>
+
+  <section id="scrOver" class="screen dim hidden">
+    <div class="card">
+      <h2 class="out">จบเกม!</h2>
+      <div id="newRec" class="rec hidden">★ สถิติใหม่! ★</div>
+      <div class="rows">
+        <div><span>คะแนน</span><b class="num" id="oScore">0</b></div>
+        <div><span>ระยะทาง</span><b class="num" id="oDist">0 ม.</b></div>
+        <div><span>กระป๋องที่เก็บได้</span><b class="num" id="oCans">0</b></div>
+        <div><span>สถิติสูงสุด</span><b class="num" id="oBest">0</b></div>
+      </div>
+      <button id="btnRetry" class="btn">↻ เล่นอีกครั้ง</button>
+      <button id="btnHomeO" class="btn sec">หน้าหลัก</button>
+    </div>
+  </section>
+  <noscript>เกมนี้ต้องเปิด JavaScript</noscript>
+</div>
+
+<script>
+(function () {
+'use strict';
+
+/* =====================================================================
+   ซ่าแมน: วิ่งซ่าทะลุเมือง — endless runner สไตล์ PS1
+   - เรนเดอร์ 3 มิติแบบ software บน Canvas 2D ความละเอียดต่ำ แล้วขยายแบบ nearest-neighbor
+   - vertex snapping (ภาพสั่นแบบ PS1), flat shading, หมอก, สีแบบ 15 บิต + dithering
+   ===================================================================== */
+
+var D = document;
+function $(id) { return D.getElementById(id); }
+var TAU = Math.PI * 2;
+function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function rand(a, b) { return a + Math.random() * (b - a); }
+function randi(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function smooth(t) { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); }
+function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+/* ---------------- บันทึกสถิติ (localStorage + try/catch) ---------------- */
+var STORE_KEY = 'saman-runner-v1';
+var save = { bestScore: 0, bestDist: 0, muted: false };
+function loadSave() {
+  try {
+    var s = window.localStorage.getItem(STORE_KEY);
+    if (s) {
+      var o = JSON.parse(s);
+      if (o && typeof o === 'object') {
+        save.bestScore = Math.max(0, Math.floor(+o.bestScore || 0));
+        save.bestDist = Math.max(0, Math.floor(+o.bestDist || 0));
+        save.muted = !!o.muted;
+      }
+    }
+  } catch (e) { /* storage ไม่พร้อมใช้งาน: เล่นต่อได้ตามปกติ */ }
+}
+function writeSave() {
+  try { window.localStorage.setItem(STORE_KEY, JSON.stringify(save)); } catch (e) { /* ignore */ }
+}
+loadSave();
+
+/* ---------------- เสียง (Web Audio API ล้วน) ---------------- */
+var AU = (function () {
+  var ctx = null, master = null, noiseBuf = null, unlocked = false;
+  var VOL = 0.6;
+  function ensure() {
+    if (ctx) return ctx;
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    try { ctx = new AC(); } catch (e) { ctx = null; return null; }
+    master = ctx.createGain();
+    master.gain.value = save.muted ? 0 : VOL;
+    master.connect(ctx.destination);
+    var len = Math.floor(ctx.sampleRate * 1.0);
+    noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+    var d = noiseBuf.getChannelData(0);
+    for (var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    return ctx;
+  }
+  function unlock() {
+    var c = ensure();
+    if (!c) return;
+    if (c.state !== 'running' && c.resume) {
+      try { var p = c.resume(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+    }
+    if (!unlocked) {
+      try {
+        var b = c.createBuffer(1, 1, 22050), s = c.createBufferSource();
+        s.buffer = b; s.connect(c.destination); s.start(0);
+      } catch (e) {}
+      unlocked = true;
+    }
+  }
+  // หลังผู้เล่นแตะครั้งแรก ระหว่างที่ context กำลัง resume ให้จัดคิวเสียงไว้ได้ (iOS Safari resume แบบ async)
+  function ok() { return ctx && master && !save.muted && (ctx.state === 'running' || (unlocked && ctx.state === 'suspended')); }
+  function tone(type, f0, f1, dur, vol, delay) {
+    if (!ok()) return;
+    var t = ctx.currentTime + (delay || 0);
+    var o = ctx.createOscillator(), gn = ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(f0, t);
+    if (f1 && f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    gn.gain.setValueAtTime(0.0001, t);
+    gn.gain.exponentialRampToValueAtTime(vol, t + 0.008);
+    gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(gn); gn.connect(master);
+    o.start(t); o.stop(t + dur + 0.03);
+  }
+  function hiss(dur, vol, ftype, f0, f1, delay, q) {
+    if (!ok()) return;
+    var t = ctx.currentTime + (delay || 0);
+    var s = ctx.createBufferSource();
+    s.buffer = noiseBuf; s.loop = true;
+    var f = ctx.createBiquadFilter();
+    f.type = ftype;
+    f.frequency.setValueAtTime(f0, t);
+    if (f1 && f1 !== f0) f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    if (q) f.Q.value = q;
+    var gn = ctx.createGain();
+    gn.gain.setValueAtTime(0.0001, t);
+    gn.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+    gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(f); f.connect(gn); gn.connect(master);
+    s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.03);
+  }
+  function setMuted(m) {
+    if (!ctx || !master) return;
+    try { master.gain.cancelScheduledValues(ctx.currentTime); master.gain.setValueAtTime(m ? 0 : VOL, ctx.currentTime); }
+    catch (e) { master.gain.value = m ? 0 : VOL; }
+  }
+  return {
+    unlock: unlock, setMuted: setMuted,
+    jump: function () { tone('square', 260, 640, 0.17, 0.09); tone('triangle', 520, 1300, 0.13, 0.05); },
+    slide: function () { hiss(0.32, 0.16, 'lowpass', 1800, 260); tone('sine', 190, 90, 0.22, 0.08); },
+    lane: function () { hiss(0.09, 0.07, 'bandpass', 2600, 1200, 0, 1.2); tone('triangle', 430, 300, 0.07, 0.05); },
+    bump: function () { tone('sine', 150, 70, 0.12, 0.14); },
+    land: function () { hiss(0.08, 0.07, 'lowpass', 500, 200); },
+    coin: function () {
+      tone('square', 988, 988, 0.06, 0.06); tone('square', 1319, 1319, 0.13, 0.06, 0.055);
+      hiss(0.22, 0.05, 'highpass', 4500, 7000, 0.02);
+    },
+    gold: function () {
+      var n = [784, 988, 1175, 1568];
+      for (var i = 0; i < n.length; i++) tone('square', n[i], n[i], 0.09, 0.06, i * 0.055);
+      hiss(0.45, 0.07, 'highpass', 4000, 8000, 0.03);
+    },
+    crash: function () {
+      hiss(0.7, 0.42, 'lowpass', 1400, 90);
+      tone('sawtooth', 200, 38, 0.55, 0.2);
+      tone('square', 96, 30, 0.45, 0.12, 0.03);
+    },
+    start: function () {
+      var n = [523, 659, 784, 1047];
+      for (var i = 0; i < n.length; i++) tone('square', n[i], n[i], 0.1, 0.06, i * 0.07);
+      hiss(0.5, 0.06, 'highpass', 3000, 8000, 0.25);
+    },
+    mile: function () { tone('triangle', 659, 659, 0.1, 0.08); tone('triangle', 880, 880, 0.1, 0.08, 0.09); tone('triangle', 1175, 1175, 0.2, 0.08, 0.18); },
+    beep: function () { tone('square', 660, 660, 0.1, 0.07); },
+    go: function () { tone('square', 990, 990, 0.25, 0.07); },
+    click: function () { tone('triangle', 820, 620, 0.05, 0.05); },
+    over: function () { var n = [523, 440, 349, 262]; for (var i = 0; i < n.length; i++) tone('triangle', n[i], n[i], 0.16, 0.08, i * 0.13); }
+  };
+})();
+
+/* ---------------- DOM ---------------- */
+var gameEl = $('game'), view = $('view');
+var hud = $('hud'), elScore = $('hScore'), elDist = $('hDist'), elBest = $('hBest');
+var elCount = $('count'), elToast = $('toast');
+var scrTitle = $('scrTitle'), scrPause = $('scrPause'), scrOver = $('scrOver');
+var btnPause = $('btnPause'), btnMute = $('btnMute');
+
+(function buildCapIcon() {
+  var pts = '';
+  for (var i = 0; i < 24; i++) {
+    var a = i / 24 * TAU - Math.PI / 2, r = (i & 1) ? 40 : 48;
+    pts += (50 + r * Math.cos(a)).toFixed(1) + ',' + (50 + r * Math.sin(a)).toFixed(1) + ' ';
+  }
+  $('logoCap').innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="' + pts +
+    '" fill="#dfe4ea" stroke="#1a1a1a" stroke-width="4" stroke-linejoin="round"/>' +
+    '<circle cx="50" cy="50" r="30" fill="#e3261f" stroke="#6e0905" stroke-width="3"/>' +
+    '<circle cx="40" cy="44" r="7" fill="#fff"/><circle cx="58" cy="36" r="4.5" fill="#fff"/><circle cx="57" cy="58" r="5.5" fill="#fff"/></svg>';
+})();
+
+var hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+var finePointer = false;
+try { finePointer = window.matchMedia && window.matchMedia('(pointer:fine)').matches; } catch (e) {}
+if (!hasTouch) $('helpTouch').classList.add('hidden');
+if (hasTouch && !finePointer) $('helpKeys').classList.add('hidden');
+
+/* ---------------- Canvas & ความละเอียด ---------------- */
+var vctx = view.getContext('2d');
+var low = D.createElement('canvas');
+var g = low.getContext('2d', { alpha: false }) || low.getContext('2d');
+var cssW = 320, cssH = 240, dpr = 1, W = 320, H = 240, UNIT = 1;
+var ditherPat = null, needRender = true;
+
+function makeDither() {
+  var c = D.createElement('canvas'); c.width = 4; c.height = 4;
+  var x = c.getContext('2d'), id = x.createImageData(4, 4);
+  var B = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+  for (var i = 0; i < 16; i++) {
+    var v = (B[i] + 0.5) / 16 - 0.5, o = i * 4, w = v > 0 ? 255 : 0;
+    id.data[o] = w; id.data[o + 1] = w; id.data[o + 2] = w;
+    id.data[o + 3] = Math.round(Math.abs(v) * 2 * 26);
+  }
+  x.putImageData(id, 0, 0);
+  ditherPat = g.createPattern(c, 'repeat');
+}
+
+function resize() {
+  var w = window.innerWidth || D.documentElement.clientWidth || 320;
+  var h = window.innerHeight || D.documentElement.clientHeight || 240;
+  if (window.visualViewport && window.visualViewport.width > 0) {
+    w = Math.min(w, window.visualViewport.width) || w;
+    h = Math.min(h, window.visualViewport.height) || h;
+  }
+  cssW = w; cssH = h;
+  dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 3));
+  view.width = Math.max(1, Math.round(w * dpr));
+  view.height = Math.max(1, Math.round(h * dpr));
+  var pix = Math.max(1, Math.min(w, h) / 240);       // ด้านสั้นสุด ≈ 240 พิกเซล (แบบ PS1)
+  W = Math.max(120, Math.round(w / pix));
+  H = Math.max(120, Math.round(h / pix));
+  low.width = W; low.height = H;
+  UNIT = Math.min(W, H) / 240;
+  makeDither();
+  needRender = true;
+}
+
+/* ---------------- ค่าคงที่ของเกม ---------------- */
+var LANE = 2.6, ROAD = 3.95, RUMBLE = 4.4, WALK = 7.8;
+var SEG = 4, DRAW_DIST = 210, NEAR = 0.2;
+var START_SPEED = 13, MAX_SPEED = 36;
+var GRAV = 34, JUMP_V = 11, FAST_FALL = 20, SLIDE_TIME = 0.75;
+var STEP = 1 / 120, CURVE_MAX = 7, STEP_FREEZE = false;
+
+/* วัสดุ (สี RGB) */
+var C = {
+  asphA: [98, 96, 108], asphB: [88, 86, 100], line: [238, 234, 214], rumR: [214, 44, 44], rumW: [238, 238, 238],
+  walkA: [170, 160, 152], walkB: [156, 148, 142],
+  suit: [255, 84, 28], cape: [196, 22, 44], capeIn: [255, 186, 40], trunk: [176, 20, 40], boot: [178, 22, 36],
+  gold: [255, 198, 36], skin: [244, 196, 150], white: [250, 250, 250], dark: [40, 26, 30],
+  capRim: [216, 222, 230], capRed: [232, 30, 30], shadow: [8, 6, 16],
+  canBody: [255, 122, 0], canBand: [255, 234, 92], canRim: [216, 216, 222],
+  goldBody: [255, 200, 30], goldBand: [255, 255, 226], goldRim: [255, 238, 166],
+  barR: [226, 40, 30], barW: [244, 244, 244], steel: [124, 128, 138], beamY: [255, 202, 0], beamK: [34, 30, 36], post: [196, 196, 204],
+  glass: [44, 58, 80], tail: [255, 36, 36], tire: [26, 26, 30], bumper: [52, 52, 58], plate: [240, 240, 220],
+  wood: [184, 132, 70], woodD: [128, 86, 44], lightOn: [255, 150, 40], lightOff: [120, 60, 30],
+  pole: [72, 76, 88], lampD: [214, 214, 204], lampN: [255, 238, 182], glow: [255, 200, 120],
+  bark: [112, 76, 48], leaf: [56, 142, 72], leafD: [40, 112, 60], winW: [255, 214, 120], winC: [176, 222, 255]
+};
+var BCOLS = [[156, 146, 136], [122, 132, 154], [166, 104, 84], [104, 144, 136], [184, 172, 142], [112, 102, 126], [140, 120, 150], [96, 116, 140]];
+var NEONS = [[255, 60, 170], [60, 240, 255], [150, 255, 60], [255, 140, 30], [255, 240, 80]];
+var VAN_COLS = [[238, 238, 238], [60, 112, 204], [242, 200, 40], [72, 162, 94], [184, 42, 54], [130, 70, 170]];
+var TRUCK_COLS = [[214, 214, 206], [230, 226, 200], [190, 206, 220]];
+
+/* ชุดสีของฉาก: พลบค่ำ → กลางคืน → รุ่งเช้า (วนตามระยะทาง) */
+var PALS = [
+  { skyTop: [44, 26, 96], skyMid: [198, 74, 112], fog: [255, 156, 98], ground: [86, 64, 72], tint: [1.0, 0.86, 0.78], amb: 0.52,
+    sun: [255, 228, 132], sunR: 0.15, sunY: 0.05, stars: 0, win: 0.35, glow: 0.15, skyline: [96, 40, 86] },
+  { skyTop: [4, 4, 22], skyMid: [24, 20, 66], fog: [46, 36, 94], ground: [26, 24, 42], tint: [0.5, 0.52, 0.76], amb: 0.44,
+    sun: [236, 236, 255], sunR: 0.05, sunY: 0.32, stars: 1, win: 0.72, glow: 1, skyline: [16, 12, 40] },
+  { skyTop: [66, 128, 226], skyMid: [150, 198, 246], fog: [216, 228, 242], ground: [98, 112, 92], tint: [1.0, 1.0, 1.0], amb: 0.56,
+    sun: [255, 252, 224], sunR: 0.06, sunY: 0.45, stars: 0, win: 0.08, glow: 0, skyline: [150, 170, 204] }
+];
+var pal = {};
+(function () { var k; for (k in PALS[0]) pal[k] = Array.isArray(PALS[0][k]) ? PALS[0][k].slice() : PALS[0][k]; })();
+function updatePalette(d) {
+  var PH = 900, TR = 220, k = Math.floor(d / PH), r = d - k * PH;
+  var a = PALS[k % 3], b = PALS[(k + 1) % 3];
+  var t = r > PH - TR ? smooth((r - (PH - TR)) / TR) : 0;
+  for (var key in a) {
+    if (Array.isArray(a[key])) { for (var i = 0; i < a[key].length; i++) pal[key][i] = lerp(a[key][i], b[key][i], t); }
+    else pal[key] = lerp(a[key], b[key], t);
+  }
+}
+
+/* ---------------- สถานะเกม ---------------- */
+var state = 'title', stateT = 0, T = 0;
+var dist = 0, runStart = 0, runDist = 0, speed = 0, introT = 1, camBlend = 0;
+var score = 0, cans = 0, nextMile = 500, overT = 0, countT = 0, countShown = 0;
+var newBest = false, newDist = false;
+var curve = 0, curveTarget = 0, nextCurve = 300, skyScroll = 0;
+var shake = 0, flash = 0;
+var obs = [], coins = [], scen = [], parts = [];
+var nextRow = 90, nextB = [-30, -30], nextLamp = -24;
+
+var hero = { lane: 1, x: 0, y: 0, vy: 0, ground: true, slideT: 0, jumpBuf: 0, qSlide: false, phase: 0, yaw: Math.PI, capeLift: 0.35 };
+
+/* โพสท่าของตัวละคร (มุมข้อต่อ) */
+var HIPY = 0, BODYP = 1, TLEAN = 2, HEADP = 3, THIGH = 4, KNEE = 6, ARM = 8, EL = 10, ARMO = 12, LEGO = 14, ELZ = 16, BOB = 18, ROLL = 19, NP = 20;
+var pose = new Float32Array(NP), ptgt = new Float32Array(NP);
+pose[HIPY] = 0.98;
+
+/* ---------------- เรนเดอร์ 3D (software, painter's algorithm) ---------------- */
+var cam = { x: 0, y: 3, z: -5.5, pitch: 0.15, cp: 1, sp: 0, F: 200, cx: 160, cy: 120 };
+var F_CULL = 1, F_LIT = 2, F_EMIS = 4, F_TWO = 8;
+var LX = -0.45, LY = 0.8, LZ = -0.4;
+(function () { var l = Math.sqrt(LX * LX + LY * LY + LZ * LZ); LX /= l; LY /= l; LZ /= l; })();
+var TR = 1, TG = 1, TB = 1, AMB = 0.5, FR = 0, FGc = 0, FB = 0, FOG0 = 20, FOGK = 1 / 185;
+var baseTint = [1, 1, 1];
+
+var P = new Float64Array(64 * 3), CS = new Float64Array(64 * 3), CL = new Float64Array(66 * 3);
+var pool = [], polyCount = 0, lastArea = 0;
+var CC = new Array(32768);
+
+function colStr(r, gg, b) {
+  r = r < 0 ? 0 : (r > 255 ? 255 : r); gg = gg < 0 ? 0 : (gg > 255 ? 255 : gg); b = b < 0 ? 0 : (b > 255 ? 255 : b);
+  var R = r >> 3, G = gg >> 3, B = b >> 3, k = (R << 10) | (G << 5) | B;   // สี 15 บิตแบบ PS1
+  var s = CC[k];
+  if (s === undefined) { s = 'rgb(' + ((R << 3) | (R >> 2)) + ',' + ((G << 3) | (G >> 2)) + ',' + ((B << 3) | (B >> 2)) + ')'; CC[k] = s; }
+  return s;
+}
+function getPoly() {
+  var p = pool[polyCount];
+  if (!p) { p = { x: new Float32Array(68), y: new Float32Array(68), n: 0, key: 0, col: '#000', a: 1 }; pool[polyCount] = p; }
+  return p;
+}
+function clipNear(n) {
+  var m = 0;
+  for (var i = 0; i < n; i++) {
+    var j = (i + 1) % n, ai = i * 3, bi = j * 3;
+    var az = CS[ai + 2], bz = CS[bi + 2], ain = az >= NEAR, bin = bz >= NEAR;
+    if (ain) { CL[m * 3] = CS[ai]; CL[m * 3 + 1] = CS[ai + 1]; CL[m * 3 + 2] = az; m++; }
+    if (ain !== bin) {
+      var t = (NEAR - az) / (bz - az);
+      CL[m * 3] = CS[ai] + (CS[bi] - CS[ai]) * t; CL[m * 3 + 1] = CS[ai + 1] + (CS[bi + 1] - CS[ai + 1]) * t; CL[m * 3 + 2] = NEAR; m++;
+    }
+  }
+  return m;
+}
+/* ส่งรูปหลายเหลี่ยมจากบัฟเฟอร์ P (พิกัดโลก, z สัมพัทธ์กับผู้เล่น) เข้าคิววาด */
+function emit(n, col, flags, key, col2, alpha) {
+  var anyIn = false, allIn = true, i, o;
+  var cx0 = cam.x, cy0 = cam.y, cz0 = cam.z, cp = cam.cp, sp = cam.sp, cv = curve;
+  for (i = 0, o = 0; i < n; i++, o += 3) {
+    var z = P[o + 2], zz = z > 0 ? z * 0.01 : 0;
+    var dx = P[o] + cv * zz * zz - cx0, dy = P[o + 1] - cy0, dz = z - cz0;   // ถนนโค้ง (เลื่อน x ตามระยะ)
+    var zc = dz * cp - dy * sp;
+    CS[o] = dx; CS[o + 1] = dy * cp + dz * sp; CS[o + 2] = zc;
+    if (zc >= NEAR) anyIn = true; else allIn = false;
+  }
+  if (!anyIn) return null;
+  var src = CS, m = n;
+  if (!allIn) { m = clipNear(n); src = CL; if (m < 3) return null; }
+  var p = getPoly(), Fo = cam.F, ccx = cam.cx, ccy = cam.cy, zs = 0;
+  var minx = 1e9, maxx = -1e9, miny = 1e9, maxy = -1e9;
+  for (i = 0, o = 0; i < m; i++, o += 3) {
+    var iz = Fo / src[o + 2];
+    var sx = Math.round(ccx + src[o] * iz), sy = Math.round(ccy - src[o + 1] * iz);   // vertex snapping
+    p.x[i] = sx; p.y[i] = sy; zs += src[o + 2];
+    if (sx < minx) minx = sx; if (sx > maxx) maxx = sx; if (sy < miny) miny = sy; if (sy > maxy) maxy = sy;
+  }
+  var area = 0;
+  for (i = 0, o = m - 1; i < m; o = i++) area += p.x[o] * p.y[i] - p.x[i] * p.y[o];
+  lastArea = area;
+  if (area === 0 || ((flags & F_CULL) && area > 0)) return null;
+  if (maxx < 0 || minx > W || maxy < 0 || miny > H) return null;
+  var back = (flags & F_TWO) && area > 0;
+  var c = (back && col2) ? col2 : col;
+  var r = c[0], gg = c[1], b = c[2];
+  if (flags & F_LIT) {
+    var ax = P[3] - P[0], ay = P[4] - P[1], az = P[5] - P[2], bx = P[6] - P[0], by = P[7] - P[1], bz = P[8] - P[2];
+    var nx = by * az - bz * ay, ny = bz * ax - bx * az, nz = bx * ay - by * ax;
+    var l = Math.sqrt(nx * nx + ny * ny + nz * nz);
+    var d = l > 0 ? (nx * LX + ny * LY + nz * LZ) / l : 0.5;
+    if (back) d = -d;
+    var sh = AMB + (1 - AMB) * (d > 0 ? d : 0);
+    r *= sh * TR; gg *= sh * TG; b *= sh * TB;
+  } else if (!(flags & F_EMIS)) { r *= TR; gg *= TG; b *= TB; }
+  var depth = zs / m;
+  var f = (depth - FOG0) * FOGK; f = f < 0 ? 0 : (f > 1 ? 1 : f);
+  if (flags & F_EMIS) f *= 0.6;
+  r += (FR - r) * f; gg += (FGc - gg) * f; b += (FB - b) * f;
+  p.col = colStr(r, gg, b);
+  p.n = m; p.key = key === undefined ? depth : key; p.a = alpha || 1;
+  polyCount++;
+  return p;
+}
+function flush(start, sort) {
+  var end = polyCount, i, j, p;
+  if (sort && end - start > 1) {
+    for (i = start + 1; i < end; i++) {
+      p = pool[i]; var k = p.key; j = i - 1;
+      while (j >= start && pool[j].key < k) { pool[j + 1] = pool[j]; j--; }
+      pool[j + 1] = p;
+    }
+  }
+  for (i = start; i < end; i++) {
+    p = pool[i];
+    g.fillStyle = p.col;
+    if (p.a < 1) g.globalAlpha = p.a;
+    g.beginPath(); g.moveTo(p.x[0], p.y[0]);
+    for (j = 1; j < p.n; j++) g.lineTo(p.x[j], p.y[j]);
+    g.closePath(); g.fill();
+    if (p.a < 1) g.globalAlpha = 1;
+  }
+  polyCount = start;
+}
+function depthOf(y, z) { return (z - cam.z) * cam.cp - (y - cam.y) * cam.sp; }
+var PT = { x: 0, y: 0, z: 0 };
+function project(x, y, z) {
+  var zz = z > 0 ? z * 0.01 : 0, dx = x + curve * zz * zz - cam.x, dy = y - cam.y, dz = z - cam.z;
+  var zc = dz * cam.cp - dy * cam.sp;
+  if (zc < NEAR) return false;
+  PT.x = cam.cx + dx * cam.F / zc; PT.y = cam.cy - (dy * cam.cp + dz * cam.sp) * cam.F / zc; PT.z = zc;
+  return true;
+}
+
+/* ----- primitive helpers ----- */
+var BX = new Float64Array(24), BF = [null, null, null, null, null, null], lastKey = 0;
+/* หน้า: 0 หน้า(-z) 1 หลัง(+z) 2 ซ้าย(-x) 3 ขวา(+x) 4 บน(+y) 5 ล่าง(-y) — เรียงทวนเข็มเมื่อมองจากด้านนอก */
+var FACES = [[0, 1, 3, 2], [5, 4, 6, 7], [4, 0, 2, 6], [1, 5, 7, 3], [2, 3, 7, 6], [4, 5, 1, 0]];
+function emitBox(col, flags, key, fc) {
+  for (var f = 0; f < 6; f++) {
+    var fi = FACES[f];
+    for (var j = 0; j < 4; j++) { var s = fi[j] * 3; P[j * 3] = BX[s]; P[j * 3 + 1] = BX[s + 1]; P[j * 3 + 2] = BX[s + 2]; }
+    BF[f] = emit(4, (fc && fc[f]) || col, flags, key);
+  }
+  lastKey = key;
+}
+function boxW(x0, y0, z0, x1, y1, z1, col, flags, fc) {
+  for (var i = 0; i < 8; i++) { BX[i * 3] = (i & 1) ? x1 : x0; BX[i * 3 + 1] = (i & 2) ? y1 : y0; BX[i * 3 + 2] = (i & 4) ? z1 : z0; }
+  emitBox(col, flags || (F_CULL | F_LIT), depthOf((y0 + y1) * 0.5, (z0 + z1) * 0.5), fc);
+}
+function boxM(m, x0, y0, z0, x1, y1, z1, col, fc) {
+  for (var i = 0; i < 8; i++) {
+    var x = (i & 1) ? x1 : x0, y = (i & 2) ? y1 : y0, z = (i & 4) ? z1 : z0;
+    BX[i * 3] = m[0] * x + m[1] * y + m[2] * z + m[3];
+    BX[i * 3 + 1] = m[4] * x + m[5] * y + m[6] * z + m[7];
+    BX[i * 3 + 2] = m[8] * x + m[9] * y + m[10] * z + m[11];
+  }
+  var cx = (x0 + x1) * 0.5, cy = (y0 + y1) * 0.5, cz = (z0 + z1) * 0.5;
+  emitBox(col, F_CULL | F_LIT, depthOf(m[4] * cx + m[5] * cy + m[6] * cz + m[7], m[8] * cx + m[9] * cy + m[10] * cz + m[11]), fc);
+}
+function lp(m, x, y, z, o) {
+  P[o] = m[0] * x + m[1] * y + m[2] * z + m[3];
+  P[o + 1] = m[4] * x + m[5] * y + m[6] * z + m[7];
+  P[o + 2] = m[8] * x + m[9] * y + m[10] * z + m[11];
+}
+function set4(a, b, c, d, e, f, g2, h, i, j, k, l) {
+  P[0] = a; P[1] = b; P[2] = c; P[3] = d; P[4] = e; P[5] = f; P[6] = g2; P[7] = h; P[8] = i; P[9] = j; P[10] = k; P[11] = l;
+}
+function quadZ(z, xa, ya, xb, yb, col, flags, key) { set4(xa, ya, z, xb, ya, z, xb, yb, z, xa, yb, z); return emit(4, col, flags, key); }
+function quadX(x, s, za, ya, zb, yb, col, flags, key) {
+  if (s < 0) set4(x, ya, zb, x, ya, za, x, yb, za, x, yb, zb); else set4(x, ya, za, x, ya, zb, x, yb, zb, x, yb, za);
+  return emit(4, col, flags, key);
+}
+function quadY(y, xa, za, xb, zb, col, flags, key, alpha) { set4(xa, y, za, xb, y, za, xb, y, zb, xa, y, zb); return emit(4, col, flags, key, null, alpha); }
+function ellipseY(x, y, z, rx, rz, n, col, flags, key, alpha) {
+  for (var i = 0; i < n; i++) { var a = i / n * TAU; P[i * 3] = x + Math.cos(a) * rx; P[i * 3 + 1] = y; P[i * 3 + 2] = z + Math.sin(a) * rz; }
+  return emit(n, col, flags, key, null, alpha);
+}
+
+/* ----- เมทริกซ์ 3x4 ----- */
+var MI = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0];
+function mMul(a, b) {
+  return [
+    a[0] * b[0] + a[1] * b[4] + a[2] * b[8], a[0] * b[1] + a[1] * b[5] + a[2] * b[9], a[0] * b[2] + a[1] * b[6] + a[2] * b[10], a[0] * b[3] + a[1] * b[7] + a[2] * b[11] + a[3],
+    a[4] * b[0] + a[5] * b[4] + a[6] * b[8], a[4] * b[1] + a[5] * b[5] + a[6] * b[9], a[4] * b[2] + a[5] * b[6] + a[6] * b[10], a[4] * b[3] + a[5] * b[7] + a[6] * b[11] + a[7],
+    a[8] * b[0] + a[9] * b[4] + a[10] * b[8], a[8] * b[1] + a[9] * b[5] + a[10] * b[9], a[8] * b[2] + a[9] * b[6] + a[10] * b[10], a[8] * b[3] + a[9] * b[7] + a[10] * b[11] + a[11]
+  ];
+}
+function mT(m, x, y, z) {
+  return [m[0], m[1], m[2], m[0] * x + m[1] * y + m[2] * z + m[3], m[4], m[5], m[6], m[4] * x + m[5] * y + m[6] * z + m[7], m[8], m[9], m[10], m[8] * x + m[9] * y + m[10] * z + m[11]];
+}
+function mRX(m, t) { var c = Math.cos(t), s = Math.sin(t); return mMul(m, [1, 0, 0, 0, 0, c, -s, 0, 0, s, c, 0]); }
+function mRY(m, t) { var c = Math.cos(t), s = Math.sin(t); return mMul(m, [c, 0, s, 0, 0, 1, 0, 0, -s, 0, c, 0]); }
+function mRZ(m, t) { var c = Math.cos(t), s = Math.sin(t); return mMul(m, [c, -s, 0, 0, s, c, 0, 0, 0, 0, 1, 0]); }
+
+/* ---------------- กล้อง ---------------- */
+function setupCamera() {
+  var asp = W / H, tl = clamp((asp - 0.56) / (1.45 - 0.56), 0, 1), e = smooth(camBlend);
+  var gY = lerp(4.7, 2.95, tl), gZ = lerp(-4.6, -6.0, tl), gP = lerp(0.3, 0.13, tl), gFeet = lerp(0.86, 0.84, tl);
+  var tY = 1.3, tZ = lerp(-4.3, -3.7, tl), tP = lerp(0.04, 0.02, tl), tFeet = lerp(0.76, 0.9, tl);
+  var y = lerp(tY, gY, e), z = lerp(tZ, gZ, e), pt = lerp(tP, gP, e);
+  cam.y = y; cam.z = z; cam.pitch = pt; cam.cp = Math.cos(pt); cam.sp = Math.sin(pt);
+  var zcF = -z * cam.cp + y * cam.sp;
+  var Fg = Math.min(H * 0.95, 0.5 * W * zcF / lerp(3.75, 4.6, tl));
+  var Ft = Math.min(H * lerp(0.36, 0.56, tl) * zcF / 1.95, W * 0.6 * zcF / 1.0);
+  cam.F = lerp(Ft, Fg, e);
+  cam.cx = W * lerp(lerp(0.5, 0.71, tl), 0.5, e);
+  var yc = -y * cam.cp - z * cam.sp;
+  cam.cy = lerp(tFeet, gFeet, e) * H + yc * cam.F / zcF;
+  cam.x = hero.x * 0.62 * e;
+  if (shake > 0) { cam.x += (Math.random() - 0.5) * shake * 0.5; cam.y += (Math.random() - 0.5) * shake * 0.35; }
+}
+function horizonY() { return cam.cy - cam.F * cam.sp / cam.cp; }
+
+/* ---------------- ท้องฟ้า เส้นขอบฟ้า พื้น ---------------- */
+function genSkyline(n, minH, maxH, minW, maxW) {
+  var blocks = [], total = 0;
+  for (var i = 0; i < n; i++) {
+    var w = rand(minW, maxW), h = rand(minH, maxH) * (Math.random() < 0.12 ? 1.7 : 1), wins = [];
+    for (var k = 0; k < 4; k++) if (Math.random() < 0.7) wins.push(Math.random(), Math.random());
+    blocks.push({ w: w, h: h, wins: wins }); total += w;
+  }
+  return { blocks: blocks, total: total };
+}
+var SKY_FAR = genSkyline(70, 6, 22, 5, 14), SKY_NEAR = genSkyline(60, 4, 15, 6, 17);
+var STARS = []; for (var si = 0; si < 90; si++) STARS.push(Math.random(), Math.random(), Math.random());
+
+function drawSkyline(L, off, col, hy, winA) {
+  var total = L.total * UNIT, x = -(((off % total) + total) % total);
+  g.fillStyle = col;
+  var guard = 0;
+  while (x < W && guard++ < 6) {
+    for (var i = 0; i < L.blocks.length; i++) {
+      var b = L.blocks[i], bw = b.w * UNIT, bh = b.h * UNIT;
+      if (x + bw >= 0 && x <= W) g.fillRect(Math.floor(x), Math.floor(hy - bh), Math.ceil(bw) + 1, Math.ceil(bh) + 2);
+      x += bw; if (x > W) break;
+    }
+  }
+  if (winA > 0.05) {
+    g.globalAlpha = winA; g.fillStyle = '#ffd27a';
+    x = -(((off % total) + total) % total); guard = 0;
+    while (x < W && guard++ < 6) {
+      for (var j = 0; j < L.blocks.length; j++) {
+        var bb = L.blocks[j], w2 = bb.w * UNIT, h2 = bb.h * UNIT;
+        if (x + w2 >= 0 && x <= W) for (var k = 0; k < bb.wins.length; k += 2) g.fillRect(Math.floor(x + 1 + bb.wins[k] * (w2 - 2)), Math.floor(hy - h2 + 1 + bb.wins[k + 1] * (h2 - 2)), 1, 1);
+        x += w2; if (x > W) break;
+      }
+    }
+    g.globalAlpha = 1;
+  }
+}
+function mix(a, b, t) { return colStr(lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)); }
+function circle(x, y, r, n) { g.beginPath(); for (var i = 0; i < n; i++) { var a = i / n * TAU; g.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); } g.closePath(); g.fill(); }
+
+function drawSky(hy) {
+  g.fillStyle = colStr(pal.fog[0], pal.fog[1], pal.fog[2]);
+  g.fillRect(0, 0, W, H);
+  if (hy <= 0) return;
+  var bot = Math.min(H, hy), bands = 22;
+  for (var i = 0; i < bands; i++) {
+    var t = i / (bands - 1), a = Math.floor(bot * i / bands), b = Math.floor(bot * (i + 1) / bands) + 1;
+    g.fillStyle = t < 0.62 ? mix(pal.skyTop, pal.skyMid, t / 0.62) : mix(pal.skyMid, pal.fog, (t - 0.62) / 0.38);
+    g.fillRect(0, a, W, b - a);
+  }
+  if (pal.stars > 0.02) {
+    g.fillStyle = '#ffffff';
+    for (var s = 0; s < STARS.length; s += 3) {
+      var tw = 0.5 + 0.5 * Math.sin(T * 3 + STARS[s + 2] * 20);
+      g.globalAlpha = pal.stars * (0.35 + 0.65 * tw);
+      g.fillRect(Math.floor(STARS[s] * W), Math.floor(STARS[s + 1] * (hy - 12) * 0.9), 1, 1);
+    }
+    g.globalAlpha = 1;
+  }
+  var S = Math.min(W, H), sr = pal.sunR * S;
+  var sx = W * 0.5 - curve * 3 * UNIT, sy = hy - Math.min(pal.sunY * S + sr * 0.35, hy - sr - 4);
+  g.fillStyle = colStr(pal.sun[0], pal.sun[1], pal.sun[2]);
+  g.globalAlpha = 0.14; circle(sx, sy, sr * 1.9, 20);
+  g.globalAlpha = 0.22; circle(sx, sy, sr * 1.35, 20);
+  g.globalAlpha = 1; circle(sx, sy, sr, 20);
+  drawSkyline(SKY_FAR, skyScroll * 0.4, mix(pal.skyline, pal.fog, 0.55), hy + 1, 0);
+  drawSkyline(SKY_NEAR, skyScroll * 0.8 + 37, mix(pal.skyline, pal.fog, 0.18), hy + 1, pal.stars * 0.85);
+}
+function drawGround(hy) {
+  var y0 = Math.max(0, Math.floor(hy)), gr = pal.ground;
+  for (var y = y0; y < H; y += 2) {
+    var v = (cam.cy - (y + 1)) / cam.F, den = cam.sp - v * cam.cp;
+    var depth = den > 1e-4 ? cam.y / den : 1e5;
+    var f = clamp((depth - FOG0) * FOGK, 0, 1);
+    g.fillStyle = colStr(lerp(gr[0] * TR, FR, f), lerp(gr[1] * TG, FGc, f), lerp(gr[2] * TB, FB, f));
+    g.fillRect(0, y, W, 2);
+  }
+}
+function drawRoad() {
+  var zStart = Math.floor((dist + cam.z) / SEG) * SEG;
+  var n = Math.ceil((DRAW_DIST - cam.z) / SEG) + 1;
+  for (var i = n - 1; i >= 0; i--) {
+    var za = zStart + i * SEG, z0 = za - dist, z1 = z0 + SEG + 0.06 + Math.max(0, z0) * 0.012;
+    if (z1 < cam.z) continue;
+    var idx = Math.round(za / SEG), alt = idx & 1, s = polyCount;
+    quadY(0, -WALK, z0, WALK, z1, alt ? C.walkA : C.walkB, 0);
+    quadY(0, -RUMBLE, z0, RUMBLE, z1, alt ? C.rumR : C.rumW, 0);
+    quadY(0, -ROAD, z0, ROAD, z1, alt ? C.asphA : C.asphB, 0);
+    if ((idx & 1) === 0 && z0 < 150) {
+      quadY(0, -LANE * 0.5 - 0.08, z0, -LANE * 0.5 + 0.08, z0 + SEG * 0.55, C.line, 0);
+      quadY(0, LANE * 0.5 - 0.08, z0, LANE * 0.5 + 0.08, z0 + SEG * 0.55, C.line, 0);
+    }
+    flush(s, false);
+  }
+  if (pal.glow > 0.03) {           // แสงไฟเสาไฟบนถนนตอนกลางคืน
+    var s2 = polyCount;
+    for (var j = 0; j < scen.length; j++) {
+      var o = scen[j];
+      if (o.kind !== 'l') continue;
+      var zr = o.z - dist;
+      if (zr < cam.z + 1 || zr > 120) continue;
+      var ga = 0.24 * pal.glow * clamp((zr - cam.z - 1) / 7, 0, 1);
+      if (ga > 0.02) ellipseY(o.side * 3.3, 0.01, zr, 2.3, 3.2, 10, C.glow, F_EMIS, 0, ga);
+    }
+    flush(s2, false);
+  }
+}
+
+/* ---------------- วาดวัตถุ ---------------- */
+function hash3(a, b, c) {
+  var h = (a ^ Math.imul(b + 1, 0x27d4eb2d) ^ Math.imul(c + 7, 0x165667b1)) | 0;
+  h = Math.imul(h ^ (h >>> 15), 0x85ebca6b); h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35); h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+}
+var winTmp = [0, 0, 0];
+function winCol(b, r, c) {
+  if (hash3(b.seed, r, c) < pal.win) return b.cool ? C.winC : C.winW;
+  var k = 0.42; winTmp[0] = b.col[0] * k; winTmp[1] = b.col[1] * k; winTmp[2] = b.col[2] * k + 6;
+  return null;
+}
+function drawChunk(c) {
+  var b = c.b, z0 = c.z0 - dist, z1 = c.z1 - dist + 0.3, s = b.side, h = b.h, xi = s * b.xIn;
+  var p = quadX(xi, -s, z0, 0, z1, h, b.col, F_CULL | F_LIT);
+  var near = z0 < 115, r, k, lit;
+  if (p && near) {
+    var cl = c.z1 - c.z0, cw = (cl - 0.8) / c.cols;
+    for (r = 0; r < b.rows; r++) {
+      var ya = 1.3 + r * 3.1, yb = ya + 1.55;
+      for (k = 0; k < c.cols; k++) {
+        var za = z0 + 0.4 + k * cw + 0.3, zb = za + cw - 0.6;
+        lit = winCol(b, r, c.idx * 4 + k);
+        quadX(xi, -s, za, ya, zb, yb, lit || winTmp, lit ? F_EMIS : F_LIT);
+      }
+    }
+  }
+  if (c.neon && h > 9) {
+    var nc = b.neon, gk = 0.55 + 0.45 * pal.glow, ncol = [nc[0] * gk, nc[1] * gk, nc[2] * gk];
+    quadX(xi - s * 0.05, -s, z0 + 0.6, h - 2.3, c.z1 - dist - 0.6, h - 1.1, ncol, F_EMIS);
+  }
+  if (c.front) {
+    var xa = s > 0 ? b.xIn : -b.xIn - b.dep, xb = xa + b.dep;
+    var pf = quadZ(z0, xa, 0, xb, h, b.col, F_CULL | F_LIT);
+    if (pf && near) {
+      var fw = (b.dep - 0.8) / b.fcols;
+      for (r = 0; r < b.rows; r++) {
+        var ya2 = 1.3 + r * 3.1, yb2 = ya2 + 1.55;
+        for (k = 0; k < b.fcols; k++) {
+          var x0 = xa + 0.4 + k * fw + 0.3, x1 = x0 + fw - 0.6;
+          lit = winCol(b, r, 100 + k);
+          quadZ(z0, x0, ya2, x1, yb2, lit || winTmp, lit ? F_EMIS : F_LIT);
+        }
+      }
+    }
+  }
+}
+function cone(x, z, y0, y1, r, n, col, rot) {
+  var key = depthOf((y0 + y1) * 0.5, z), i;
+  for (i = 0; i < n; i++) {
+    var a0 = rot + i * TAU / n, a1 = a0 + TAU / n;
+    P[0] = x + r * Math.cos(a0); P[1] = y0; P[2] = z + r * Math.sin(a0);
+    P[3] = x + r * Math.cos(a1); P[4] = y0; P[5] = z + r * Math.sin(a1);
+    P[6] = x; P[7] = y1; P[8] = z;
+    emit(3, col, F_CULL | F_LIT, key);
+  }
+  for (i = 0; i < n; i++) { var a = rot - i * TAU / n; P[i * 3] = x + r * Math.cos(a); P[i * 3 + 1] = y0; P[i * 3 + 2] = z + r * Math.sin(a); }
+  emit(n, col, F_CULL | F_LIT, key);
+}
+function drawTree(t) {
+  var z = t.z - dist;
+  boxW(t.x - 0.18, 0, z - 0.18, t.x + 0.18, 1.6, z + 0.18, C.bark);
+  cone(t.x, z, 1.2, 1.2 + t.h * 0.55, t.r, 6, t.c ? C.leafD : C.leaf, 0.3);
+  cone(t.x, z, 1.2 + t.h * 0.38, 1.2 + t.h, t.r * 0.75, 6, t.c ? C.leaf : C.leafD, 0.8);
+}
+function drawLamp(l) {
+  var z = l.z - dist, s = l.side, px = s * 4.75, hx = s * 3.35;
+  boxW(px - 0.08, 0, z - 0.08, px + 0.08, 5.1, z + 0.08, C.pole);
+  boxW(Math.min(px, hx), 4.95, z - 0.06, Math.max(px, hx), 5.08, z + 0.06, C.pole);
+  var lc = [lerp(C.lampD[0], C.lampN[0], pal.glow), lerp(C.lampD[1], C.lampN[1], pal.glow), lerp(C.lampD[2], C.lampN[2], pal.glow)];
+  boxW(hx - 0.3, 4.8, z - 0.16, hx + 0.3, 4.95, z + 0.16, lc, F_CULL | F_EMIS);
+}
+function stripes(z, x0, x1, y0, y1, w, skew, col, key) {     // แถบเฉียงบนหน้าตรง
+  for (var x = x0 + 0.04; x + w + skew <= x1 + 0.001; x += w * 2) {
+    set4(x, y0, z, x + w, y0, z, x + w + skew, y1, z, x + skew, y1, z);
+    emit(4, col, F_LIT, key);
+  }
+}
+function wheels(x, z0, zs) {
+  for (var i = 0; i < zs.length; i++) {
+    var wz = z0 + zs[i];
+    boxW(x - 1.04, 0, wz, x - 0.84, 0.64, wz + 0.72, C.tire);
+    boxW(x + 0.84, 0, wz, x + 1.04, 0.64, wz + 0.72, C.tire);
+  }
+}
+function drawObstacle(o) {
+  var z0 = o.z - dist, x = o.x, k, z1;
+  if (o.t === 'barrier') {                       // แผงกั้นเตี้ย: ต้องกระโดด
+    z1 = z0 + 0.14;
+    boxW(x - 1.16, 0, z0 - 0.22, x - 0.86, 0.08, z1 + 0.22, C.steel);
+    boxW(x + 0.86, 0, z0 - 0.22, x + 1.16, 0.08, z1 + 0.22, C.steel);
+    boxW(x - 1.06, 0.08, z0 + 0.02, x - 0.94, 0.52, z1 - 0.02, C.steel);
+    boxW(x + 0.94, 0.08, z0 + 0.02, x + 1.06, 0.52, z1 - 0.02, C.steel);
+    boxW(x - 1.22, 0.5, z0, x + 1.22, 0.92, z1, C.barW);
+    k = lastKey;
+    if (BF[0]) stripes(z0, x - 1.22, x + 1.22, 0.5, 0.92, 0.24, 0.2, C.barR, k);
+    var on = ((T * 2.2 + o.z * 0.13) % 1) < 0.5;
+    boxW(x - 0.08, 0.92, z0 + 0.01, x + 0.08, 1.06, z1 - 0.01, on ? C.lightOn : C.lightOff, on ? (F_CULL | F_EMIS) : (F_CULL | F_LIT));
+  } else if (o.t === 'beam') {                   // คานสูง: ต้องสไลด์
+    var hw = o.full ? 4.25 : 1.22;
+    z1 = z0 + 0.22;
+    boxW(x - hw - 0.12, 0, z0, x - hw + 0.1, 2.3, z1, C.post);
+    boxW(x + hw - 0.1, 0, z0, x + hw + 0.12, 2.3, z1, C.post);
+    boxW(x - hw - 0.16, 1.22, z0 - 0.01, x + hw + 0.16, 1.8, z1 + 0.01, C.beamY);
+    k = lastKey;
+    if (BF[0]) stripes(z0 - 0.01, x - hw - 0.16, x + hw + 0.16, 1.22, 1.8, 0.28, 0.26, C.beamK, k);
+  } else if (o.t === 'van') {                    // รถตู้: เต็มเลน
+    z1 = z0 + o.len;
+    wheels(x, z0, [0.5, o.len - 1.25]);
+    boxW(x - 1.0, 0.3, z0, x + 1.0, 2.35, z1, o.col);
+    k = lastKey;
+    var f0 = BF[0], f2 = BF[2], f3 = BF[3];
+    if (f0) {
+      quadZ(z0, x - 0.8, 1.42, x + 0.8, 2.12, C.glass, F_LIT, k);
+      quadZ(z0, x - 1.0, 0.3, x + 1.0, 0.54, C.bumper, F_LIT, k);
+      quadZ(z0, x - 0.95, 0.82, x - 0.7, 1.24, C.tail, F_EMIS, k);
+      quadZ(z0, x + 0.7, 0.82, x + 0.95, 1.24, C.tail, F_EMIS, k);
+      quadZ(z0, x - 0.24, 0.6, x + 0.24, 0.78, C.plate, F_LIT, k);
+    }
+    if (f2) quadX(x - 1.0, -1, z0 + 0.35, 1.42, z1 - 0.5, 2.06, C.glass, F_LIT, k);
+    if (f3) quadX(x + 1.0, 1, z0 + 0.35, 1.42, z1 - 0.5, 2.06, C.glass, F_LIT, k);
+  } else if (o.t === 'truck') {                  // รถบรรทุก: เต็มเลน
+    wheels(x, z0, [0.55, 1.4, 5.8]);
+    boxW(x - 0.98, 0.5, z0 + 5.45, x + 0.98, 2.55, z0 + o.len, o.col2);
+    var kc = lastKey;
+    if (BF[2]) quadX(x - 0.98, -1, z0 + 5.6, 1.5, z0 + o.len - 0.4, 2.3, C.glass, F_LIT, kc);
+    if (BF[3]) quadX(x + 0.98, 1, z0 + 5.6, 1.5, z0 + o.len - 0.4, 2.3, C.glass, F_LIT, kc);
+    boxW(x - 0.92, 0.32, z0 - 0.05, x + 0.92, 0.48, z0 + 0.12, C.steel);
+    boxW(x - 1.06, 0.64, z0, x + 1.06, 3.15, z0 + 5.35, o.col);
+    k = lastKey;
+    if (BF[0]) {
+      quadZ(z0, x - 0.03, 0.74, x + 0.03, 3.05, C.bumper, F_LIT, k);
+      quadZ(z0, x - 1.06, 0.64, x + 1.06, 0.8, C.rumR, F_LIT, k);
+      quadZ(z0, x - 1.0, 0.86, x - 0.78, 1.12, C.tail, F_EMIS, k);
+      quadZ(z0, x + 0.78, 0.86, x + 1.0, 1.12, C.tail, F_EMIS, k);
+      quadZ(z0, x - 0.3, 1.5, x - 0.18, 1.9, C.steel, F_LIT, k);
+      quadZ(z0, x + 0.18, 1.5, x + 0.3, 1.9, C.steel, F_LIT, k);
+    }
+  } else {                                       // กองลังไม้: เต็มเลน
+    var sz = 1.02, rows = o.tall ? 3 : 2;
+    for (var r = 0; r < rows; r++) {
+      var cols = r === 2 ? 1 : 2;
+      for (var cI = 0; cI < cols; cI++) {
+        var xa = cols === 1 ? x - 0.5 : x - sz + cI * sz, xb = xa + (cols === 1 ? 1.0 : sz) - 0.02;
+        var ya = r * sz, yb = ya + sz - 0.02;
+        boxW(xa, ya, z0, xb, yb, z0 + sz, C.wood);
+        k = lastKey;
+        if (BF[0]) {
+          quadZ(z0, xa + 0.13, ya + 0.13, xb - 0.13, yb - 0.13, C.woodD, F_LIT, k);
+          set4(xa + 0.13, ya + 0.13, z0, xa + 0.3, ya + 0.13, z0, xb - 0.13, yb - 0.3, z0, xb - 0.13, yb - 0.13, z0);
+          emit(4, C.wood, F_LIT, k);
+        }
+      }
+    }
+  }
+}
+var CAN_BANDS = [[0, 0.07, 'rim'], [0.07, 0.24, 'body'], [0.24, 0.42, 'band'], [0.42, 0.59, 'body'], [0.59, 0.66, 'rim']];
+function drawCoin(c) {
+  var z = c.z - dist, sc = c.gold ? 1.15 : 1;
+  var y = c.y + Math.sin(T * 4 + c.z * 0.7) * 0.07, R = 0.27 * sc, Hh = 0.66 * sc, rot = T * 3.2 + c.z * 0.37, n = 6;
+  var key = depthOf(y + Hh * 0.5, z), far = key > 60;
+  var cBody = c.gold ? C.goldBody : C.canBody, cBand = c.gold ? C.goldBand : C.canBand, cRim = c.gold ? C.goldRim : C.canRim;
+  for (var i = 0; i < n; i++) {
+    var a0 = rot + i * TAU / n, a1 = a0 + TAU / n;
+    var x0 = c.x + R * Math.cos(a0), z0 = z + R * Math.sin(a0), x1 = c.x + R * Math.cos(a1), z1 = z + R * Math.sin(a1);
+    if (far) { set4(x0, y, z0, x1, y, z1, x1, y + Hh, z1, x0, y + Hh, z0); emit(4, cBody, F_CULL | F_LIT, key); continue; }
+    for (var b = 0; b < CAN_BANDS.length; b++) {
+      var B = CAN_BANDS[b], yb0 = y + B[0] * sc, yb1 = y + B[1] * sc;
+      set4(x0, yb0, z0, x1, yb0, z1, x1, yb1, z1, x0, yb1, z0);
+      var p = emit(4, B[2] === 'rim' ? cRim : (B[2] === 'band' ? cBand : cBody), F_CULL | F_LIT, key);
+      if (!p && lastArea > 0) break;
+    }
+  }
+  for (var j = 0; j < n; j++) { var a = rot + j * TAU / n; P[j * 3] = c.x + R * Math.cos(a); P[j * 3 + 1] = y + Hh; P[j * 3 + 2] = z + R * Math.sin(a); }
+  emit(n, cRim, F_CULL | F_LIT, key);
+}
+
+/* ----- ซ่าแมน ----- */
+function capEmblem(map, R, key) {      // สัญลักษณ์ฝาขวด (ฝาจีบ + วงแดง + ฟองซ่า)
+  var i, a;
+  for (i = 0; i < 24; i++) { a = i / 24 * TAU; var rr = (i & 1) ? R * 0.84 : R; map(rr * Math.cos(a), rr * Math.sin(a), i * 3); }
+  emit(24, C.capRim, F_LIT, key);
+  for (i = 0; i < 12; i++) { a = i / 12 * TAU; map(R * 0.64 * Math.cos(a), R * 0.64 * Math.sin(a), i * 3); }
+  emit(12, C.capRed, F_LIT, key);
+  var bub = [-0.22, 0.12, 0.15, 0.2, 0.3, 0.1, 0.12, -0.24, 0.12];
+  for (var b = 0; b < bub.length; b += 3) {
+    for (i = 0; i < 8; i++) { a = i / 8 * TAU; map((bub[b] + bub[b + 2] * Math.cos(a)) * R, (bub[b + 1] + bub[b + 2] * Math.sin(a)) * R, i * 3); }
+    emit(8, C.white, F_LIT, key);
+  }
+}
+function drawHero() {
+  var p = pose, i;
+  var sh = 1 - Math.min(hero.y, 2.2) / 3;
+  ellipseY(hero.x, 0.015, 0.05, 0.42 * sh, 0.36 * sh, 10, C.shadow, 0, 1e6, 0.38);
+  var root = mT(MI, hero.x, hero.y + p[BOB], 0);
+  root = mRY(root, hero.yaw);
+  root = mRZ(root, p[ROLL]);
+  var hip = mRX(mT(root, 0, p[HIPY], 0), p[BODYP]);
+  boxM(hip, -0.2, -0.13, -0.13, 0.2, -0.01, 0.13, C.trunk);
+  boxM(hip, -0.21, -0.01, -0.14, 0.21, 0.07, 0.14, C.gold);
+  for (i = 0; i < 2; i++) {                      // ขา
+    var sd = i ? 1 : -1;
+    var m = mT(hip, sd * 0.105, -0.08, 0);
+    m = mRZ(m, sd * p[LEGO + i]); m = mRX(m, -p[THIGH + i]);
+    boxM(m, -0.09, -0.46, -0.1, 0.09, 0, 0.1, C.suit);
+    m = mRX(mT(m, 0, -0.46, 0), p[KNEE + i]);
+    boxM(m, -0.085, -0.2, -0.09, 0.085, 0, 0.09, C.suit);
+    boxM(m, -0.098, -0.44, -0.105, 0.098, -0.2, 0.105, C.boot);
+    boxM(m, -0.085, -0.44, 0.105, 0.085, -0.33, 0.21, C.boot);
+  }
+  var tor = mRX(mT(hip, 0, 0.07, 0), p[TLEAN]);  // ลำตัว + สัญลักษณ์ฝาขวดที่หน้าอก
+  boxM(tor, -0.23, 0, -0.135, 0.23, 0.54, 0.135, C.suit);
+  var tk = lastKey;
+  if (BF[1]) capEmblem(function (u, v, o) { lp(tor, -u, 0.33 + v, 0.137, o); }, 0.11, tk);
+  var hd = mRX(mT(tor, 0, 0.55, 0), p[HEADP]);   // หัว (หน้ากาก)
+  boxM(hd, -0.135, 0.02, -0.14, 0.135, 0.31, 0.15, C.suit, [null, C.skin]);
+  var hk = lastKey;
+  if (BF[1]) {
+    var hm = hd;
+    lp(hm, 0.136, 0.15, 0.151, 0); lp(hm, -0.136, 0.15, 0.151, 3); lp(hm, -0.136, 0.31, 0.151, 6); lp(hm, 0.136, 0.31, 0.151, 9);
+    emit(4, C.suit, F_LIT, hk);
+    lp(hm, -0.025, 0.175, 0.152, 0); lp(hm, -0.11, 0.185, 0.152, 3); lp(hm, -0.11, 0.24, 0.152, 6); lp(hm, -0.025, 0.225, 0.152, 9);
+    emit(4, C.white, F_LIT, hk);
+    lp(hm, 0.11, 0.185, 0.152, 0); lp(hm, 0.025, 0.175, 0.152, 3); lp(hm, 0.025, 0.225, 0.152, 6); lp(hm, 0.11, 0.24, 0.152, 9);
+    emit(4, C.white, F_LIT, hk);
+    lp(hm, 0.045, 0.075, 0.152, 0); lp(hm, -0.045, 0.075, 0.152, 3); lp(hm, -0.045, 0.09, 0.152, 6); lp(hm, 0.045, 0.09, 0.152, 9);
+    emit(4, C.dark, F_LIT, hk);
+  }
+  boxM(hd, -0.022, 0.31, -0.11, 0.022, 0.37, 0.12, C.gold);   // หงอนทอง
+  for (i = 0; i < 2; i++) {                      // แขน
+    var s2 = i ? 1 : -1;
+    var a = mT(tor, s2 * 0.3, 0.48, 0);
+    a = mRZ(a, s2 * p[ARMO + i]); a = mRX(a, -p[ARM + i]);
+    boxM(a, -0.07, -0.29, -0.07, 0.07, 0.03, 0.07, C.suit);
+    a = mT(a, 0, -0.29, 0); a = mRZ(a, -s2 * p[ELZ + i]); a = mRX(a, -p[EL + i]);
+    boxM(a, -0.065, -0.15, -0.065, 0.065, 0, 0.065, C.suit);
+    boxM(a, -0.082, -0.29, -0.082, 0.082, -0.13, 0.082, C.gold);
+  }
+  // ผ้าคลุม (สองด้าน: นอกสีแดงเข้ม ในสีทอง) พร้อมฝาขวดเล็กด้านหลัง
+  var rows = [], yv = 0.52, zv = -0.145, lift = hero.capeLift, k;
+  rows.push([-0.2, yv, zv, 0.2, yv, zv]);
+  for (k = 1; k <= 3; k++) {
+    var phi = lift + k * 0.1 + Math.sin(T * 10 + k * 1.3) * (0.05 + 0.04 * k) * (0.4 + lift);
+    yv -= 0.27 * Math.cos(phi); zv -= 0.27 * Math.sin(phi);
+    var w = 0.2 + k * 0.045, wob = Math.sin(T * 8 + k) * 0.025 * k;
+    rows.push([-w + wob, yv, zv, w + wob, yv, zv]);
+  }
+  for (k = 0; k < 3; k++) {
+    var A = rows[k], B = rows[k + 1];
+    lp(tor, B[0], B[1], B[2], 0); lp(tor, B[3], B[4], B[5], 3); lp(tor, A[3], A[4], A[5], 6); lp(tor, A[0], A[1], A[2], 9);
+    var cp = emit(4, C.cape, F_TWO | F_LIT, undefined, C.capeIn);
+    if (k === 1 && cp && lastArea < 0) {
+      var ck = cp.key;
+      capEmblem(function (u, v, o) {
+        var s = 0.5 + u / (A[3] - A[0] + B[3] - B[0]) * 2, t = 0.5 - v / 0.27;
+        var tx = lerp(A[0], A[3], s), ty = A[1], tz = A[2], bx = lerp(B[0], B[3], s), by = B[1], bz = B[2];
+        lp(tor, lerp(tx, bx, t), lerp(ty, by, t), lerp(tz, bz, t) - 0.004, o);
+      }, 0.085, ck);
+    }
+  }
+}
+
+/* ---------------- ฉากและการสุ่มด่าน ---------------- */
+function genScenery() {
+  var lim = dist + DRAW_DIST + 30, s, side, z0, len, i;
+  for (s = 0; s < 2; s++) {
+    side = s ? 1 : -1;
+    while (nextB[s] < lim) {
+      z0 = nextB[s];
+      if (Math.random() < 0.16) {
+        len = rand(7, 14);
+        var nt = Math.random() < 0.5 ? 1 : 2;
+        for (i = 0; i < nt; i++) scen.push({ kind: 't', x: side * rand(8.8, 11.5), z: z0 + len * (i + 0.5) / nt, h: rand(3.2, 5), r: rand(1.1, 1.6), c: Math.random() < 0.5 ? 0 : 1 });
+        nextB[s] = z0 + len;
+      } else {
+        len = rand(9, 22);
+        var tall = Math.random() < 0.15;
+        var b = { side: side, xIn: rand(8.2, 10.5), dep: rand(8, 14), h: tall ? rand(26, 42) : rand(7, 22), col: pick(BCOLS),
+          seed: (Math.random() * 1e9) | 0, cool: Math.random() < 0.3, neon: Math.random() < 0.35 ? pick(NEONS) : null };
+        b.rows = Math.max(1, Math.floor((b.h - 1.6) / 3.1));
+        b.fcols = Math.max(1, Math.round(b.dep / 3.2));
+        var n = Math.max(1, Math.round(len / 6)), cl = len / n;
+        for (i = 0; i < n; i++) scen.push({ kind: 'c', b: b, idx: i, z0: z0 + i * cl, z1: z0 + (i + 1) * cl, front: i === 0, neon: !!b.neon && i === (n >> 1), cols: Math.max(1, Math.round(cl / 3.1)) });
+        nextB[s] = z0 + len + (Math.random() < 0.3 ? rand(2, 6) : rand(0.4, 1.2));
+      }
+    }
+  }
+  while (nextLamp < lim) {
+    scen.push({ kind: 'l', side: -1, z: nextLamp });
+    scen.push({ kind: 'l', side: 1, z: nextLamp + 16 });
+    nextLamp += 32;
+  }
+}
+function prune(arr, keep) { var j = 0; for (var i = 0; i < arr.length; i++) { if (keep(arr[i])) arr[j++] = arr[i]; } arr.length = j; }
+function pruneAll() {
+  var cut = dist + cam.z - 6;
+  prune(scen, function (o) { return (o.kind === 'c' ? o.z1 : o.z + 2) > cut; });
+  prune(obs, function (o) { return o.z + o.len > dist - 9; });
+  prune(coins, function (c) { return !c.taken && c.z > dist - 7; });
+}
+function targetSpeed(d) { return START_SPEED + (MAX_SPEED - START_SPEED) * (1 - Math.exp(-d / 1800)); }
+function mkObs(type, lane, z, full) {
+  if (type === 'block') type = pick(['van', 'van', 'truck', 'crates', 'crates']);
+  var o = { kind: 'o', t: type, lane: lane, x: (lane - 1) * LANE, z: z, full: !!full, len: 0.2, hw: 1.0 };
+  if (type === 'barrier') { o.len = 0.14; o.hw = 1.15; }
+  else if (type === 'beam') { o.len = 0.22; o.hw = full ? 4.3 : 1.25; if (full) o.x = 0; }
+  else if (type === 'van') { o.len = 4.6; o.hw = 1.0; o.col = pick(VAN_COLS); }
+  else if (type === 'truck') { o.len = 7.3; o.hw = 1.06; o.col = pick(TRUCK_COLS); o.col2 = pick(VAN_COLS); }
+  else { o.len = 1.02; o.hw = 1.02; o.tall = Math.random() < 0.5; }
+  return o;
+}
+function addCoin(x, y, z, gold) { coins.push({ kind: 'k', x: x, y: y, z: z, gold: !!gold, taken: false }); }
+function spawnRow(z) {
+  var d = clamp(runDist / 2600, 0, 1) * 0.5 + clamp((z - runStart) / 2600, 0, 1) * 0.5;
+  var r = Math.random(), L = [null, null, null], full = false, i;
+  if (r < 0.34 - 0.12 * d) { L[randi(0, 2)] = pick(['barrier', 'beam', 'block', 'block']); }
+  else if (r < 0.66) {
+    var free = randi(0, 2);
+    for (i = 0; i < 3; i++) if (i !== free) L[i] = Math.random() < 0.55 ? 'block' : (Math.random() < 0.5 ? 'barrier' : 'beam');
+  }
+  else if (r < 0.76) { L[0] = L[1] = L[2] = 'barrier'; }
+  else if (r < 0.84) { full = true; }
+  else { var t3 = shuffle(['block', 'barrier', 'beam']); for (i = 0; i < 3; i++) L[i] = t3[i]; }
+  var maxLen = 0.25;
+  if (full) obs.push(mkObs('beam', 1, z, true));
+  else for (i = 0; i < 3; i++) if (L[i]) { var o = mkObs(L[i], i, z, false); obs.push(o); if (o.len > maxLen) maxLen = o.len; }
+  // กระป๋อง: โค้งเหนือแผงกั้น / ใต้คาน / แถวในช่องว่าง
+  for (i = 0; i < 3; i++) {
+    var lx = (i - 1) * LANE;
+    if (L[i] === 'barrier' && Math.random() < 0.45) {
+      for (var a = -2; a <= 2; a++) addCoin(lx, 0.45 + 1.25 * (1 - (a / 2.6) * (a / 2.6)), z + a * 2.3, false);
+    } else if ((L[i] === 'beam' || full) && Math.random() < (full ? 0.14 : 0.4)) {
+      for (var b = -1; b <= 1; b++) addCoin(lx, 0.25, z + b * 1.6, false);
+    }
+  }
+  var gap = Math.max(16, targetSpeed(z - runStart) * rand(0.95, 1.5) * lerp(1.25, 0.92, d));
+  if (Math.random() < 0.75) {
+    var lane = randi(0, 2), zs = z + maxLen + 5, ze = z + maxLen + gap - 5, cnt = Math.min(8, Math.floor((ze - zs) / 2.6));
+    var gi = Math.random() < 0.1 ? randi(0, Math.max(0, cnt - 1)) : -1;
+    for (var c = 0; c < cnt; c++) addCoin((lane - 1) * LANE, 0.5, zs + c * 2.6, c === gi);
+  }
+  nextRow = z + maxLen + gap;
+}
+
+/* ---------------- อนุภาค ---------------- */
+function burst(x, y, z, n, cols, spd, up) {
+  if (!project(x, y, z)) return;
+  for (var i = 0; i < n; i++) parts.push({ x: PT.x, y: PT.y, vx: rand(-1, 1) * spd * UNIT, vy: (rand(-1, 0.3) - (up || 0)) * spd * UNIT, t: 0, life: rand(0.35, 0.75), c: pick(cols), s: Math.max(1, Math.round(rand(1, 2.4) * UNIT)), gr: up ? -40 : 60 });
+}
+function updateParticles(dt) {
+  for (var i = parts.length - 1; i >= 0; i--) {
+    var p = parts[i]; p.t += dt;
+    if (p.t >= p.life) { parts.splice(i, 1); continue; }
+    p.x += p.vx * dt; p.y += p.vy * dt; p.vy += p.gr * UNIT * dt; p.vx *= 0.97;
+  }
+}
+function drawParticles() {
+  for (var i = 0; i < parts.length; i++) {
+    var p = parts[i];
+    g.globalAlpha = 1 - p.t / p.life; g.fillStyle = p.c;
+    g.fillRect(Math.round(p.x), Math.round(p.y), p.s, p.s);
+  }
+  g.globalAlpha = 1;
+}
+function dust() { burst(hero.x, 0.05, 0.3, 6, ['#d8d0c8', '#a89e96', '#fff'], 30, 0.2); }
+
+/* ---------------- ฟิสิกส์ ---------------- */
+function doJump() {
+  hero.vy = JUMP_V; hero.ground = false; hero.slideT = 0; hero.jumpBuf = 0; hero.qSlide = false;
+  AU.jump();
+}
+function startSlide() { hero.slideT = SLIDE_TIME; hero.qSlide = false; AU.slide(); dust(); }
+function act(a) {
+  if (state !== 'play') return;
+  if (a === 'L' || a === 'R') {
+    var nl = hero.lane + (a === 'L' ? -1 : 1);
+    if (nl < 0 || nl > 2) { AU.bump(); shake = Math.max(shake, 0.25); return; }
+    hero.lane = nl; AU.lane();
+  } else if (a === 'U') {
+    if (hero.ground) doJump(); else hero.jumpBuf = 0.18;
+  } else if (a === 'D') {
+    if (!hero.ground) { hero.vy = Math.min(hero.vy, -FAST_FALL); hero.qSlide = true; hero.jumpBuf = 0; }
+    else startSlide();
+  }
+}
+function heroHeight() { return (hero.slideT > 0 && hero.ground) ? 0.85 : 1.8; }
+function hitTest() {
+  var hh = heroHeight();
+  for (var i = 0; i < obs.length; i++) {
+    var o = obs[i], zr = o.z - dist;
+    if (zr > 0.32 || zr + o.len < -0.32) continue;
+    if (Math.abs(hero.x - o.x) >= o.hw + 0.28) continue;
+    var hit;
+    if (o.t === 'barrier') hit = hero.y < 0.84;
+    else if (o.t === 'beam') hit = hero.y + hh > 1.2 && hero.y < 1.85;
+    else hit = true;
+    if (hit) { die(); return; }
+  }
+}
+function coinTest() {
+  var hh = heroHeight();
+  for (var i = 0; i < coins.length; i++) {
+    var c = coins[i];
+    if (c.taken) continue;
+    var zr = c.z - dist;
+    if (zr > 0.9 || zr < -0.9) continue;
+    if (Math.abs(c.x - hero.x) > 0.95) continue;
+    if (c.y + 0.66 < hero.y - 0.25 || c.y > hero.y + hh + 0.25) continue;
+    c.taken = true; cans++;
+    score += c.gold ? 50 : 10;
+    if (c.gold) { AU.gold(); showToast('+50 กระป๋องทอง!'); } else AU.coin();
+    burst(c.x, c.y + 0.35, zr, c.gold ? 16 : 9, c.gold ? ['#fff6c0', '#ffd23a', '#ffffff'] : ['#ffffff', '#ffe46a', '#ff9a2a', '#cfefff'], 70, 0.8);
+    bumpScore();
+  }
+}
+function step(h) {
+  introT = Math.min(1, introT + h / 0.9);
+  speed = targetSpeed(runDist) * (0.2 + 0.8 * smooth(introT));
+  dist += speed * h; runDist = dist - runStart;
+  if (runDist >= nextMile) { showToast(nextMile + ' เมตร!'); AU.mile(); nextMile += 500; }
+  var tx = (hero.lane - 1) * LANE, ls = (16 + speed * 0.3) * h, dx = tx - hero.x;
+  hero.x = Math.abs(dx) <= ls ? tx : hero.x + (dx > 0 ? ls : -ls);
+  if (hero.jumpBuf > 0) hero.jumpBuf -= h;
+  if (!hero.ground) {
+    hero.vy -= GRAV * h; hero.y += hero.vy * h;
+    if (hero.y <= 0) {
+      hero.y = 0; hero.vy = 0; hero.ground = true;
+      if (hero.jumpBuf > 0) doJump();
+      else if (hero.qSlide) startSlide();
+      else { AU.land(); dust(); }
+    }
+  }
+  if (hero.slideT > 0) hero.slideT -= h;
+  hero.phase += h * (6 + speed * 0.34);
+  hitTest();
+  if (state !== 'play') return;
+  coinTest();
+  if (dist > nextCurve) {
+    curveTarget = (runDist < 250 || Math.random() < 0.3) ? 0 : rand(-1, 1) * CURVE_MAX;
+    nextCurve = dist + rand(160, 420);
+  }
+  curve += (curveTarget - curve) * Math.min(1, h * 0.45);
+  skyScroll += curve * speed * h * 0.03 * UNIT;
+  while (nextRow < dist + DRAW_DIST) spawnRow(nextRow);
+}
+function die() {
+  setState('dying');
+  AU.crash(); shake = 0.9; flash = 1;
+  try { if (navigator.vibrate) navigator.vibrate(140); } catch (e) {}
+  hero.ground = false; hero.vy = 4.2; hero.slideT = 0; hero.qSlide = false;
+  burst(hero.x, 1.0, 0.4, 14, ['#ffffff', '#ffd23a', '#ff5a1f', '#888'], 90, 0.5);
+  var d = Math.floor(runDist);
+  newBest = score > save.bestScore; newDist = d > save.bestDist;
+  if (newBest) save.bestScore = score;
+  if (newDist) save.bestDist = d;
+  if (newBest || newDist) writeSave();
+}
+
+/* ---------------- โพสท่า ---------------- */
+function poseTarget() {
+  var p = ptgt, i;
+  for (i = 0; i < NP; i++) p[i] = 0;
+  p[HIPY] = 0.98;
+  if (state === 'title') {
+    var br = Math.sin(T * 2.2);
+    p[LEGO] = 0.15; p[LEGO + 1] = 0.15; p[KNEE] = 0.05; p[KNEE + 1] = 0.05;
+    p[ARMO] = 0.62; p[ELZ] = 1.95; p[ARM] = 0.12; p[EL] = 0.1;           // มือซ้ายเท้าเอว
+    p[ARMO + 1] = 0.3; p[ARM + 1] = 2.75 + br * 0.05; p[EL + 1] = 0.2;    // มือขวาชูกำปั้น
+    p[TLEAN] = 0.02 + br * 0.015; p[HEADP] = -0.08; p[BOB] = br * 0.008;
+  } else if (state === 'dying' || state === 'over') {
+    p[HIPY] = 0.32; p[BODYP] = -1.42; p[TLEAN] = 0.1; p[HEADP] = -0.35;
+    p[LEGO] = 0.35; p[LEGO + 1] = 0.25; p[THIGH] = 0.25; p[THIGH + 1] = -0.1; p[KNEE] = 0.5; p[KNEE + 1] = 0.2;
+    p[ARMO] = 1.25; p[ARMO + 1] = 1.1; p[ARM] = 0.6; p[ARM + 1] = 1.2; p[EL] = 0.5; p[EL + 1] = 0.3; p[ROLL] = 0.15;
+  } else if (!hero.ground) {
+    p[THIGH] = 1.0; p[KNEE] = 1.35; p[THIGH + 1] = -0.35; p[KNEE + 1] = 0.9;
+    p[ARM + 1] = 2.85; p[EL + 1] = 0.1; p[ARMO + 1] = 0.15;
+    p[ARM] = -0.5; p[EL] = 0.9; p[ARMO] = 0.35;
+    p[TLEAN] = 0.22; p[HEADP] = -0.1;
+  } else if (hero.slideT > 0) {
+    p[HIPY] = 0.42; p[BODYP] = -1.05; p[HEADP] = 0.55;
+    p[THIGH] = 0.35; p[THIGH + 1] = 0.25; p[KNEE] = 0.25; p[KNEE + 1] = 0.75;
+    p[ARM] = -0.9; p[ARM + 1] = -0.7; p[EL] = 0.3; p[EL + 1] = 0.4; p[ARMO] = 0.35; p[ARMO + 1] = 0.35;
+  } else {
+    var s = Math.sin(hero.phase), c = Math.cos(hero.phase);
+    p[THIGH] = s * 0.85; p[THIGH + 1] = -s * 0.85;
+    p[KNEE] = 0.25 + Math.max(0, c) * 1.3; p[KNEE + 1] = 0.25 + Math.max(0, -c) * 1.3;
+    p[ARM] = -s * 0.8; p[ARM + 1] = s * 0.8; p[EL] = 1.25; p[EL + 1] = 1.25; p[ARMO] = 0.1; p[ARMO + 1] = 0.1;
+    p[TLEAN] = 0.2; p[HEADP] = -0.12; p[BOB] = Math.abs(c) * 0.06 - 0.03;
+  }
+  if (state === 'play') p[ROLL] += clamp(((hero.lane - 1) * LANE - hero.x) * -0.09, -0.22, 0.22);
+}
+
+/* ---------------- วงจรเกม ---------------- */
+var drawList = [], HERO_OBJ = { kind: 'h', _z: 0 };
+function byZ(a, b) { return b._z - a._z; }
+function render() {
+  setupCamera();
+  baseTint[0] = pal.tint[0]; baseTint[1] = pal.tint[1]; baseTint[2] = pal.tint[2];
+  TR = baseTint[0]; TG = baseTint[1]; TB = baseTint[2]; AMB = pal.amb;
+  FR = pal.fog[0]; FGc = pal.fog[1]; FB = pal.fog[2];
+  var hy = horizonY();
+  drawSky(hy);
+  drawGround(hy);
+  drawRoad();
+  drawList.length = 0;
+  var i, o, z;
+  for (i = 0; i < scen.length; i++) {
+    o = scen[i];
+    if (o.kind === 'c') { z = o.z0 - dist; if (o.z1 - dist < cam.z) continue; }
+    else z = o.z - dist;
+    if (z > DRAW_DIST || z < cam.z - 3) continue;
+    o._z = z; drawList.push(o);
+  }
+  for (i = 0; i < obs.length; i++) { o = obs[i]; z = o.z - dist; if (z > DRAW_DIST || z + o.len < cam.z) continue; o._z = z + o.len * 0.5; drawList.push(o); }
+  for (i = 0; i < coins.length; i++) { o = coins[i]; if (o.taken) continue; z = o.z - dist; if (z > DRAW_DIST || z < cam.z) continue; o._z = z - 0.01; drawList.push(o); }
+  drawList.push(HERO_OBJ);
+  drawList.sort(byZ);
+  for (i = 0; i < drawList.length; i++) {
+    o = drawList[i];
+    var s = polyCount, k = o.kind;
+    if (k === 'o' || k === 'k' || k === 'h') {          // วัตถุบนถนนสว่างกว่าฉากเล็กน้อยเพื่อให้มองเห็นชัด
+      var mixT = k === 'h' ? 0.55 : 0.35;
+      TR = lerp(baseTint[0], 1, mixT); TG = lerp(baseTint[1], 1, mixT); TB = lerp(baseTint[2], 1, mixT);
+    }
+    if (k === 'c') drawChunk(o);
+    else if (k === 't') drawTree(o);
+    else if (k === 'l') drawLamp(o);
+    else if (k === 'o') drawObstacle(o);
+    else if (k === 'k') drawCoin(o);
+    else drawHero();
+    flush(s, k !== 'c');
+    TR = baseTint[0]; TG = baseTint[1]; TB = baseTint[2];
+  }
+  drawParticles();
+  g.fillStyle = ditherPat; g.fillRect(0, 0, W, H);
+  if (flash > 0) { g.globalAlpha = Math.min(1, flash) * 0.7; g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.globalAlpha = 1; }
+  if ('imageSmoothingEnabled' in vctx) vctx.imageSmoothingEnabled = false;
+  else { vctx.webkitImageSmoothingEnabled = false; vctx.mozImageSmoothingEnabled = false; vctx.msImageSmoothingEnabled = false; }
+  vctx.drawImage(low, 0, 0, W, H, 0, 0, view.width, view.height);
+}
+
+function update(dt) {
+  if (state === 'paused') return;
+  T += dt; stateT += dt;
+  camBlend = clamp(camBlend + (state === 'title' ? -dt : dt) / 0.9, 0, 1);
+  if (state === 'play' && !STEP_FREEZE) {
+    var n = Math.max(1, Math.ceil(dt / STEP)), h = dt / n;
+    for (var i = 0; i < n; i++) { step(h); if (state !== 'play') break; }
+  } else if (state === 'count') {
+    countT -= dt;
+    var kc = Math.ceil(countT / 0.6);
+    if (kc !== countShown && kc > 0) { countShown = kc; elCount.textContent = kc; AU.beep(); }
+    if (countT <= 0) { AU.go(); setState('play'); showToast('ไป!'); }
+  } else if (state === 'dying') {
+    speed *= Math.exp(-dt * 5); dist += speed * dt;
+    if (!hero.ground) { hero.vy -= GRAV * dt; hero.y += hero.vy * dt; if (hero.y <= 0) { hero.y = 0; hero.vy = 0; hero.ground = true; dust(); } }
+    if (stateT > 1.15) showOver();
+  }
+  var ty = state === 'title' ? Math.PI + Math.sin(T * 0.7) * 0.6 : 0, dy = ty - hero.yaw;
+  dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+  hero.yaw += dy * Math.min(1, dt * (state === 'title' ? 3 : 5));
+  if (state !== 'count') {
+    poseTarget();
+    var kp = 1 - Math.exp(-dt * (state === 'dying' || state === 'over' ? 8 : 16));
+    for (var j = 0; j < NP; j++) pose[j] += (ptgt[j] - pose[j]) * kp;
+  }
+  var cl = 0.35;
+  if (state === 'play') cl = hero.ground ? (hero.slideT > 0 ? 0.1 : clamp(0.95 + speed * 0.012, 0, 1.35)) : 0.45;
+  else if (state === 'dying' || state === 'over') cl = 0.2;
+  else if (state === 'count') cl = hero.capeLift;
+  hero.capeLift += (cl - hero.capeLift) * Math.min(1, dt * 5);
+  shake = Math.max(0, shake - dt * 1.6); flash = Math.max(0, flash - dt * 3);
+  if (state === 'over') overT += dt;
+  updateParticles(dt);
+  updatePalette(runDist);
+  FOG0 = 20; FOGK = 1 / 185;
+  genScenery();
+  pruneAll();
+  updateHUD();
+}
+
+var lastT = 0;
+var raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (cb) { return setTimeout(function () { cb(Date.now()); }, 16); };
+function loop(now) {
+  raf(loop);
+  if (!lastT) lastT = now;
+  var dt = (now - lastT) / 1000; lastT = now;
+  if (!(dt >= 0)) dt = 0;
+  if (dt > 0.1) dt = 0.1;           // กันกระตุกเมื่อเฟรมหน่วง (ใช้ delta time + substep 120Hz)
+  update(dt);
+  if (state !== 'paused' || needRender) { render(); needRender = false; }
+}
+
+/* ---------------- หน้าจอ / HUD ---------------- */
+var hudScore = -1, hudDist = -1, hudBest = -1;
+function updateHUD() {
+  if (score !== hudScore) { hudScore = score; elScore.textContent = score; }
+  var dm = Math.floor(runDist);
+  if (dm !== hudDist) { hudDist = dm; elDist.textContent = dm; }
+  var b = Math.max(save.bestScore, score);
+  if (b !== hudBest) { hudBest = b; elBest.textContent = b; }
+}
+function bumpScore() { elScore.classList.remove('bump'); void elScore.offsetWidth; elScore.classList.add('bump'); }
+function showToast(t) { elToast.textContent = t; elToast.classList.remove('show'); void elToast.offsetWidth; elToast.classList.add('show'); }
+function setState(s) {
+  state = s; stateT = 0;
+  scrTitle.classList.toggle('hidden', s !== 'title');
+  scrPause.classList.toggle('hidden', s !== 'paused');
+  scrOver.classList.toggle('hidden', s !== 'over');
+  var inRun = s === 'play' || s === 'count' || s === 'paused' || s === 'dying';
+  hud.classList.toggle('hidden', !inRun);
+  btnPause.classList.toggle('hidden', !(s === 'play' || s === 'count'));
+  elCount.classList.toggle('hidden', s !== 'count');
+  needRender = true;
+}
+function blurActive() { try { if (D.activeElement && D.activeElement.blur) D.activeElement.blur(); } catch (e) {} }
+function resetHero() {
+  hero.lane = 1; hero.x = 0; hero.y = 0; hero.vy = 0; hero.ground = true; hero.slideT = 0; hero.jumpBuf = 0; hero.qSlide = false;
+}
+function startGame() {
+  AU.unlock(); AU.start();
+  obs.length = 0; coins.length = 0; parts.length = 0;
+  runStart = dist; runDist = 0; score = 0; cans = 0; speed = 0; introT = 0; nextMile = 500;
+  nextRow = dist + 95; curveTarget = 0; nextCurve = dist + 250;
+  resetHero();
+  for (var i = 0; i < 8; i++) addCoin(0, 0.5, dist + 28 + i * 2.6, false);
+  hudScore = hudDist = hudBest = -1;
+  setState('play');
+  blurActive();
+}
+function goTitle() {
+  obs.length = 0; coins.length = 0; parts.length = 0;
+  runStart = dist; runDist = 0; score = 0; speed = 0; curveTarget = 0;
+  resetHero();
+  $('tBest').textContent = save.bestScore; $('tBestD').textContent = save.bestDist;
+  setState('title');
+  blurActive();
+}
+function showOver() {
+  setState('over'); overT = 0;
+  $('oScore').textContent = score;
+  $('oDist').textContent = Math.floor(runDist) + ' ม.';
+  $('oCans').textContent = cans;
+  $('oBest').textContent = save.bestScore + ' / ' + save.bestDist + ' ม.';
+  $('newRec').classList.toggle('hidden', !(newBest || newDist));
+  AU.over();
+}
+function pause() {
+  if (state !== 'play' && state !== 'count') return;
+  setState('paused');
+}
+function resume() {
+  if (state !== 'paused') return;
+  countT = 1.8; countShown = 0; elCount.textContent = '3';
+  setState('count');
+  lastT = 0;
+  blurActive();
+}
+function toggleMute() {
+  save.muted = !save.muted; writeSave();
+  AU.unlock(); AU.setMuted(save.muted);
+  updateMuteIcon();
+  if (!save.muted) AU.click();
+}
+function updateMuteIcon() {
+  $('icoOn').style.display = save.muted ? 'none' : '';
+  $('icoOff').style.display = save.muted ? '' : 'none';
+  btnMute.setAttribute('aria-pressed', save.muted ? 'true' : 'false');
+}
+
+/* ---------------- อินพุต ---------------- */
+function bindBtn(el, fn) {
+  var fire = function () {
+    AU.unlock(); AU.click(); fn();
+    if (state === 'play' || state === 'count') blurActive();   // ไม่ให้ Space ไปกดปุ่มที่ค้างโฟกัสระหว่างเล่น
+  };
+  el.addEventListener('click', function (e) {
+    e.preventDefault();
+    if (e.detail) { try { el.blur(); } catch (er) {} }           // คลิกด้วยเมาส์: ไม่ค้างโฟกัส
+    fire();
+  });
+  el.addEventListener('touchend', function (e) {       // ตอบสนองทันทีและกันดับเบิลแทปซูม
+    e.preventDefault();
+    var t = e.changedTouches && e.changedTouches[0];
+    if (t) {
+      var r = el.getBoundingClientRect();
+      if (t.clientX < r.left - 10 || t.clientX > r.right + 10 || t.clientY < r.top - 10 || t.clientY > r.bottom + 10) return;
+    }
+    fire();
+  }, { passive: false });
+}
+bindBtn($('btnStart'), startGame);
+bindBtn($('btnResume'), resume);
+bindBtn($('btnRestart'), startGame);
+bindBtn($('btnHomeP'), goTitle);
+bindBtn($('btnRetry'), function () { if (overT > 0.3) startGame(); });
+bindBtn($('btnHomeO'), function () { if (overT > 0.3) goTitle(); });
+bindBtn(btnPause, pause);
+bindBtn(btnMute, toggleMute);
+
+window.addEventListener('keydown', function (e) {
+  var k = e.key, c = e.code, a = null;
+  if (k === 'ArrowLeft' || k === 'Left' || c === 'KeyA') a = 'L';
+  else if (k === 'ArrowRight' || k === 'Right' || c === 'KeyD') a = 'R';
+  else if (k === 'ArrowUp' || k === 'Up' || k === ' ' || k === 'Spacebar' || c === 'Space' || c === 'KeyW') a = 'U';
+  else if (k === 'ArrowDown' || k === 'Down' || c === 'KeyS') a = 'D';
+  var isP = c === 'KeyP' || k === 'p' || k === 'P', isEsc = k === 'Escape' || k === 'Esc', isM = c === 'KeyM' || k === 'm' || k === 'M', isEnter = k === 'Enter';
+  var onBtn = e.target && e.target.tagName === 'BUTTON' && state !== 'play' && state !== 'count';
+  if (onBtn && (isEnter || k === ' ' || c === 'Space')) { AU.unlock(); return; }   // ให้ปุ่มที่โฟกัสอยู่ทำงานตามปกติ (คีย์บอร์ด)
+  if (a || isP || isEsc || isM || isEnter) e.preventDefault();
+  AU.unlock();
+  if (e.repeat) return;
+  if (isM) { toggleMute(); return; }
+  if (isP || isEsc) { if (state === 'play' || state === 'count') pause(); else if (state === 'paused') resume(); return; }
+  if (isEnter || a === 'U') {
+    if (state === 'title') { startGame(); return; }
+    if (state === 'over') { if (overT > 0.6) startGame(); return; }
+    if (state === 'paused' && isEnter) { resume(); return; }
+  }
+  if (a) act(a);
+}, false);
+
+function isBtn(el) { return !!(el && el.closest && el.closest('button')); }
+var tch = null;
+function swipeCheck(dx, dy, fin) {
+  var th = Math.max(18, Math.min(cssW, cssH) * 0.05), ax = Math.abs(dx), ay = Math.abs(dy);
+  if (Math.max(ax, ay) < (fin ? th * 0.55 : th)) return false;
+  if (ax > ay) act(dx < 0 ? 'L' : 'R'); else act(dy < 0 ? 'U' : 'D');
+  return true;
+}
+gameEl.addEventListener('touchstart', function (e) {
+  if (isBtn(e.target)) return;
+  e.preventDefault();
+  AU.unlock();
+  if (tch) return;
+  var t = e.changedTouches[0];
+  tch = { id: t.identifier, x: t.clientX, y: t.clientY, used: false };
+}, { passive: false });
+gameEl.addEventListener('touchmove', function (e) {
+  e.preventDefault();
+  if (!tch || tch.used) return;
+  for (var i = 0; i < e.changedTouches.length; i++) {
+    var t = e.changedTouches[i];
+    if (t.identifier === tch.id && swipeCheck(t.clientX - tch.x, t.clientY - tch.y, false)) tch.used = true;
+  }
+}, { passive: false });
+function touchEnd(e) {
+  if (!tch) return;
+  for (var i = 0; i < e.changedTouches.length; i++) {
+    var t = e.changedTouches[i];
+    if (t.identifier !== tch.id) continue;
+    if (!tch.used && e.type === 'touchend') swipeCheck(t.clientX - tch.x, t.clientY - tch.y, true);
+    tch = null; break;
+  }
+}
+gameEl.addEventListener('touchend', function (e) { if (!isBtn(e.target)) e.preventDefault(); touchEnd(e); }, { passive: false });
+gameEl.addEventListener('touchcancel', touchEnd, { passive: false });
+// เมาส์: ลากเพื่อปัด (สำหรับทดสอบบนคอม)
+var ms = null;
+gameEl.addEventListener('mousedown', function (e) { if (isBtn(e.target) || e.button !== 0) return; ms = { x: e.clientX, y: e.clientY, used: false }; AU.unlock(); });
+window.addEventListener('mousemove', function (e) { if (!ms || ms.used) return; if (swipeCheck(e.clientX - ms.x, e.clientY - ms.y, false)) ms.used = true; });
+window.addEventListener('mouseup', function () { ms = null; });
+
+// กันเลื่อน/ซูม/เมนูค้าง บนมือถือ
+D.addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
+D.addEventListener('gesturestart', function (e) { e.preventDefault(); }, { passive: false });
+D.addEventListener('gesturechange', function (e) { e.preventDefault(); }, { passive: false });
+D.addEventListener('dblclick', function (e) { e.preventDefault(); }, { passive: false });
+D.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+D.addEventListener('wheel', function (e) { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+window.addEventListener('touchend', AU.unlock, { passive: true });
+window.addEventListener('pointerup', AU.unlock, { passive: true });
+
+// หยุดเกมอัตโนมัติเมื่อสลับแท็บ/ออกจากหน้า
+function autoPause() { if (state === 'play' || state === 'count') pause(); }
+D.addEventListener('visibilitychange', function () { if (D.hidden) autoPause(); lastT = 0; });
+window.addEventListener('blur', autoPause);
+window.addEventListener('pagehide', autoPause);
+
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', function () { resize(); setTimeout(resize, 250); setTimeout(resize, 700); });
+if (window.visualViewport) window.visualViewport.addEventListener('resize', resize);
+
+/* ---------------- เริ่มต้น ---------------- */
+resize();
+updateMuteIcon();
+genScenery();
+goTitle();
+if (/debug/.test(location.hash)) {                // ตัวช่วยทดสอบ (เปิดด้วย #debug เท่านั้น)
+  window.__saman = { get state() { return state; }, get dist() { return runDist; }, get abs() { return dist; }, get score() { return score; },
+    hero: hero, obs: obs, coins: coins, act: act, mkObs: mkObs, au: AU, warp: function (m) { runStart -= m; runDist += m; },
+    freeze: function (on) { STEP_FREEZE = !!on; } };
+}
+raf(loop);
+
+})();
+</script>
+</body>
+</html>
