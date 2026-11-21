@@ -17,7 +17,7 @@ html,body{position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;ov
   -webkit-touch-callout:none;-webkit-tap-highlight-color:rgba(0,0,0,0);-webkit-text-size-adjust:100%;text-size-adjust:100%;
   font-family:"Sukhumvit Set","Thonburi","Leelawadee UI","Leelawadee","Tahoma","Noto Sans Thai","Noto Sans",system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
 #game{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;touch-action:none}
-#view{position:absolute;top:0;left:0;width:100%;height:100%;display:block;touch-action:none}
+#view,#glview{position:absolute;top:0;left:0;width:100%;height:100%;display:block;touch-action:none}
 .hidden{display:none!important}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation;-webkit-appearance:none;-moz-appearance:none;appearance:none;outline:none}
 button:focus-visible{outline:3px solid #7fe3ff;outline-offset:2px}
@@ -115,6 +115,7 @@ noscript{position:absolute;top:40%;left:0;right:0;text-align:center;font-size:18
 </head>
 <body>
 <div id="game">
+  <canvas id="glview" class="hidden" aria-label="เกมซ่าแมน (3 มิติ)"></canvas>
   <canvas id="view" aria-label="เกมซ่าแมน"></canvas>
 
   <div id="hud" class="hidden">
@@ -206,7 +207,7 @@ function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floo
 
 /* ---------------- บันทึกสถิติ (localStorage + try/catch) ---------------- */
 var STORE_KEY = 'saman-runner-v1';
-var save = { bestScore: 0, bestDist: 0, muted: false, gfx: 'hd' };
+var save = { bestScore: 0, bestDist: 0, muted: false, gfx: 'real', gfxV: 3 };
 function loadSave() {
   try {
     var s = window.localStorage.getItem(STORE_KEY);
@@ -216,7 +217,7 @@ function loadSave() {
         save.bestScore = Math.max(0, Math.floor(+o.bestScore || 0));
         save.bestDist = Math.max(0, Math.floor(+o.bestDist || 0));
         save.muted = !!o.muted;
-        save.gfx = o.gfx === 'ps1' ? 'ps1' : 'hd';
+        if (o.gfxV === 3 && (o.gfx === 'real' || o.gfx === 'hd' || o.gfx === 'ps1')) save.gfx = o.gfx;
       }
     }
   } catch (e) { /* storage ไม่พร้อมใช้งาน: เล่นต่อได้ตามปกติ */ }
@@ -359,7 +360,7 @@ var vctx = view.getContext('2d');
 var low = D.createElement('canvas');
 var g = low.getContext('2d', { alpha: false }) || low.getContext('2d');
 var cssW = 320, cssH = 240, dpr = 1, W = 320, H = 240, UNIT = 1;
-var MAX_PIX = 2.6e6, resScale = 1, perfSum = 0, perfN = 0, QB = 3;
+var MAX_PIX = 2.6e6, resScale = 1, perfSum = 0, perfN = 0, QB = 3, lastMode = '';
 var ditherPat = null, needRender = true;
 
 function makeDither() {
@@ -384,9 +385,19 @@ function resize() {
   }
   cssW = w; cssH = h;
   dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 3));
+  var mode = gfxMode(), glOn = mode === 'real';
+  lastMode = mode;
+  GL3.canvas.classList.toggle('hidden', !glOn);
+  view.classList.toggle('hidden', glOn);
+  if (glOn) {                                        // โหมดสมจริง: WebGL (ความละเอียดสูงสุด 2x, จำกัดพิกเซล)
+    GL3.size(w, h, dpr);
+    W = GL3.w; H = GL3.h; UNIT = Math.min(W, H) / 240;
+    needRender = true;
+    return;
+  }
   view.width = Math.max(1, Math.round(w * dpr));
   view.height = Math.max(1, Math.round(h * dpr));
-  if (save.gfx === 'ps1') {                          // โหมดย้อนยุค: ด้านสั้นสุด ≈ 240 พิกเซล ขยายแบบพิกเซลคม
+  if (mode === 'ps1') {                          // โหมดย้อนยุค: ด้านสั้นสุด ≈ 240 พิกเซล ขยายแบบพิกเซลคม
     var pix = Math.max(1, Math.min(w, h) / 240);
     W = Math.max(120, Math.round(w / pix));
     H = Math.max(120, Math.round(h / pix));
@@ -404,13 +415,18 @@ function resize() {
   makeDither();
   needRender = true;
 }
+function gfxMode() {                               // 'real' (WebGL) → 'hd' / 'ps1' (Canvas 2D สำรอง)
+  if (save.gfx === 'real') return GL3.ok ? 'real' : 'hd';
+  return save.gfx === 'ps1' ? 'ps1' : 'hd';
+}
 function setGfx(m) {
-  save.gfx = m === 'ps1' ? 'ps1' : 'hd'; writeSave();
-  resScale = 1; perfSum = 0; perfN = 0;
+  save.gfx = (m === 'real' || m === 'ps1') ? m : 'hd'; save.gfxV = 3; writeSave();
+  resScale = 1; perfSum = 0; perfN = 0; GL3.scale = 1;
   resize(); updateGfxLabels();
 }
+var GFX_LABEL = { real: 'ภาพ: สมจริง 3D ⇄', hd: 'ภาพ: เรียบง่าย ⇄', ps1: 'ภาพ: ย้อนยุค PS1 ⇄' };
 function updateGfxLabels() {
-  var t = save.gfx === 'ps1' ? 'ภาพ: ย้อนยุค PS1 ⇄' : 'ภาพ: คมชัด HD ⇄';
+  var t = GFX_LABEL[gfxMode()];
   $('btnGfx').textContent = t; $('btnGfxP').textContent = t;
 }
 
@@ -444,11 +460,17 @@ var TRUCK_COLS = [[214, 214, 206], [230, 226, 200], [190, 206, 220]];
 /* ชุดสีของฉาก: พลบค่ำ → กลางคืน → รุ่งเช้า (วนตามระยะทาง) */
 var PALS = [
   { skyTop: [44, 26, 96], skyMid: [198, 74, 112], fog: [255, 156, 98], ground: [86, 64, 72], tint: [1.0, 0.86, 0.78], amb: 0.52,
-    sun: [255, 228, 132], sunR: 0.15, sunY: 0.05, stars: 0, win: 0.35, glow: 0.15, skyline: [96, 40, 86] },
+    sun: [255, 228, 132], sunR: 0.15, sunY: 0.05, stars: 0, win: 0.35, glow: 0.15, skyline: [96, 40, 86],
+    gSun: [0.306, 0.139, 0.942], gSunC: [3.3, 1.75, 0.85], gZen: [0.07, 0.08, 0.26], gHor: [1.0, 0.5, 0.32], gSkyA: [0.34, 0.29, 0.44],
+    gGndA: [0.2, 0.13, 0.11], gFog: 0.0052, gExpo: 1.0, gNight: 0.28, gWet: 0.4, gCloud: 0.55, gStars: 0, gDisk: 1, gGlow: 0.7, gFill: [0.55, 0.45, 0.52] },
   { skyTop: [4, 4, 22], skyMid: [24, 20, 66], fog: [46, 36, 94], ground: [26, 24, 42], tint: [0.5, 0.52, 0.76], amb: 0.44,
-    sun: [236, 236, 255], sunR: 0.05, sunY: 0.32, stars: 1, win: 0.72, glow: 1, skyline: [16, 12, 40] },
+    sun: [236, 236, 255], sunR: 0.05, sunY: 0.32, stars: 1, win: 0.72, glow: 1, skyline: [16, 12, 40],
+    gSun: [-0.468, 0.469, 0.749], gSunC: [0.2, 0.24, 0.42], gZen: [0.004, 0.006, 0.024], gHor: [0.07, 0.055, 0.14], gSkyA: [0.07, 0.075, 0.15],
+    gGndA: [0.035, 0.03, 0.04], gFog: 0.0075, gExpo: 1.6, gNight: 1, gWet: 0.6, gCloud: 0.3, gStars: 1, gDisk: 0.55, gGlow: 0.35, gFill: [0.16, 0.17, 0.26] },
   { skyTop: [66, 128, 226], skyMid: [150, 198, 246], fog: [216, 228, 242], ground: [98, 112, 92], tint: [1.0, 1.0, 1.0], amb: 0.56,
-    sun: [255, 252, 224], sunR: 0.06, sunY: 0.45, stars: 0, win: 0.08, glow: 0, skyline: [150, 170, 204] }
+    sun: [255, 252, 224], sunR: 0.06, sunY: 0.45, stars: 0, win: 0.08, glow: 0, skyline: [150, 170, 204],
+    gSun: [0.353, 0.788, -0.504], gSunC: [2.8, 2.55, 2.2], gZen: [0.08, 0.24, 0.78], gHor: [0.6, 0.74, 0.95], gSkyA: [0.4, 0.5, 0.72],
+    gGndA: [0.24, 0.21, 0.18], gFog: 0.004, gExpo: 0.92, gNight: 0, gWet: 0.05, gCloud: 0.65, gStars: 0, gDisk: 1, gGlow: 0.55, gFill: [0.32, 0.32, 0.34] }
 ];
 var pal = {};
 (function () { var k; for (k in PALS[0]) pal[k] = Array.isArray(PALS[0][k]) ? PALS[0][k].slice() : PALS[0][k]; })();
@@ -470,12 +492,12 @@ var newBest = false, newDist = false;
 var curve = 0, curveTarget = 0, nextCurve = 300, skyScroll = 0;
 var shake = 0, flash = 0;
 var obs = [], coins = [], scen = [], parts = [];
-var nextRow = 90, nextB = [-30, -30], nextLamp = -24;
+var nextRow = 90, nextB = [-30, -30], nextLamp = -24, nextPalm = [-20, -6];
 
 var hero = { lane: 1, x: 0, y: 0, vy: 0, ground: true, slideT: 0, jumpBuf: 0, qSlide: false, phase: 0, yaw: Math.PI, capeLift: 0.35 };
 
 /* โพสท่าของตัวละคร (มุมข้อต่อ) */
-var HIPY = 0, BODYP = 1, TLEAN = 2, HEADP = 3, THIGH = 4, KNEE = 6, ARM = 8, EL = 10, ARMO = 12, LEGO = 14, ELZ = 16, BOB = 18, ROLL = 19, NP = 20;
+var HIPY = 0, BODYP = 1, TLEAN = 2, HEADP = 3, THIGH = 4, KNEE = 6, ARM = 8, EL = 10, ARMO = 12, LEGO = 14, ELZ = 16, BOB = 18, ROLL = 19, TWIST = 20, NP = 21;
 var pose = new Float32Array(NP), ptgt = new Float32Array(NP);
 pose[HIPY] = 0.98;
 
@@ -1010,7 +1032,7 @@ function drawHero() {
     boxM(m, -0.098, -0.44, -0.105, 0.098, -0.2, 0.105, C.boot);
     boxM(m, -0.085, -0.44, 0.105, 0.085, -0.33, 0.21, C.boot);
   }
-  var tor = mRX(mT(hip, 0, 0.07, 0), p[TLEAN]);  // ลำตัว + สัญลักษณ์ฝาขวดที่หน้าอก
+  var tor = mRY(mRX(mT(hip, 0, 0.07, 0), p[TLEAN]), p[TWIST]);  // ลำตัว + สัญลักษณ์ฝาขวดที่หน้าอก
   boxM(tor, -0.23, 0, -0.135, 0.23, 0.54, 0.135, C.suit);
   var tk = lastKey;
   if (BF[1]) capEmblem(function (u, v, o) { lp(tor, -u, 0.33 + v, 0.137, o); }, 0.11, tk);
@@ -1072,19 +1094,30 @@ function genScenery() {
       if (Math.random() < 0.16) {
         len = rand(7, 14);
         var nt = Math.random() < 0.5 ? 1 : 2;
-        for (i = 0; i < nt; i++) scen.push({ kind: 't', x: side * rand(8.8, 11.5), z: z0 + len * (i + 0.5) / nt, h: rand(3.2, 5), r: rand(1.1, 1.6), c: Math.random() < 0.5 ? 0 : 1 });
+        for (i = 0; i < nt; i++) scen.push({ kind: 't', x: side * rand(8.8, 11.5), z: z0 + len * (i + 0.5) / nt, h: rand(3.2, 5), r: rand(1.1, 1.6), c: Math.random() < 0.5 ? 0 : 1,
+          palm: Math.random() < 0.5, lean: rand(-0.12, 0.12), rot: rand(0, 6.28) });
         nextB[s] = z0 + len;
       } else {
         len = rand(9, 22);
         var tall = Math.random() < 0.15;
         var b = { side: side, xIn: rand(8.2, 10.5), dep: rand(8, 14), h: tall ? rand(26, 42) : rand(7, 22), col: pick(BCOLS),
           seed: (Math.random() * 1e9) | 0, cool: Math.random() < 0.3, neon: Math.random() < 0.35 ? pick(NEONS) : null };
+        b.z0 = z0; b.z1 = z0 + len;
+        b.style = tall ? (Math.random() < 0.7 ? 1 : 0) : randi(0, 2); b.shopT = randi(0, 1); b.seedF = Math.random() * 16;
+        b.sign = Math.random() < 0.5 ? randi(0, 5) : -1; b.bill = (!tall && Math.random() < 0.2) ? randi(0, 1) : -1; b.podium = tall && Math.random() < 0.75;
+        if (b.style === 1 && tall) b.col = pick([[150, 170, 190], [130, 160, 170], [170, 180, 200]]);
         b.rows = Math.max(1, Math.floor((b.h - 1.6) / 3.1));
         b.fcols = Math.max(1, Math.round(b.dep / 3.2));
         var n = Math.max(1, Math.round(len / 6)), cl = len / n;
         for (i = 0; i < n; i++) scen.push({ kind: 'c', b: b, idx: i, z0: z0 + i * cl, z1: z0 + (i + 1) * cl, front: i === 0, neon: !!b.neon && i === (n >> 1), cols: Math.max(1, Math.round(cl / 3.1)) });
         nextB[s] = z0 + len + (Math.random() < 0.3 ? rand(2, 6) : rand(0.4, 1.2));
       }
+    }
+  }
+  for (s = 0; s < 2; s++) {                          // ต้นมะพร้าวริมทางเท้า (เฉพาะโหมดสมจริง)
+    while (nextPalm[s] < lim) {
+      scen.push({ kind: 'p', side: s ? 1 : -1, x: (s ? 1 : -1) * rand(6.4, 6.9), z: nextPalm[s], h: rand(6.2, 8.6), lean: rand(-0.1, 0.1) * (s ? -1 : 1) - (s ? 1 : -1) * 0.05, rot: rand(0, 6.28) });
+      nextPalm[s] += rand(20, 34);
     }
   }
   while (nextLamp < lim) {
@@ -1145,26 +1178,33 @@ function spawnRow(z) {
 }
 
 /* ---------------- อนุภาค ---------------- */
-function burst(x, y, z, n, cols, spd, up) {
-  if (!project(x, y, z)) return;
-  for (var i = 0; i < n; i++) parts.push({ x: PT.x, y: PT.y, vx: rand(-1, 1) * spd * UNIT, vy: (rand(-1, 0.3) - (up || 0)) * spd * UNIT, t: 0, life: rand(0.35, 0.75), c: pick(cols), s: Math.max(1, Math.round(rand(1, 2.4) * UNIT)), gr: up ? -40 : 60 });
+function hexRgb(h) { var v = parseInt(h.slice(1), 16); return [(v >> 16 & 255) / 255, (v >> 8 & 255) / 255, (v & 255) / 255]; }
+// kind: 'fizz' = ฟองซ่าลอยขึ้น (แสงบวก), 'dust' = ฝุ่นตกลง, 'spark' = ประกายตอนชน
+function burst(x, y, z, n, cols, spd, kind) {
+  for (var i = 0; i < n; i++) {
+    var c = pick(cols);
+    parts.push({ x: x, y: y, z: z, vx: rand(-1, 1) * spd, vy: (kind === 'dust' ? rand(0.2, 1) : rand(0.2, 1.4)) * spd, vz: (kind === 'dust' ? -rand(1.5, 3.5) : rand(-1, 1) * spd * 0.6),
+      t: 0, life: rand(0.35, 0.8), c: c, rgb: hexRgb(c), s: kind === 'dust' ? rand(0.12, 0.25) : rand(0.05, 0.11), gr: kind === 'fizz' ? 1.2 : -7, add: kind !== 'dust' });
+  }
 }
 function updateParticles(dt) {
   for (var i = parts.length - 1; i >= 0; i--) {
     var p = parts[i]; p.t += dt;
     if (p.t >= p.life) { parts.splice(i, 1); continue; }
-    p.x += p.vx * dt; p.y += p.vy * dt; p.vy += p.gr * UNIT * dt; p.vx *= 0.97;
+    p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; p.vy += p.gr * dt; p.vx *= 0.97;
   }
 }
 function drawParticles() {
   for (var i = 0; i < parts.length; i++) {
     var p = parts[i];
+    if (!project(p.x, p.y, p.z)) continue;
+    var sz = Math.max(1, Math.round(p.s * 1.6 * cam.F / PT.z));
     g.globalAlpha = 1 - p.t / p.life; g.fillStyle = p.c;
-    g.fillRect(Math.round(p.x), Math.round(p.y), p.s, p.s);
+    g.fillRect(Math.round(PT.x - sz / 2), Math.round(PT.y - sz / 2), sz, sz);
   }
   g.globalAlpha = 1;
 }
-function dust() { burst(hero.x, 0.05, 0.3, 6, ['#d8d0c8', '#a89e96', '#fff'], 30, 0.2); }
+function dust() { burst(hero.x, 0.08, 0.2, 7, ['#d8d0c8', '#a89e96', '#c9c2ba'], 0.9, 'dust'); }
 
 /* ---------------- ฟิสิกส์ ---------------- */
 function doJump() {
@@ -1211,7 +1251,7 @@ function coinTest() {
     c.taken = true; cans++;
     score += c.gold ? 50 : 10;
     if (c.gold) { AU.gold(); showToast('+50 กระป๋องทอง!'); } else AU.coin();
-    burst(c.x, c.y + 0.35, zr, c.gold ? 16 : 9, c.gold ? ['#fff6c0', '#ffd23a', '#ffffff'] : ['#ffffff', '#ffe46a', '#ff9a2a', '#cfefff'], 70, 0.8);
+    burst(c.x, c.y + 0.35, Math.max(zr, 0.3), c.gold ? 18 : 11, c.gold ? ['#fff6c0', '#ffd23a', '#ffffff'] : ['#ffffff', '#ffe46a', '#ff9a2a', '#cfefff'], 1.6, 'fizz');
     bumpScore();
   }
 }
@@ -1250,7 +1290,7 @@ function die() {
   AU.crash(); shake = 0.9; flash = 1;
   try { if (navigator.vibrate) navigator.vibrate(140); } catch (e) {}
   hero.ground = false; hero.vy = 4.2; hero.slideT = 0; hero.qSlide = false;
-  burst(hero.x, 1.0, 0.4, 14, ['#ffffff', '#ffd23a', '#ff5a1f', '#888'], 90, 0.5);
+  burst(hero.x, 1.0, 0.4, 16, ['#ffffff', '#ffd23a', '#ff5a1f', '#ffb070'], 3.2, 'spark');
   var d = Math.floor(runDist);
   newBest = score > save.bestScore; newDist = d > save.bestDist;
   if (newBest) save.bestScore = score;
@@ -1284,18 +1324,1363 @@ function poseTarget() {
     p[ARM] = -0.9; p[ARM + 1] = -0.7; p[EL] = 0.3; p[EL + 1] = 0.4; p[ARMO] = 0.35; p[ARMO + 1] = 0.35;
   } else {
     var s = Math.sin(hero.phase), c = Math.cos(hero.phase);
-    p[THIGH] = s * 0.85; p[THIGH + 1] = -s * 0.85;
-    p[KNEE] = 0.25 + Math.max(0, c) * 1.3; p[KNEE + 1] = 0.25 + Math.max(0, -c) * 1.3;
-    p[ARM] = -s * 0.8; p[ARM + 1] = s * 0.8; p[EL] = 1.25; p[EL + 1] = 1.25; p[ARMO] = 0.1; p[ARMO + 1] = 0.1;
-    p[TLEAN] = 0.2; p[HEADP] = -0.12; p[BOB] = Math.abs(c) * 0.06 - 0.03;
+    p[THIGH] = 0.12 + s * 1.0; p[THIGH + 1] = 0.12 - s * 1.0;                 // ยกเข่าสูงแบบสปรินต์
+    p[KNEE] = 0.3 + Math.max(0, c) * 1.65; p[KNEE + 1] = 0.3 + Math.max(0, -c) * 1.65;
+    p[ARM] = -s * 1.05 + 0.15; p[ARM + 1] = s * 1.05 + 0.15;                   // เหวี่ยงแขนแรง ข้อศอกงอ
+    p[EL] = 1.45 - s * 0.25; p[EL + 1] = 1.45 + s * 0.25; p[ARMO] = 0.14; p[ARMO + 1] = 0.14;
+    p[TLEAN] = 0.34; p[HEADP] = -0.28; p[TWIST] = s * 0.14;                    // โน้มตัว บิดลำตัวสวนแขน
+    p[BOB] = Math.abs(c) * 0.085 - 0.04;
   }
   if (state === 'play') p[ROLL] += clamp(((hero.lane - 1) * LANE - hero.x) * -0.09, -0.22, 0.22);
 }
+
+/* ======================================================================
+   โหมดภาพ "สมจริง 3D" — WebGL ที่มีในตัวเบราว์เซอร์ (ไม่ใช้ไลบรารี/ไฟล์ภายนอก)
+   แสงแดด + เงา (shadow map), วัสดุมันวาว/สะท้อนท้องฟ้า, ถนนเปียก, ไฟถนนจริง,
+   ป้ายนีออน, หมอกบรรยากาศ, ACES tone mapping — โมเดลและพื้นผิวสร้างด้วยโค้ดทั้งหมด
+   ====================================================================== */
+var GL3 = (function () {
+  var api = { ok: false, w: 1, h: 1, scale: 1, err: '', lost: false, shadows: true }, gen = 0;
+  var cv = $('glview'), gl = null, hiF = true;
+  var PS = null, PK = null, PP = null, PH = null;
+  var MS = {}, RBC = {}, TX = {}, MT = {};
+  var aniso = null, anisoMax = 1;
+  var SH = 2048, shFB = null, shTex = null, shOK = false, whiteTex = null;
+  var SPR_MAX = 1600, SPR_B_MAX = 500, sprVB = null, sprIB = null;
+  var sprA = new Float32Array(SPR_MAX * 48), sprB = new Float32Array(SPR_B_MAX * 48), nA = 0, nB = 0;
+  var cape = null, capeEm = null, CR = 7, CCOL = 5;
+  var capeArr = new Float32Array(CR * CCOL * 8), emArr = new Float32Array(4 * 8);
+  var vp = new Float32Array(16), lvp = new Float32Array(16), m4 = new Float32Array(16), n3 = new Float32Array(9);
+  var items = [], order = [], nItems = 0, frameNo = 0, curMesh = null, curMat = null;
+  var plPos = new Float32Array(24), plCol = new Float32Array(18), lamps = [];
+  var sunV = [0, 1, 0], winP = 0.3, nightF = 0, wetF = 0;
+  var CAN_V0 = 0.2, CAN_V1 = 0.9;
+  var FONT = '"Sukhumvit Set","Thonburi","Leelawadee UI","Leelawadee","Tahoma","Noto Sans Thai",sans-serif';
+
+  /* ---------- shaders ---------- */
+  var SKYF = [
+    'uniform vec3 uSunDir; uniform vec3 uSunC; uniform vec3 uZen; uniform vec3 uHor; uniform vec4 uSkyP;',
+    'vec3 skyCol(vec3 d) {',
+    '  vec3 c = mix(uHor, uZen, pow(clamp(d.y, 0.0, 1.0), 0.42));',
+    '  float sd = max(dot(d, uSunDir), 0.0);',
+    '  c += uSunC * (pow(sd, 6.0) * 0.16 + pow(sd, 48.0) * 0.5) * uSkyP.x;',
+    '  return mix(c, uHor * 0.3, clamp(-d.y * 3.0, 0.0, 1.0));',
+    '}'
+  ].join('\n');
+  var POSTF = [
+    'uniform vec4 uEnv; uniform vec4 uRes;',
+    'vec3 post(vec3 c) {',
+    '  c *= uEnv.y;',
+    '  c = (c * (2.51 * c + 0.03)) / (c * (2.43 * c + 0.59) + 0.14);',
+    '  c = pow(clamp(c, 0.0, 1.0), vec3(0.4545));',
+    '  float lu = dot(c, vec3(0.299, 0.587, 0.114));',
+    '  c = clamp(mix(vec3(lu), c, 1.12), 0.0, 1.0);',
+    '  vec2 q = gl_FragCoord.xy / uRes.xy;',
+    '  c *= 0.6 + 0.4 * pow(16.0 * q.x * q.y * (1.0 - q.x) * (1.0 - q.y), 0.22);',
+    '  return c;',
+    '}'
+  ].join('\n');
+  function VS_STD(P) {
+    return [P,
+      'attribute vec3 aPos; attribute vec3 aNor; attribute vec2 aUV;',
+      'uniform mat4 uModel; uniform mat3 uNM; uniform mat4 uVP; uniform mat4 uLVP; uniform float uCurve; uniform vec3 uCam;',
+      'uniform vec4 uEnv;',
+      SKYF,
+      'varying vec3 vW; varying vec3 vN; varying vec2 vUV; varying vec4 vLS; varying vec4 vFog;',
+      'void main() {',
+      '  vec4 w = uModel * vec4(aPos, 1.0);',
+      '  vec3 n = normalize(uNM * aNor);',
+      '  vW = w.xyz; vN = n; vUV = aUV;',
+      '  float zz = max(w.z, 0.0) * 0.01;',
+      '  vec3 b = vec3(w.x + uCurve * zz * zz, w.y, w.z);',
+      '  vLS = uLVP * vec4(b + n * 0.06, 1.0);',
+      '  gl_Position = uVP * vec4(b, 1.0);',
+      '  vec3 dv = w.xyz - uCam; float dist = length(dv);',
+      '  float f = 1.0 - exp(-dist * uEnv.x);',
+      '  f *= mix(1.0, 0.6, clamp(w.y / 70.0, 0.0, 1.0));',
+      '  f = max(f, smoothstep(150.0, 208.0, dist));',
+      '  vec3 fd = dv / max(dist, 0.001); fd.y = max(fd.y, 0.02);',
+      '  vFog = vec4(skyCol(normalize(fd)), f);',
+      '}'].join('\n');
+  }
+  function FS_STD(P) {
+    return [P,
+      'varying vec3 vW; varying vec3 vN; varying vec2 vUV; varying vec4 vLS; varying vec4 vFog;',
+      'uniform vec3 uCol; uniform vec3 uCol2; uniform vec3 uEmis;',
+      'uniform vec4 uMat; uniform vec4 uMat2; uniform vec4 uMisc; uniform vec2 uUVS;',
+      'uniform sampler2D uTex; uniform sampler2D uTex2; uniform sampler2D uShadow;',
+      'uniform vec3 uCam; uniform vec3 uSkyA; uniform vec3 uGndA; uniform vec3 uFillC; uniform vec3 uFillD;',
+      'uniform vec4 uPL[6]; uniform vec3 uPLC[6];',
+      SKYF, POSTF,
+      'float unpack(vec4 c) { return dot(c, vec4(1.0, 1.0 / 255.0, 1.0 / 65025.0, 1.0 / 16581375.0)); }',
+      'float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+      'float shadowF() {',
+      '  if (uRes.w < 0.5) return 1.0;',
+      '  vec3 p = vLS.xyz / vLS.w * 0.5 + 0.5;',
+      '  if (p.x < 0.0 || p.x > 1.0 || p.y < 0.0 || p.y > 1.0 || p.z > 1.0) return 1.0;',
+      '  float s = 0.0, t = uRes.z, z = p.z - 0.00025;',
+      '  for (int i = -1; i <= 1; i++) for (int j = -1; j <= 1; j++)',
+      '    s += step(z, unpack(texture2D(uShadow, p.xy + vec2(float(i), float(j)) * t)));',
+      '  return s / 9.0;',
+      '}',
+      'void main() {',
+      '  vec3 N = normalize(vN);',
+      '  vec3 alb = uCol;',
+      '  if (uMat2.w > 0.5 && !gl_FrontFacing) { N = -N; alb = uCol2; }',
+      '  vec3 V = normalize(uCam - vW);',
+      '  vec3 emis = uEmis;',
+      '  float spec = uMat.x, gloss = uMat.y, refl = uMat.z, mode = uMat.w;',
+      '  float zabs = vW.z + uMisc.y;',
+      '  if (mode > 0.5 && mode < 1.5) {',
+      '    vec4 t = texture2D(uTex, vUV * uUVS);',
+      '    if (t.a < uMat2.z) discard;',
+      '    alb *= t.rgb * t.rgb;',
+      '  } else if (mode > 1.5 && mode < 2.5) {',
+      '    if (abs(N.y) > 0.5) { alb *= 0.45; } else {',
+      '    float along = abs(N.x) > 0.5 ? (N.x > 0.0 ? zabs : -zabs) : vW.x;',
+      '    float shop = step(vW.y, 4.0);',
+      '    vec4 t; vec2 cid;',
+      '    if (shop > 0.5) { t = texture2D(uTex2, vec2(along / 24.0 + uMisc.x, 1.0 - vW.y / 4.0)); cid = vec2(floor(along / 6.0 + uMisc.x * 4.0), 7.0); }',
+      '    else { vec2 gg = vec2(along / 3.2 + uMisc.x * 4.0, (vW.y - 4.0) / 3.1); t = texture2D(uTex, gg * 0.25); cid = floor(gg); }',
+      '    float glass = step(0.75, t.a), sgn = step(0.25, t.a) * (1.0 - glass);',
+      '    alb *= t.rgb * t.rgb;',
+      '    float h1 = hash(cid + uMisc.x * 13.0), h2 = hash(cid.yx * 1.37 + 4.1);',
+      '    float on = step(h1, shop > 0.5 ? 0.9 : uMisc.z);',
+      '    vec3 wc = mix(vec3(1.0, 0.66, 0.34), vec3(0.6, 0.8, 1.0), step(0.72, h2));',
+      '    emis += glass * on * wc * (0.25 + 0.75 * h2) * (shop > 0.5 ? 1.5 : 1.15) * (0.12 + 0.88 * uEnv.z);',
+      '    emis += sgn * t.rgb * t.rgb * (0.4 + 1.6 * uEnv.z);',
+      '    spec = mix(spec, 0.9, glass); gloss = mix(gloss, 160.0, glass);',
+      '    refl = mix(refl, 0.6 * (1.0 - on * uEnv.z * 0.7), glass);',
+      '    alb *= mix(1.0, 0.3, glass);',
+      '    }',
+      '  } else if (mode > 2.5 && mode < 3.5) {',
+      '    vec4 t = texture2D(uTex, vec2((vW.x + 3.95) / 7.9, zabs / 8.0));',
+      '    vec4 n = texture2D(uTex2, vec2(vW.x, zabs) / 26.0);',
+      '    alb *= t.rgb * t.rgb * (0.9 + 0.2 * n.r);',
+      '    float puddle = smoothstep(0.6, 0.72, n.g) * uEnv.w;',
+      '    float wet = uEnv.w * 0.45 + puddle * 0.55;',
+      '    alb *= mix(1.0, 0.5, wet);',
+      '    spec = mix(0.2, 1.0, wet); gloss = mix(16.0, 380.0, wet); refl = mix(0.02, 0.5, puddle) + wet * 0.08;',
+      '  } else if (mode > 3.5 && mode < 4.5) {',
+      '    vec4 t = texture2D(uTex, vec2(vW.x, zabs) / 2.0);',
+      '    vec4 n = texture2D(uTex2, vec2(vW.x, zabs) / 17.0);',
+      '    alb *= t.rgb * t.rgb * (0.85 + 0.3 * n.b);',
+      '    float wet = uEnv.w * 0.35;',
+      '    alb *= mix(1.0, 0.65, wet); spec = mix(spec, 0.6, wet); gloss = mix(gloss, 90.0, wet); refl += wet * 0.1;',
+      '  } else if (mode > 4.5 && mode < 5.5) {',
+      '    float st = step(0.5, fract(zabs / 2.0));',
+      '    alb = mix(vec3(0.6, 0.04, 0.03), vec3(0.78), st);',
+      '  } else if (mode > 5.5) {',
+      '    vec4 t = texture2D(uTex, vUV);',
+      '    alb *= t.rgb * t.rgb * 0.3;',
+      '    emis += t.rgb * t.rgb * uMisc.w;',
+      '  }',
+      '  float sh = shadowF();',
+      '  float ndl = max(dot(N, uSunDir), 0.0);',
+      '  vec3 H = normalize(uSunDir + V);',
+      '  float sp = pow(max(dot(N, H), 0.0), gloss) * spec * (gloss + 2.0) * 0.06;',
+      '  vec3 amb = mix(uGndA, uSkyA, N.y * 0.5 + 0.5);',
+      '  vec3 col = alb * (amb + uSunC * ndl * sh) + uSunC * sp * ndl * sh;',
+      '  col += alb * uFillC * max(dot(N, uFillD), 0.0) * uMat2.x;',
+      '  for (int i = 0; i < 6; i++) {',
+      '    vec4 L = uPL[i];',
+      '    if (L.w > 0.0) {',
+      '      vec3 ld = L.xyz - vW; float d2 = dot(ld, ld);',
+      '      float a = max(0.0, 1.0 - d2 / (L.w * L.w)); a *= a;',
+      '      if (a > 0.0) {',
+      '        ld *= inversesqrt(d2 + 0.0001);',
+      '        float nl = max(dot(N, ld), 0.0);',
+      '        float s2 = pow(max(dot(N, normalize(ld + V)), 0.0), gloss) * spec * (gloss + 2.0) * 0.06;',
+      '        col += uPLC[i] * a * nl * (alb + s2 * 0.3);',
+      '      }',
+      '    }',
+      '  }',
+      '  float nv = max(dot(N, V), 0.0);',
+      '  float fr = pow(1.0 - nv, 5.0);',
+      '  col += skyCol(reflect(-V, N)) * refl * mix(0.06, 1.0, fr);',
+      '  col += (uSunC * 0.3 + uSkyA) * pow(1.0 - nv, 3.0) * uMat2.y;',
+      '  col += emis;',
+      '  col = mix(col, vFog.rgb, vFog.a);',
+      '  gl_FragColor = vec4(post(col), 1.0);',
+      '}'].join('\n');
+  }
+  function VS_SKY(P) { return [P, 'attribute vec3 aPos; varying vec2 vP;', 'void main() { vP = aPos.xy; gl_Position = vec4(aPos.xy, 0.9999, 1.0); }'].join('\n'); }
+  function FS_SKY(P) {
+    return [P,
+      'varying vec2 vP;',
+      'uniform vec4 uProj; uniform vec2 uPit; uniform sampler2D uTex; uniform float uTime; uniform vec3 uSkyA;',
+      SKYF, POSTF,
+      'float hash3(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }',
+      'void main() {',
+      '  float xc = (vP.x - uProj.z) * uProj.x, yc = (vP.y - uProj.w) * uProj.y;',
+      '  vec3 d = normalize(vec3(xc, yc * uPit.x - uPit.y, yc * uPit.y + uPit.x));',
+      '  vec3 c = skyCol(d);',
+      '  float sd = dot(d, uSunDir);',
+      '  float rad = 0.012 * uSkyP.w;',
+      '  float disk = smoothstep(cos(rad * 1.25), cos(rad), sd);',
+      '  if (d.y > 0.0 && uSkyP.y > 0.01) {',
+      '    vec2 cu = d.xz / (d.y + 0.15) * 0.16 + vec2(uTime * 0.004, uTime * 0.0015);',
+      '    float cl = texture2D(uTex, cu).r * 0.65 + texture2D(uTex, cu * 2.3 + 0.37).r * 0.35;',
+      '    cl = smoothstep(0.52 - 0.22 * uSkyP.y, 0.86, cl) * smoothstep(0.0, 0.2, d.y);',
+      '    vec3 cc = uSkyA * 1.4 + uSunC * (0.2 + 0.9 * pow(max(sd, 0.0), 5.0)) * 0.45;',
+      '    c = mix(c, cc, cl * 0.88);',
+      '    disk *= 1.0 - cl * 0.8;',
+      '  }',
+      '  c += uSunC * disk * 6.0;',
+      '  if (uSkyP.z > 0.01 && d.y > 0.0) {',
+      '    vec3 q = d * 260.0; vec3 fq = floor(q);',
+      '    float h = hash3(fq);',
+      '    float st = step(0.9975, h) * step(length(fract(q) - 0.5), 0.3) * smoothstep(0.02, 0.3, d.y);',
+      '    c += vec3(0.9, 0.95, 1.0) * st * uSkyP.z * (0.6 + 0.8 * fract(h * 91.7));',
+      '  }',
+      '  gl_FragColor = vec4(post(c), 1.0);',
+      '}'].join('\n');
+  }
+  function VS_SPR(P) {
+    return [P,
+      'attribute vec4 aP; attribute vec4 aQ; attribute vec4 aC;',
+      'uniform mat4 uVP; uniform float uCurve; uniform vec3 uUp;',
+      'varying vec2 vQ; varying vec4 vC;',
+      'void main() {',
+      '  vec3 p = aP.xyz; float zz = max(p.z, 0.0) * 0.01; p.x += uCurve * zz * zz;',
+      '  if (aP.w < 0.5) p += vec3(1.0, 0.0, 0.0) * aQ.x * aQ.z + uUp * aQ.y * aQ.w;',
+      '  else p += vec3(aQ.x * aQ.z, 0.0, aQ.y * aQ.w);',
+      '  vQ = aQ.xy; vC = aC;',
+      '  gl_Position = uVP * vec4(p, 1.0);',
+      '}'].join('\n');
+  }
+  function FS_SPR(P) {
+    return [P, 'varying vec2 vQ; varying vec4 vC;',
+      'void main() { float r = dot(vQ, vQ); if (r > 1.0) discard; float a = pow(1.0 - r, 2.2) * vC.a; gl_FragColor = vec4(vC.rgb * a, a); }'].join('\n');
+  }
+  function VS_SHD(P) {
+    return [P, 'attribute vec3 aPos; uniform mat4 uModel; uniform mat4 uLVP; uniform float uCurve;',
+      'void main() { vec4 w = uModel * vec4(aPos, 1.0); float zz = max(w.z, 0.0) * 0.01; gl_Position = uLVP * vec4(w.x + uCurve * zz * zz, w.y, w.z, 1.0); }'].join('\n');
+  }
+  function FS_SHD(P) {
+    return [P,
+      'void main() { vec4 e = fract(gl_FragCoord.z * vec4(1.0, 255.0, 65025.0, 16581375.0));',
+      '  e -= e.yzww * vec4(1.0 / 255.0, 1.0 / 255.0, 1.0 / 255.0, 0.0); gl_FragColor = e; }'].join('\n');
+  }
+
+  function compile(vs, fs, attrs) {
+    function sh(type, src) {
+      var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS) && !gl.isContextLost()) throw new Error('shader: ' + gl.getShaderInfoLog(s));
+      return s;
+    }
+    var p = gl.createProgram(), i;
+    gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs));
+    for (i = 0; i < attrs.length; i++) gl.bindAttribLocation(p, i, attrs[i]);
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS) && !gl.isContextLost()) throw new Error('link: ' + gl.getProgramInfoLog(p));
+    var o = { p: p, u: {} }, n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS) || 0;
+    for (i = 0; i < n; i++) { var inf = gl.getActiveUniform(p, i); if (inf) o.u[inf.name.replace(/\[0\]$/, '')] = gl.getUniformLocation(p, inf.name); }
+    return o;
+  }
+  function U(pr, n) { return pr.u[n] || null; }
+
+  /* ---------- geometry ---------- */
+  function Geo() { return { p: [], n: [], u: [], i: [] }; }
+  function gv(g, x, y, z, nx, ny, nz, u, v) { g.p.push(x, y, z); g.n.push(nx, ny, nz); g.u.push(u, v); return g.p.length / 3 - 1; }
+  function gq(g, a, b, c, d) { g.i.push(a, b, c, a, c, d); }
+  function fixWinding(g) {       // ให้ทุกสามเหลี่ยมหันด้านหน้าไปทางเดียวกับ normal
+    var p = g.p, n = g.n, I = g.i;
+    for (var t = 0; t < I.length; t += 3) {
+      var a = I[t] * 3, b = I[t + 1] * 3, c = I[t + 2] * 3;
+      var ux = p[b] - p[a], uy = p[b + 1] - p[a + 1], uz = p[b + 2] - p[a + 2];
+      var vx = p[c] - p[a], vy = p[c + 1] - p[a + 1], vz = p[c + 2] - p[a + 2];
+      var cx = uy * vz - uz * vy, cy = uz * vx - ux * vz, cz = ux * vy - uy * vx;
+      var nx = n[a] + n[b] + n[c], ny = n[a + 1] + n[b + 1] + n[c + 1], nz = n[a + 2] + n[b + 2] + n[c + 2];
+      if (cx * nx + cy * ny + cz * nz < 0) { var tmp = I[t + 1]; I[t + 1] = I[t + 2]; I[t + 2] = tmp; }
+    }
+  }
+  function upload(g) {
+    fixWinding(g);
+    var nv = g.p.length / 3, a = new Float32Array(nv * 8);
+    for (var i = 0; i < nv; i++) {
+      a[i * 8] = g.p[i * 3]; a[i * 8 + 1] = g.p[i * 3 + 1]; a[i * 8 + 2] = g.p[i * 3 + 2];
+      a[i * 8 + 3] = g.n[i * 3]; a[i * 8 + 4] = g.n[i * 3 + 1]; a[i * 8 + 5] = g.n[i * 3 + 2];
+      a[i * 8 + 6] = g.u[i * 2]; a[i * 8 + 7] = g.u[i * 2 + 1];
+    }
+    var vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vb); gl.bufferData(gl.ARRAY_BUFFER, a, gl.STATIC_DRAW);
+    var ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(g.i), gl.STATIC_DRAW);
+    curMesh = null;
+    return { vb: vb, ib: ib, n: g.i.length };
+  }
+  function boxGeo() {
+    var g = Geo(), F = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+    for (var f = 0; f < 6; f++) {
+      var N = F[f], ax = N[0] ? 0 : (N[1] ? 1 : 2), a1 = (ax + 1) % 3, a2 = (ax + 2) % 3, b = g.p.length / 3;
+      for (var k = 0; k < 4; k++) {
+        var q = [0, 0, 0]; q[ax] = N[ax] * 0.5; q[a1] = (k === 1 || k === 2) ? 0.5 : -0.5; q[a2] = k >= 2 ? 0.5 : -0.5;
+        gv(g, q[0], q[1], q[2], N[0], N[1], N[2], q[a1] + 0.5, q[a2] + 0.5);
+      }
+      gq(g, b, b + 1, b + 2, b + 3);
+    }
+    return g;
+  }
+  function roundBox(w, h, d, r, taper) {          // กล่องขอบมน (normal เรียบตามขอบ)
+    var g = Geo(), hs = [w / 2, h / 2, d / 2];
+    r = Math.min(r, hs[0] * 0.98, hs[1] * 0.98, hs[2] * 0.98);
+    function smp(hh) { return [-hh, -hh + r * 0.29, -hh + r * 0.71, -hh + r, hh - r, hh - r * 0.71, hh - r * 0.29, hh]; }
+    var S = [smp(hs[0]), smp(hs[1]), smp(hs[2])];
+    for (var ax = 0; ax < 3; ax++) for (var sg = -1; sg <= 1; sg += 2) {
+      var a1 = (ax + 1) % 3, a2 = (ax + 2) % 3, base = g.p.length / 3, i, j;
+      for (i = 0; i < 8; i++) for (j = 0; j < 8; j++) {
+        var q = [0, 0, 0]; q[ax] = sg * hs[ax]; q[a1] = S[a1][i]; q[a2] = S[a2][j];
+        var I0 = clamp(q[0], -hs[0] + r, hs[0] - r), I1 = clamp(q[1], -hs[1] + r, hs[1] - r), I2 = clamp(q[2], -hs[2] + r, hs[2] - r);
+        var nx = q[0] - I0, ny = q[1] - I1, nz = q[2] - I2, l = Math.sqrt(nx * nx + ny * ny + nz * nz);
+        if (l < 1e-6) { nx = ax === 0 ? sg : 0; ny = ax === 1 ? sg : 0; nz = ax === 2 ? sg : 0; } else { nx /= l; ny /= l; nz /= l; }
+        var x = I0 + nx * r, y = I1 + ny * r, z = I2 + nz * r;
+        if (taper) { var k = lerp(taper, 1, (y + hs[1]) / (2 * hs[1])); x *= k; z *= lerp(1, k, 0.4); }
+        gv(g, x, y, z, nx, ny, nz, (q[a1] + hs[a1]) / (2 * hs[a1]), (q[a2] + hs[a2]) / (2 * hs[a2]));
+      }
+      for (i = 0; i < 7; i++) for (j = 0; j < 7; j++) gq(g, base + i * 8 + j, base + (i + 1) * 8 + j, base + (i + 1) * 8 + j + 1, base + i * 8 + j + 1);
+    }
+    return g;
+  }
+  function RB(w, h, d, r, taper) {
+    var k = w + ',' + h + ',' + d + ',' + r + ',' + (taper || 0);
+    return RBC[k] || (RBC[k] = upload(roundBox(w, h, d, r, taper)));
+  }
+  function lathe(prof, segs) {                     // หมุนรอบแกน y (บน→ล่าง), v ตามความยาวเส้นโค้ง
+    var g = Geo(), n = prof.length, len = [0], tot = 0, i, j;
+    for (i = 1; i < n; i++) { tot += Math.sqrt(Math.pow(prof[i][0] - prof[i - 1][0], 2) + Math.pow(prof[i][1] - prof[i - 1][1], 2)); len.push(tot); }
+    for (i = 0; i < n; i++) {
+      var a = prof[Math.max(0, i - 1)], b = prof[Math.min(n - 1, i + 1)], dr = b[0] - a[0], dy = b[1] - a[1];
+      var l = Math.sqrt(dr * dr + dy * dy) || 1, nr = -dy / l, ny = dr / l;
+      for (j = 0; j <= segs; j++) {
+        var t = j / segs * TAU, s = Math.sin(t), c = Math.cos(t);
+        gv(g, -prof[i][0] * s, prof[i][1], -prof[i][0] * c, -nr * s, ny, -nr * c, j / segs, tot ? len[i] / tot : 0);
+      }
+    }
+    for (i = 0; i < n - 1; i++) for (j = 0; j < segs; j++) { var r0 = i * (segs + 1), r1 = (i + 1) * (segs + 1); gq(g, r0 + j, r1 + j, r1 + j + 1, r0 + j + 1); }
+    g.len = len; g.tot = tot;
+    return g;
+  }
+  function limb(r0, r1, L) {                       // แขนขาเรียวปลายมน ข้อต่ออยู่ที่ y=0
+    return [[0, r0 * 0.75], [r0 * 0.6, r0 * 0.6], [r0 * 0.9, r0 * 0.3], [r0, 0], [lerp(r0, r1, 0.5) * 1.03, -L * 0.45], [r1, -L],
+      [r1 * 0.9, -L - r1 * 0.3], [r1 * 0.6, -L - r1 * 0.6], [0, -L - r1 * 0.75]];
+  }
+  function sphereGeo(su, sv, lump) {
+    var g = Geo(), i, j;
+    for (i = 0; i <= sv; i++) {
+      var ph = i / sv * Math.PI, y = Math.cos(ph), r = Math.sin(ph);
+      for (j = 0; j <= su; j++) {
+        var t = j / su * TAU, x = -r * Math.sin(t), z = -r * Math.cos(t), k = 1;
+        if (lump) k = 1 + 0.17 * Math.sin(x * 5.1 + y * 3.3) * Math.sin(z * 4.7 + y * 2.1) + 0.08 * Math.sin(x * 11.0 + z * 9.0);
+        gv(g, x * k, y * k, z * k, x, y, z, j / su, i / sv);
+      }
+    }
+    for (i = 0; i < sv; i++) for (j = 0; j < su; j++) gq(g, i * (su + 1) + j, (i + 1) * (su + 1) + j, (i + 1) * (su + 1) + j + 1, i * (su + 1) + j + 1);
+    return g;
+  }
+  function quadGeo() {
+    var g = Geo();
+    gv(g, -0.5, -0.5, 0, 0, 0, -1, 0, 1); gv(g, 0.5, -0.5, 0, 0, 0, -1, 1, 1);
+    gv(g, 0.5, 0.5, 0, 0, 0, -1, 1, 0); gv(g, -0.5, 0.5, 0, 0, 0, -1, 0, 0);
+    gq(g, 0, 1, 2, 3); return g;
+  }
+  function discGeo(n) {
+    var g = Geo(); gv(g, 0, 0, 0, 0, 0, -1, 0.5, 0.5);
+    for (var i = 0; i <= n; i++) { var a = i / n * TAU, c = Math.cos(a), s = Math.sin(a); gv(g, c * 0.5, s * 0.5, 0, 0, 0, -1, 0.5 + c * 0.5, 0.5 - s * 0.5); }
+    for (i = 1; i <= n; i++) g.i.push(0, i, i + 1);
+    return g;
+  }
+  function stripY(x0, x1, y, z0, z1, n) {
+    var g = Geo();
+    for (var k = 0; k <= n; k++) { var z = z0 + (z1 - z0) * k / n; gv(g, x0, y, z, 0, 1, 0, 0, k / n); gv(g, x1, y, z, 0, 1, 0, 1, k / n); }
+    for (k = 0; k < n; k++) gq(g, k * 2, k * 2 + 1, k * 2 + 3, k * 2 + 2);
+    return g;
+  }
+  function wallX(x, y0, y1, z0, z1, n, nx) {
+    var g = Geo();
+    for (var k = 0; k <= n; k++) { var z = z0 + (z1 - z0) * k / n; gv(g, x, y0, z, nx, 0, 0, 0, k / n); gv(g, x, y1, z, nx, 0, 0, 1, k / n); }
+    for (k = 0; k < n; k++) gq(g, k * 2, k * 2 + 1, k * 2 + 3, k * 2 + 2);
+    return g;
+  }
+  function palmGeo() {                             // ใบมะพร้าวโค้งพับเป็นรูปตัว V
+    var g = Geo(), F = 9;
+    for (var f = 0; f < F; f++) {
+      var a = f / F * TAU + (f % 2) * 0.22, dx = Math.sin(a), dz = Math.cos(a), Lf = 2.5 + (f % 3) * 0.4, up0 = 0.55 - (f % 3) * 0.22;
+      var px = -dz, pz = dx, base = g.p.length / 3, S = 9, k;
+      for (k = 0; k <= S; k++) {
+        var t = k / S, r = Lf * t, y = Lf * (up0 * t - 0.78 * t * t), w = 0.5 * Math.sin(Math.PI * Math.min(1, 0.12 + t * 0.95)) + 0.04;
+        var ty = Lf * (up0 - 1.56 * t), tl = Math.sqrt(Lf * Lf + ty * ty), tax = dx * Lf / tl, tay = ty / tl, taz = dz * Lf / tl;
+        var nx = tay * pz, ny = taz * px - tax * pz, nz = -tay * px;
+        if (ny < 0) { nx = -nx; ny = -ny; nz = -nz; }
+        var cx = dx * r, cz = dz * r, fold = w * 0.35;
+        gv(g, cx + px * w, y - fold, cz + pz * w, nx, ny, nz, t, 0);
+        gv(g, cx, y, cz, nx, ny, nz, t, 0.5);
+        gv(g, cx - px * w, y - fold, cz - pz * w, nx, ny, nz, t, 1);
+      }
+      for (k = 0; k < S; k++) { var b0 = base + k * 3, b1 = base + (k + 1) * 3; gq(g, b0, b1, b1 + 1, b0 + 1); gq(g, b0 + 1, b1 + 1, b1 + 2, b0 + 2); }
+    }
+    return g;
+  }
+  function buildMeshes() {
+    MS = {}; RBC = {};
+    MS.box = upload(boxGeo());
+    MS.quad = upload(quadGeo());
+    MS.disc = upload(discGeo(32));
+    MS.tri = upload({ p: [-1, -1, 0, 3, -1, 0, -1, 3, 0], n: [0, 0, 1, 0, 0, 1, 0, 0, 1], u: [0, 0, 0, 0, 0, 0], i: [0, 1, 2] });
+    MS.sphere = upload(sphereGeo(24, 16, false));
+    MS.blob = upload(sphereGeo(18, 12, true));
+    MS.road = upload(stripY(-ROAD, ROAD, 0, -14, 236, 64));
+    MS.walkL = upload(stripY(-WALK, -ROAD, 0.15, -14, 236, 64));
+    MS.walkR = upload(stripY(ROAD, WALK, 0.15, -14, 236, 64));
+    MS.curbL = upload(wallX(-ROAD, 0, 0.15, -14, 236, 64, 1));
+    MS.curbR = upload(wallX(ROAD, 0, 0.15, -14, 236, 64, -1));
+    MS.gndL = upload(stripY(-90, -WALK, 0.15, -14, 236, 64));
+    MS.gndR = upload(stripY(WALK, 90, 0.15, -14, 236, 64));
+    MS.thigh = upload(lathe(limb(0.106, 0.08, 0.46), 14));
+    MS.shin = upload(lathe(limb(0.08, 0.06, 0.44), 14));
+    MS.uarm = upload(lathe(limb(0.074, 0.06, 0.29), 12));
+    MS.farm = upload(lathe(limb(0.062, 0.05, 0.25), 12));
+    MS.boot = upload(lathe([[0, 0.02], [0.08, 0.02], [0.092, 0], [0.09, -0.12], [0.084, -0.24], [0, -0.24]], 14));
+    MS.neck = upload(lathe(limb(0.066, 0.072, 0.1), 12));
+    MS.torso = RB(0.52, 0.56, 0.28, 0.12, 0.7);
+    var can = lathe([[0, 0.66], [0.19, 0.655], [0.205, 0.67], [0.222, 0.676], [0.234, 0.656], [0.248, 0.615], [0.27, 0.57], [0.27, 0.1], [0.255, 0.04], [0.215, 0.006], [0, 0]], 24);
+    CAN_V0 = can.len[6] / can.tot; CAN_V1 = can.len[7] / can.tot;
+    MS.can = upload(can);
+    MS.tire = upload(lathe([[0.2, 0.13], [0.3, 0.135], [0.345, 0.12], [0.365, 0.08], [0.365, -0.08], [0.345, -0.12], [0.3, -0.135], [0.2, -0.13], [0.2, 0.13]], 20));
+    MS.rim = upload(lathe([[0, 0.12], [0.06, 0.125], [0.17, 0.11], [0.205, 0.08], [0.205, -0.08], [0.17, -0.11], [0, -0.12]], 16));
+    MS.cyl = upload(lathe([[0, 1], [1, 1], [1, 0], [0, 0]], 10));
+    MS.pole = upload(lathe([[0, 5.2], [0.055, 5.2], [0.065, 5.1], [0.075, 0.5], [0.12, 0.42], [0.12, 0], [0, 0]], 10));
+    var tp = [[0, 1]];
+    for (var k = 0; k <= 20; k++) { var tt = k / 20; tp.push([0.12 + 0.08 * tt * tt + (k % 2 ? 0.012 : 0), 1 - tt]); }
+    tp.push([0, 0]);
+    MS.trunk = upload(lathe(tp, 10));
+    MS.frond = upload(palmGeo());
+  }
+
+  /* ---------- textures (วาดด้วย canvas) ---------- */
+  function cnv(w, h) { var c = D.createElement('canvas'); c.width = w; c.height = h; return c; }
+  function fbm(N, f0, oct) {
+    var out = new Float32Array(N * N), amp = 1, tot = 0;
+    for (var o = 0; o < oct; o++) {
+      var f = f0 << o; if (f > N) break;
+      var lat = new Float32Array(f * f), i, x, y;
+      for (i = 0; i < f * f; i++) lat[i] = Math.random();
+      for (y = 0; y < N; y++) {
+        var fy = y * f / N, iy = Math.floor(fy), ty = fy - iy; ty = ty * ty * (3 - 2 * ty);
+        var y0 = iy % f, y1 = (iy + 1) % f;
+        for (x = 0; x < N; x++) {
+          var fx = x * f / N, ix = Math.floor(fx), tx = fx - ix; tx = tx * tx * (3 - 2 * tx);
+          var x0 = ix % f, x1 = (ix + 1) % f;
+          var a = lat[y0 * f + x0] + (lat[y0 * f + x1] - lat[y0 * f + x0]) * tx;
+          var b = lat[y1 * f + x0] + (lat[y1 * f + x1] - lat[y1 * f + x0]) * tx;
+          out[y * N + x] += (a + (b - a) * ty) * amp;
+        }
+      }
+      tot += amp; amp *= 0.5;
+    }
+    for (i = 0; i < out.length; i++) out[i] /= tot;
+    return out;
+  }
+  function texImg(img, repeat, mip) {
+    var t = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    var wr = repeat ? gl.REPEAT : gl.CLAMP_TO_EDGE;
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wr);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wr);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    if (mip) {
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      if (aniso) gl.texParameterf(gl.TEXTURE_2D, aniso.TEXTURE_MAX_ANISOTROPY_EXT, anisoMax);
+    } else gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    return t;
+  }
+  // ใช้ ImageData เพื่อเก็บสี RGB ไว้แม้ alpha = 0 (canvas จะ premultiply ทิ้ง)
+  function texFrom(c, maskC, repeat, mip, bleed) {
+    var id = c.getContext('2d').getImageData(0, 0, c.width, c.height), d = id.data, i;
+    if (maskC) { var md = maskC.getContext('2d').getImageData(0, 0, c.width, c.height).data; for (i = 3; i < d.length; i += 4) d[i] = md[i - 3]; }
+    if (bleed) for (i = 0; i < d.length; i += 4) if (d[i + 3] < 8) { d[i] = bleed[0]; d[i + 1] = bleed[1]; d[i + 2] = bleed[2]; }
+    return texImg(id, repeat, mip);
+  }
+  function grayCanvas(arr, N, lo, hi) {
+    var c = cnv(N, N), x = c.getContext('2d'), id = x.createImageData(N, N);
+    for (var i = 0; i < N * N; i++) { var v = clamp((arr[i] - lo) / (hi - lo), 0, 1) * 255; id.data[i * 4] = id.data[i * 4 + 1] = id.data[i * 4 + 2] = v; id.data[i * 4 + 3] = 255; }
+    x.putImageData(id, 0, 0); return c;
+  }
+  function txt(x, s, px, py, size, col, stroke, sw, weight) {
+    x.font = (weight || 'bold') + ' ' + size + 'px ' + FONT; x.textAlign = 'center'; x.textBaseline = 'middle';
+    if (stroke) { x.lineJoin = 'round'; x.lineWidth = sw || 4; x.strokeStyle = stroke; x.strokeText(s, px, py); }
+    x.fillStyle = col; x.fillText(s, px, py);
+  }
+  function rr(x, X, Y, w, h, r) { x.beginPath(); x.moveTo(X + r, Y); x.arcTo(X + w, Y, X + w, Y + h, r); x.arcTo(X + w, Y + h, X, Y + h, r); x.arcTo(X, Y + h, X, Y, r); x.arcTo(X, Y, X + w, Y, r); x.closePath(); }
+  function capIcon(x, cx, cy, R) {
+    x.beginPath();
+    for (var i = 0; i < 28; i++) { var a = i / 28 * TAU, r = (i & 1) ? R * 0.86 : R; x.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); }
+    x.closePath();
+    var gr = x.createRadialGradient(cx - R * 0.3, cy - R * 0.3, R * 0.1, cx, cy, R);
+    gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.6, '#c9ced6'); gr.addColorStop(1, '#7d838c');
+    x.fillStyle = gr; x.fill(); x.lineWidth = Math.max(1, R * 0.05); x.strokeStyle = '#3a3d42'; x.stroke();
+    var g2 = x.createRadialGradient(cx - R * 0.2, cy - R * 0.25, R * 0.05, cx, cy, R * 0.66);
+    g2.addColorStop(0, '#ff6a4a'); g2.addColorStop(1, '#b3120d');
+    x.fillStyle = g2; x.beginPath(); x.arc(cx, cy, R * 0.64, 0, TAU); x.fill();
+    x.fillStyle = '#fff';
+    var B = [[-0.24, -0.14, 0.15], [0.16, -0.3, 0.1], [0.12, 0.22, 0.12]];
+    for (i = 0; i < 3; i++) { x.beginPath(); x.arc(cx + B[i][0] * R, cy + B[i][1] * R, B[i][2] * R, 0, TAU); x.fill(); }
+  }
+  function buildTextures() {
+    TX = {};
+    var i, k, x, c, m, mx, X, Y;
+    var wc1 = cnv(1, 1), wx1 = wc1.getContext('2d'); wx1.fillStyle = '#fff'; wx1.fillRect(0, 0, 1, 1); whiteTex = texImg(wx1.getImageData(0, 0, 1, 1), false, false);
+    // noise: R ละเอียด, G ก้อนใหญ่ (แอ่งน้ำ), B กลาง
+    var nR = fbm(256, 16, 4), nG = fbm(256, 4, 3), nB = fbm(256, 8, 4);
+    c = cnv(256, 256); x = c.getContext('2d'); var id = x.createImageData(256, 256);
+    for (i = 0; i < 65536; i++) {
+      id.data[i * 4] = clamp((nR[i] - 0.5) * 1.7 + 0.5, 0, 1) * 255; id.data[i * 4 + 1] = clamp((nG[i] - 0.5) * 1.9 + 0.5, 0, 1) * 255;
+      id.data[i * 4 + 2] = clamp((nB[i] - 0.5) * 1.7 + 0.5, 0, 1) * 255; id.data[i * 4 + 3] = 255;
+    }
+    TX.noise = texImg(id, true, true);
+    var nC = grayCanvas(nB, 256, 0.25, 0.75), nF = grayCanvas(nR, 256, 0.2, 0.8);
+    var cl = fbm(256, 4, 6);
+    TX.clouds = texImg(grayCanvas(cl, 256, 0.3, 0.75).getContext('2d').getImageData(0, 0, 256, 256), true, true);
+
+    // ถนน: ยางมะตอย + เส้นจราจร (กว้าง 7.9 ม. × ยาว 8 ม.)
+    var S = 512; c = cnv(S, S); x = c.getContext('2d');
+    x.fillStyle = '#56565c'; x.fillRect(0, 0, S, S);
+    x.globalCompositeOperation = 'multiply'; x.globalAlpha = 0.3; x.drawImage(nF, 0, 0, S, S);
+    x.globalAlpha = 0.12; for (k = 0; k < 4; k++) x.drawImage(nC, (k & 1) * S / 2, (k >> 1) * S / 2, S / 2, S / 2);
+    x.globalCompositeOperation = 'source-over'; x.globalAlpha = 1;
+    for (i = 0; i < 6000; i++) { x.fillStyle = Math.random() < 0.5 ? 'rgba(18,18,20,0.35)' : 'rgba(200,200,205,0.22)'; x.fillRect(Math.random() * S, Math.random() * S, 1 + Math.random() * 1.5, 1 + Math.random() * 1.5); }
+    var lanes = [-LANE, 0, LANE];
+    for (i = 0; i < 3; i++) {
+      for (k = -1; k <= 1; k += 2) {
+        var u = (lanes[i] + k * 0.62 + ROAD) / 7.9 * S, gr = x.createLinearGradient(u - 16, 0, u + 16, 0);
+        gr.addColorStop(0, 'rgba(12,12,15,0)'); gr.addColorStop(0.5, 'rgba(12,12,15,0.25)'); gr.addColorStop(1, 'rgba(12,12,15,0)');
+        x.fillStyle = gr; x.fillRect(u - 16, 0, 32, S);
+      }
+      var uc = (lanes[i] + ROAD) / 7.9 * S, g3 = x.createLinearGradient(uc - 10, 0, uc + 10, 0);
+      g3.addColorStop(0, 'rgba(8,8,10,0)'); g3.addColorStop(0.5, 'rgba(8,8,10,0.16)'); g3.addColorStop(1, 'rgba(8,8,10,0)');
+      x.fillStyle = g3; x.fillRect(uc - 10, 0, 20, S);
+    }
+    x.strokeStyle = 'rgba(14,14,14,0.28)'; x.lineWidth = 1.1;
+    for (i = 0; i < 10; i++) { var px = Math.random() * S, py = Math.random() * S; x.beginPath(); x.moveTo(px, py); for (k = 0; k < 14; k++) { px += (Math.random() - 0.5) * 18; py += (Math.random() - 0.3) * 16; x.lineTo(px, py); } x.stroke(); }
+    for (i = 0; i < 3; i++) { x.fillStyle = 'rgba(28,28,32,0.3)'; x.fillRect(Math.random() * S, Math.random() * S, 40 + Math.random() * 80, 30 + Math.random() * 60); }
+    function paint(u0, w, y0, y1) {
+      x.fillStyle = '#efeee8'; x.fillRect(u0, y0, w, y1 - y0);
+      x.fillStyle = 'rgba(70,70,70,0.4)';
+      for (var q = 0; q < (y1 - y0) * w / 10; q++) x.fillRect(u0 + Math.random() * w, y0 + Math.random() * (y1 - y0), 1.6, 1.6);
+    }
+    var lw = 0.14 / 7.9 * S;
+    paint((-LANE / 2 + ROAD) / 7.9 * S - lw / 2, lw, 0, 0.42 * S);
+    paint((LANE / 2 + ROAD) / 7.9 * S - lw / 2, lw, 0, 0.42 * S);
+    paint((-3.75 + ROAD) / 7.9 * S - 4, 8, 0, S); paint((3.75 + ROAD) / 7.9 * S - 4, 8, 0, S);
+    TX.road = texFrom(c, null, true, true);
+
+    // ทางเท้า (บล็อกปูพื้น 0.5 ม.)
+    c = cnv(256, 256); x = c.getContext('2d');
+    x.fillStyle = '#6b665f'; x.fillRect(0, 0, 256, 256);
+    for (Y = 0; Y < 4; Y++) for (X = 0; X < 4; X++) {
+      var v = 150 + (Math.random() * 34 | 0); x.fillStyle = 'rgb(' + v + ',' + (v - 6) + ',' + (v - 14) + ')';
+      x.fillRect(X * 64 + 2, Y * 64 + 2, 60, 60);
+      x.fillStyle = 'rgba(255,255,255,0.12)'; x.fillRect(X * 64 + 2, Y * 64 + 2, 60, 3);
+      x.fillStyle = 'rgba(0,0,0,0.12)'; x.fillRect(X * 64 + 2, Y * 64 + 59, 60, 3);
+    }
+    x.globalCompositeOperation = 'multiply'; x.globalAlpha = 0.45; x.drawImage(nF, 0, 0, 256, 256); x.globalCompositeOperation = 'source-over'; x.globalAlpha = 1;
+    for (i = 0; i < 8; i++) { x.fillStyle = 'rgba(40,35,30,0.12)'; x.beginPath(); x.ellipse ? x.ellipse(Math.random() * 256, Math.random() * 256, 10 + Math.random() * 20, 6 + Math.random() * 12, 0, 0, TAU) : x.arc(Math.random() * 256, Math.random() * 256, 12, 0, TAU); x.fill(); }
+    TX.walk = texFrom(c, null, true, true);
+
+    // ผนังตึก 3 แบบ (4×4 ช่องหน้าต่าง, alpha = กระจก)
+    TX.fac = [];
+    for (var st = 0; st < 3; st++) {
+      c = cnv(S, S); x = c.getContext('2d'); m = cnv(S, S); mx = m.getContext('2d');
+      x.fillStyle = ['#e7e2d9', '#b8c1ca', '#f3f0ea'][st]; x.fillRect(0, 0, S, S);
+      mx.fillStyle = '#000'; mx.fillRect(0, 0, S, S);
+      for (Y = 0; Y < 4; Y++) for (X = 0; X < 4; X++) {
+        var ox = X * 128, oy = Y * 128;
+        var inter = 'rgb(' + (36 + Math.random() * 40 | 0) + ',' + (40 + Math.random() * 30 | 0) + ',' + (50 + Math.random() * 30 | 0) + ')';
+        if (st === 0) {
+          x.fillStyle = '#8b9096'; x.fillRect(ox + 18, oy + 14, 92, 84);
+          x.fillStyle = inter; x.fillRect(ox + 22, oy + 18, 84, 76);
+          if (Math.random() < 0.5) { x.fillStyle = pick(['rgba(230,210,170,0.55)', 'rgba(200,220,230,0.5)', 'rgba(240,190,160,0.5)']); x.fillRect(ox + 22, oy + 18, 20 + Math.random() * 40, 76); }
+          x.fillStyle = '#9da3a9'; x.fillRect(ox + 62, oy + 18, 4, 76);
+          x.fillStyle = '#f8f6f1'; x.fillRect(ox + 14, oy + 98, 100, 7);
+          mx.fillStyle = '#fff'; mx.fillRect(ox + 22, oy + 18, 40, 76); mx.fillRect(ox + 66, oy + 18, 40, 76);
+          if (Math.random() < 0.35) {
+            x.fillStyle = '#d7d9dc'; x.fillRect(ox + 40, oy + 108, 34, 18); x.fillStyle = '#9aa0a6';
+            for (k = 0; k < 4; k++) x.fillRect(ox + 43, oy + 111 + k * 4, 18, 1.5);
+            x.beginPath(); x.arc(ox + 67, oy + 117, 6, 0, TAU); x.fill();
+          }
+        } else if (st === 1) {
+          var gg2 = x.createLinearGradient(ox, oy, ox + 128, oy + 104);
+          gg2.addColorStop(0, '#3b5b70'); gg2.addColorStop(1, '#2a4152');
+          x.fillStyle = gg2; x.fillRect(ox, oy, 128, 104);
+          x.fillStyle = 'rgba(255,255,255,0.06)'; x.fillRect(ox + 10, oy, 30, 104);
+          mx.fillStyle = '#fff'; mx.fillRect(ox, oy, 128, 104);
+          x.fillStyle = '#4b5661'; x.fillRect(ox, oy + 104, 128, 24);
+          x.fillStyle = '#c4cad0'; x.fillRect(ox, oy, 4, 128); x.fillRect(ox + 64, oy, 3, 104);
+          mx.fillStyle = '#000'; mx.fillRect(ox, oy, 4, 128); mx.fillRect(ox + 64, oy, 3, 104);
+        } else {
+          x.fillStyle = '#a7adb3'; x.fillRect(ox + 12, oy + 18, 104, 72);
+          x.fillStyle = inter; x.fillRect(ox + 15, oy + 21, 98, 66);
+          mx.fillStyle = '#fff'; mx.fillRect(ox + 15, oy + 21, 98, 66);
+          x.fillStyle = '#fbfaf6'; x.fillRect(ox, oy + 92, 128, 11);
+          x.fillStyle = '#7d848c'; x.fillRect(ox, oy + 66, 128, 3); mx.fillStyle = '#000'; mx.fillRect(ox, oy + 66, 128, 3);
+          for (k = 0; k < 14; k++) { x.fillRect(ox + 4 + k * 9, oy + 69, 2, 23); mx.fillRect(ox + 4 + k * 9, oy + 69, 2, 23); }
+          if (Math.random() < 0.4) { x.fillStyle = pick(['#5aa05a', '#c0503a', '#e0c050']); x.fillRect(ox + 90, oy + 76, 16, 16); }
+        }
+      }
+      x.globalCompositeOperation = 'multiply'; x.globalAlpha = 0.3; x.drawImage(nC, 0, 0, S, S); x.globalAlpha = 1; x.globalCompositeOperation = 'source-over';
+      for (k = 0; k < 40; k++) { var sx2 = Math.random() * S, gs = x.createLinearGradient(0, 0, 0, 90); gs.addColorStop(0, 'rgba(60,50,40,0.18)'); gs.addColorStop(1, 'rgba(60,50,40,0)'); x.fillStyle = gs; x.save(); x.translate(sx2, (Math.random() * 4 | 0) * 128 + 104); x.fillRect(0, 0, 3 + Math.random() * 8, 90); x.restore(); }
+      TX.fac.push(texFrom(c, m, true, true));
+    }
+    // หน้าร้านชั้นล่าง (กว้าง 24 ม. = 4 ร้าน, สูง 4 ม.)
+    var SHOPS = [['ร้านค้า', 'ก๋วยเตี๋ยว', 'กาแฟสด', 'ร้านยา'], ['ซ่ามาร์ท', 'ข้าวมันไก่', 'ผัดไทย', 'เบเกอรี่']];
+    TX.shop = [];
+    for (var sI = 0; sI < 2; sI++) {
+      c = cnv(512, 128); x = c.getContext('2d'); m = cnv(512, 128); mx = m.getContext('2d');
+      x.fillStyle = '#d6cfc3'; x.fillRect(0, 0, 512, 128); mx.fillStyle = '#000'; mx.fillRect(0, 0, 512, 128);
+      for (k = 0; k < 4; k++) {
+        X = k * 128;
+        x.fillStyle = '#aba292'; x.fillRect(X, 0, 9, 128);
+        x.fillStyle = pick(['#c0392b', '#1f6fb2', '#16a085', '#8e44ad', '#d35400', '#2c3e50', '#b7950b']);
+        x.fillRect(X + 11, 5, 112, 31);
+        txt(x, SHOPS[sI][k], X + 67, 21, 19, '#ffffff');
+        mx.fillStyle = 'rgb(128,128,128)'; mx.fillRect(X + 11, 5, 112, 31);
+        if (Math.random() < 0.22) {
+          x.fillStyle = '#8f949a'; x.fillRect(X + 14, 41, 106, 85);
+          x.fillStyle = 'rgba(0,0,0,0.25)'; for (i = 0; i < 20; i++) x.fillRect(X + 14, 43 + i * 4.2, 106, 1.2);
+        } else {
+          x.fillStyle = '#2b2927'; x.fillRect(X + 14, 41, 106, 85);
+          for (i = 0; i < 3; i++) for (var j2 = 0; j2 < 6; j2++) { x.fillStyle = 'hsl(' + (Math.random() * 360 | 0) + ',50%,' + (40 + Math.random() * 25 | 0) + '%)'; x.fillRect(X + 20 + j2 * 16, 50 + i * 20, 12, 12); }
+          x.fillStyle = '#cfd2d4'; x.fillRect(X + 14, 41, 106, 3); x.fillRect(X + 66, 41, 3, 85);
+          mx.fillStyle = '#fff'; mx.fillRect(X + 14, 44, 52, 82); mx.fillRect(X + 69, 44, 51, 82);
+        }
+      }
+      TX.shop.push(texFrom(c, m, true, true));
+    }
+    // ฉลากกระป๋อง (ส้ม/ทอง) — ไม่ใช่แบรนด์จริง
+    function canTex(gold) {
+      var cw = 256, ch = 128, cc = cnv(cw, ch), q = cc.getContext('2d'), v0 = CAN_V0 * ch, v1 = CAN_V1 * ch;
+      var gm = q.createLinearGradient(0, 0, 0, ch); gm.addColorStop(0, '#f4f5f7'); gm.addColorStop(0.5, '#9ea3aa'); gm.addColorStop(1, '#e8e9ec');
+      q.fillStyle = gm; q.fillRect(0, 0, cw, ch);
+      var gb = q.createLinearGradient(0, v0, 0, v1);
+      if (gold) { gb.addColorStop(0, '#fff2a8'); gb.addColorStop(0.5, '#f0b81c'); gb.addColorStop(1, '#b07a06'); }
+      else { gb.addColorStop(0, '#ffa63a'); gb.addColorStop(0.5, '#ff6a00'); gb.addColorStop(1, '#d24400'); }
+      q.fillStyle = gb; q.fillRect(0, v0, cw, v1 - v0);
+      q.fillStyle = gold ? 'rgba(255,255,255,0.85)' : '#fff3d6';
+      q.beginPath(); q.moveTo(0, v0 + (v1 - v0) * 0.62);
+      for (var xx = 0; xx <= cw; xx += 8) q.lineTo(xx, v0 + (v1 - v0) * (0.62 + Math.sin(xx / cw * TAU * 2) * 0.06));
+      for (xx = cw; xx >= 0; xx -= 8) q.lineTo(xx, v0 + (v1 - v0) * (0.74 + Math.sin(xx / cw * TAU * 2) * 0.06));
+      q.closePath(); q.fill();
+      for (var r2 = 0; r2 < 2; r2++) {
+        txt(q, gold ? 'ซ่าทอง' : 'ซ่า!', 64 + r2 * 128, v0 + (v1 - v0) * 0.36, gold ? 24 : 30, '#ffffff', gold ? '#7a4a00' : '#8a1a00', 5);
+        capIcon(q, 64 + r2 * 128 + 50, v0 + (v1 - v0) * 0.36, 9);
+      }
+      q.fillStyle = 'rgba(255,255,255,0.5)';
+      for (var b2 = 0; b2 < 30; b2++) { q.beginPath(); q.arc(Math.random() * cw, v0 + Math.random() * (v1 - v0), 1 + Math.random() * 2.5, 0, TAU); q.fill(); }
+      return texFrom(cc, null, true, true);
+    }
+    TX.can = canTex(false); TX.canG = canTex(true);
+    // สัญลักษณ์ฝาขวด
+    c = cnv(128, 128); x = c.getContext('2d'); capIcon(x, 64, 64, 60);
+    TX.emblem = texFrom(c, null, false, true, [200, 200, 205]);
+    // ใบหน้า/หน้ากาก (equirect บนทรงกลม หน้าอยู่ที่ u=0.5)
+    c = cnv(256, 128); x = c.getContext('2d');
+    x.fillStyle = '#ff5a24'; x.fillRect(0, 0, 256, 128);
+    var gh = x.createLinearGradient(0, 0, 0, 128); gh.addColorStop(0, 'rgba(255,255,255,0.12)'); gh.addColorStop(1, 'rgba(0,0,0,0.15)'); x.fillStyle = gh; x.fillRect(0, 0, 256, 128);
+    x.fillStyle = '#f2c094'; x.beginPath(); x.moveTo(98, 66); x.quadraticCurveTo(128, 60, 158, 66); x.lineTo(154, 96); x.quadraticCurveTo(128, 122, 102, 96); x.closePath(); x.fill();
+    x.strokeStyle = '#b8320c'; x.lineWidth = 2; x.stroke();
+    function eye(cx2, flip) { x.save(); x.translate(cx2, 57); x.scale(flip, 1); x.beginPath(); x.moveTo(-12, -2); x.quadraticCurveTo(0, -9, 13, -6); x.lineTo(10, 5); x.quadraticCurveTo(0, 7, -10, 4); x.closePath(); x.fillStyle = '#ffffff'; x.fill(); x.lineWidth = 2.5; x.strokeStyle = '#1b1b1f'; x.stroke(); x.restore(); }
+    eye(111, -1); eye(145, 1);
+    x.strokeStyle = '#6a2a1a'; x.lineWidth = 2.2; x.beginPath(); x.moveTo(118, 98); x.quadraticCurveTo(128, 104, 139, 97); x.stroke();
+    TX.face = texFrom(c, null, true, true);
+    // แถบเตือน
+    function stripesTex(bg, fg) {
+      var cc = cnv(256, 64), q = cc.getContext('2d'); q.fillStyle = bg; q.fillRect(0, 0, 256, 64); q.fillStyle = fg;
+      for (var s2 = -64; s2 < 256 + 64; s2 += 64) { q.beginPath(); q.moveTo(s2, 64); q.lineTo(s2 + 32, 64); q.lineTo(s2 + 64, 0); q.lineTo(s2 + 32, 0); q.closePath(); q.fill(); }
+      q.globalCompositeOperation = 'multiply'; q.globalAlpha = 0.25; q.drawImage(nF, 0, 0, 256, 64); q.globalAlpha = 1; q.globalCompositeOperation = 'source-over';
+      q.fillStyle = 'rgba(0,0,0,0.35)'; q.fillRect(0, 0, 256, 3); q.fillRect(0, 61, 256, 3);
+      return texFrom(cc, null, true, true);
+    }
+    TX.hazard = stripesTex('#ffc400', '#1c1a1e'); TX.barrier = stripesTex('#f4f4f2', '#d8261c');
+    // ลังไม้
+    c = cnv(256, 256); x = c.getContext('2d');
+    x.fillStyle = '#b07a3e'; x.fillRect(0, 0, 256, 256);
+    for (i = 0; i < 6; i++) { x.fillStyle = i % 2 ? '#a8723a' : '#bb8546'; x.fillRect(0, i * 43, 256, 41); x.fillStyle = 'rgba(60,35,15,0.6)'; x.fillRect(0, i * 43 + 41, 256, 2); }
+    x.globalCompositeOperation = 'multiply'; x.globalAlpha = 0.4; x.drawImage(nF, 0, 0, 256, 256); x.globalAlpha = 1; x.globalCompositeOperation = 'source-over';
+    x.fillStyle = '#8a5a2a'; x.fillRect(0, 0, 256, 24); x.fillRect(0, 232, 256, 24); x.fillRect(0, 0, 24, 256); x.fillRect(232, 0, 24, 256);
+    x.save(); x.translate(128, 128); x.rotate(-Math.PI / 4); x.fillRect(-170, -12, 340, 24); x.restore();
+    x.fillStyle = '#3a3a3a'; for (i = 0; i < 4; i++) for (k = 0; k < 4; k++) if (i === 0 || i === 3 || k === 0 || k === 3) { x.beginPath(); x.arc(12 + i * 77, 12 + k * 77, 2.5, 0, TAU); x.fill(); }
+    TX.crate = texFrom(c, null, true, true);
+    // สติกเกอร์ข้างรถบรรทุก / ท้ายรถ / ป้ายทะเบียน / ป้ายเตือนความสูง
+    c = cnv(512, 256); x = c.getContext('2d');
+    x.fillStyle = '#ff6a00'; x.fillRect(0, 200, 512, 26); x.fillStyle = '#c21d12'; x.fillRect(0, 226, 512, 10);
+    capIcon(x, 92, 104, 62);
+    txt(x, 'ซ่าขนส่ง', 300, 92, 74, '#d6300f', '#ffffff', 8, '900');
+    txt(x, 'ส่งไว ซ่าทันใจ', 300, 160, 32, '#2b2b33');
+    TX.cargo = texFrom(c, null, false, true, [255, 255, 255]);
+    c = cnv(256, 256); x = c.getContext('2d');
+    x.fillStyle = 'rgba(0,0,0,0)'; x.clearRect(0, 0, 256, 256);
+    x.fillStyle = '#5a5e66'; x.fillRect(126, 6, 4, 230);
+    for (k = 0; k < 2; k++) { x.fillStyle = '#9aa0a8'; x.fillRect(100 + k * 48, 90, 8, 70); x.fillRect(96 + k * 48, 120, 16, 6); }
+    for (k = 0; k < 8; k++) { x.fillStyle = k % 2 ? '#ffffff' : '#e3261f'; x.fillRect(k * 32, 222, 32, 16); }
+    txt(x, 'ซ่าขนส่ง', 128, 40, 26, '#d6300f');
+    TX.rear = texFrom(c, null, false, true, [200, 200, 200]);
+    c = cnv(128, 64); x = c.getContext('2d');
+    x.fillStyle = '#f6f6f2'; x.fillRect(0, 0, 128, 64); x.strokeStyle = '#222'; x.lineWidth = 3; x.strokeRect(3, 3, 122, 58);
+    txt(x, 'กข 1234', 64, 26, 26, '#111'); txt(x, 'เมืองซ่า', 64, 50, 13, '#222', null, 0, '600');
+    TX.plate = texFrom(c, null, false, true);
+    c = cnv(256, 64); x = c.getContext('2d');
+    x.fillStyle = '#ffd21a'; rr(x, 2, 2, 252, 60, 8); x.fill(); x.lineWidth = 4; x.strokeStyle = '#111'; x.stroke();
+    txt(x, 'ความสูงจำกัด 1.2 ม.', 128, 33, 27, '#111');
+    TX.warn = texFrom(c, null, false, true);
+    // ป้ายนีออน
+    var SIGNS = [['ซ่าบาร์', '#ff3fae'], ['คาราโอเกะ', '#3ff0ff'], ['โรงแรม', '#ffd23a'], ['นวดแผนไทย', '#7dff5a'], ['24 ชม.', '#ff8a2a'], ['ร้านอาหาร', '#ff4a4a']];
+    TX.signs = [];
+    for (k = 0; k < SIGNS.length; k++) {
+      c = cnv(256, 128); x = c.getContext('2d');
+      x.fillStyle = '#0d0b14'; x.fillRect(0, 0, 256, 128);
+      x.shadowColor = SIGNS[k][1]; x.shadowBlur = 14; x.lineWidth = 5; x.strokeStyle = SIGNS[k][1];
+      rr(x, 10, 10, 236, 108, 18); x.stroke();
+      txt(x, SIGNS[k][0], 128, 66, 44, '#ffffff', SIGNS[k][1], 6, '900');
+      x.shadowBlur = 0;
+      TX.signs.push(texFrom(c, null, false, true));
+    }
+    // ป้ายโฆษณาบนหลังคา (แบรนด์สมมติของเกม)
+    TX.bill = [];
+    c = cnv(512, 256); x = c.getContext('2d');
+    var gb2 = x.createLinearGradient(0, 0, 512, 256); gb2.addColorStop(0, '#ff9a1f'); gb2.addColorStop(1, '#e2321a'); x.fillStyle = gb2; x.fillRect(0, 0, 512, 256);
+    x.fillStyle = 'rgba(255,255,255,0.18)'; for (i = 0; i < 26; i++) { x.beginPath(); x.arc(Math.random() * 512, Math.random() * 256, 3 + Math.random() * 12, 0, TAU); x.fill(); }
+    txt(x, 'ซ่า!', 170, 100, 110, '#fff7d0', '#7a1400', 10, '900');
+    txt(x, 'พลังฮีโร่ในทุกกระป๋อง', 170, 196, 30, '#ffffff', '#7a1400', 5);
+    rr(x, 362, 40, 92, 176, 22); x.fillStyle = '#ff6a00'; x.fill(); x.lineWidth = 6; x.strokeStyle = '#ffffff'; x.stroke();
+    x.fillStyle = '#fff3d6'; x.fillRect(362, 120, 92, 24); capIcon(x, 408, 84, 26);
+    x.lineWidth = 8; x.strokeStyle = '#ffffff'; x.strokeRect(4, 4, 504, 248);
+    TX.bill.push(texFrom(c, null, false, true));
+    c = cnv(512, 256); x = c.getContext('2d');
+    var gb3 = x.createLinearGradient(0, 0, 0, 256); gb3.addColorStop(0, '#2a0f4a'); gb3.addColorStop(1, '#0d0620'); x.fillStyle = gb3; x.fillRect(0, 0, 512, 256);
+    x.shadowColor = '#ff3fae'; x.shadowBlur = 16;
+    txt(x, 'ตลาดนัดเมืองซ่า', 256, 96, 62, '#ffffff', '#ff3fae', 6, '900');
+    x.shadowColor = '#3ff0ff';
+    txt(x, 'ทุกคืน 18:00 - 24:00', 256, 178, 36, '#bff9ff', '#2aa9c9', 3);
+    x.shadowBlur = 0; x.lineWidth = 6; x.strokeStyle = '#ffd23a'; x.strokeRect(6, 6, 500, 244);
+    TX.bill.push(texFrom(c, null, false, true));
+    // ใบมะพร้าว (alpha test)
+    c = cnv(256, 64); x = c.getContext('2d');
+    x.lineCap = 'round';
+    for (i = 0; i < 70; i++) {
+      var fx2 = 6 + i * 3.6, len2 = 27 * Math.sin(Math.PI * Math.min(1, fx2 / 250)) + 3;
+      x.strokeStyle = 'rgb(' + (70 + Math.random() * 40 | 0) + ',' + (120 + Math.random() * 50 | 0) + ',' + (40 + Math.random() * 30 | 0) + ')';
+      x.lineWidth = 2.6;
+      x.beginPath(); x.moveTo(fx2, 32); x.lineTo(fx2 + 10, 32 - len2); x.stroke();
+      x.beginPath(); x.moveTo(fx2, 32); x.lineTo(fx2 + 10, 32 + len2); x.stroke();
+    }
+    x.strokeStyle = '#7a6a3a'; x.lineWidth = 3; x.beginPath(); x.moveTo(0, 32); x.lineTo(256, 32); x.stroke();
+    TX.frond = texFrom(c, null, false, true, [90, 130, 60]);
+  }
+
+  /* ---------- materials ---------- */
+  function Lc(c, k) { k = k || 1; return [c[0] * c[0] / 65025 * k, c[1] * c[1] / 65025 * k, c[2] * c[2] / 65025 * k]; }
+  function mt(o) {
+    return { c: o.c || [1, 1, 1], c2: o.c2 || o.c || [1, 1, 1], e: o.e || [0, 0, 0], s: o.s != null ? o.s : 0.3, g: o.g || 24, r: o.r || 0.03,
+      mode: o.mode || 0, tex: o.tex || null, tex2: o.tex2 || null, uvs: o.uvs || [1, 1], fill: o.fill || 0, rim: o.rim || 0, at: o.at || 0,
+      two: !!o.two, cast: o.cast !== false, decal: !!o.decal, seed: o.seed || 0, ei: o.ei || 1 };
+  }
+  function buildMaterials() {
+    MT = {};
+    MT.road = mt({ mode: 3, tex: TX.road, tex2: TX.noise, cast: false });
+    MT.walk = mt({ c: [0.9, 0.88, 0.86], mode: 4, tex: TX.walk, tex2: TX.noise, s: 0.12, g: 14, cast: false });
+    MT.gnd = mt({ c: [0.3, 0.31, 0.28], mode: 4, tex: TX.walk, tex2: TX.noise, s: 0.05, cast: false });
+    MT.curb = mt({ mode: 5, s: 0.2, g: 20, cast: false });
+    MT.suit = mt({ c: Lc(C.suit), s: 0.55, g: 40, r: 0.05, fill: 1, rim: 0.45 });
+    MT.trunk = mt({ c: Lc(C.trunk), s: 0.5, g: 40, r: 0.05, fill: 1, rim: 0.4 });
+    MT.boot = mt({ c: Lc(C.boot), s: 0.8, g: 60, r: 0.1, fill: 1, rim: 0.4 });
+    MT.gold = mt({ c: Lc(C.gold), s: 1.3, g: 90, r: 0.45, fill: 1, rim: 0.35 });
+    MT.head = mt({ mode: 1, tex: TX.face, s: 0.45, g: 34, r: 0.05, fill: 1, rim: 0.45 });
+    MT.emblem = mt({ mode: 1, tex: TX.emblem, at: 0.5, s: 1.1, g: 80, r: 0.3, fill: 1, rim: 0.2, decal: true, cast: false });
+    MT.cape = mt({ c: Lc(C.cape), c2: Lc(C.capeIn), s: 0.5, g: 26, r: 0.04, fill: 0.7, rim: 0.12, two: true });
+    MT.can = mt({ mode: 1, tex: TX.can, s: 1.4, g: 110, r: 0.35, fill: 1, rim: 0.35 });
+    MT.canG = mt({ mode: 1, tex: TX.canG, s: 1.6, g: 120, r: 0.5, fill: 1, rim: 0.45 });
+    MT.pole = mt({ c: Lc([84, 88, 98]), s: 0.7, g: 50, r: 0.15 });
+    MT.lampHead = mt({ c: Lc([60, 62, 70]), s: 0.6, g: 40, r: 0.1 });
+    MT.bark = mt({ c: Lc([128, 100, 72]), s: 0.05, g: 8 });
+    MT.frond = mt({ c: Lc([150, 190, 110]), c2: Lc([120, 160, 90]), mode: 1, tex: TX.frond, at: 0.45, two: true, s: 0.25, g: 20, cast: false });
+    MT.leaf = mt({ c: Lc([70, 130, 64]), s: 0.1, g: 10 });
+    MT.leafD = mt({ c: Lc([52, 104, 56]), s: 0.1, g: 10 });
+    MT.steel = mt({ c: Lc([132, 136, 146]), s: 0.9, g: 60, r: 0.25, fill: 0.7 });
+    MT.dark = mt({ c: Lc([42, 42, 48]), s: 0.4, g: 30, r: 0.05, fill: 0.5 });
+    MT.barrier = mt({ mode: 1, tex: TX.barrier, s: 0.6, g: 40, r: 0.1, fill: 0.7 });
+    MT.hazard = mt({ mode: 1, tex: TX.hazard, uvs: [2.2, 1], s: 0.5, g: 30, r: 0.08, fill: 0.7 });
+    MT.post = mt({ c: Lc([206, 206, 212]), s: 0.8, g: 50, r: 0.2, fill: 0.7 });
+    MT.blinkOn = mt({ c: Lc([255, 170, 60]), e: [3, 1.4, 0.2], s: 1, g: 60 });
+    MT.blinkOff = mt({ c: Lc([150, 80, 30]), s: 1, g: 60, r: 0.2 });
+    MT.glass = mt({ c: Lc([22, 28, 36]), s: 1.3, g: 220, r: 0.85, fill: 0.4 });
+    MT.tire = mt({ c: Lc([30, 30, 33]), s: 0.15, g: 10 });
+    MT.rim = mt({ c: Lc([196, 198, 204]), s: 1.3, g: 90, r: 0.55 });
+    MT.tail = mt({ c: Lc([120, 10, 10]), e: [1.2, 0.04, 0.02], s: 1, g: 80, r: 0.2 });
+    MT.plate = mt({ mode: 1, tex: TX.plate, s: 0.3, decal: true, cast: false, fill: 0.6 });
+    MT.crate = mt({ mode: 1, tex: TX.crate, s: 0.1, g: 10, fill: 0.7 });
+    MT.cargoDecal = mt({ mode: 1, tex: TX.cargo, at: 0.5, decal: true, cast: false, fill: 0.5, s: 0.5, g: 40 });
+    MT.rearDecal = mt({ mode: 1, tex: TX.rear, at: 0.5, decal: true, cast: false, fill: 0.6, s: 0.5, g: 40 });
+    MT.warn = mt({ mode: 1, tex: TX.warn, fill: 0.8, s: 0.4, g: 30, cast: false });
+    MT.signs = []; for (var k = 0; k < TX.signs.length; k++) MT.signs.push(mt({ mode: 6, tex: TX.signs[k], cast: false }));
+    MT.bill = []; for (k = 0; k < TX.bill.length; k++) MT.bill.push(mt({ mode: 6, tex: TX.bill[k], cast: false }));
+  }
+
+  /* ---------- render targets & dynamic buffers ---------- */
+  function buildTargets() {
+    var maxT = gl.getParameter(gl.MAX_TEXTURE_SIZE) || 1024, maxR = gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) || 1024;
+    SH = Math.min(hiF ? 2048 : 1024, maxT, maxR);
+    shTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, shTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, SH, SH, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    var rb = gl.createRenderbuffer(); gl.bindRenderbuffer(gl.RENDERBUFFER, rb); gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, SH, SH);
+    shFB = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, shFB);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, shTex, 0);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, rb);
+    shOK = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    sprVB = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, sprVB); gl.bufferData(gl.ARRAY_BUFFER, SPR_MAX * 48 * 4, gl.DYNAMIC_DRAW);
+    var idx = new Uint16Array(SPR_MAX * 6);
+    for (var i = 0; i < SPR_MAX; i++) { idx[i * 6] = i * 4; idx[i * 6 + 1] = i * 4 + 1; idx[i * 6 + 2] = i * 4 + 2; idx[i * 6 + 3] = i * 4; idx[i * 6 + 4] = i * 4 + 2; idx[i * 6 + 5] = i * 4 + 3; }
+    sprIB = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sprIB); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idx, gl.STATIC_DRAW);
+    // ผ้าคลุม (ตาข่าย 7×5 อัปเดตทุกเฟรม)
+    var ci0 = [], ci1 = [];
+    for (var r = 0; r < CR - 1; r++) for (var c2 = 0; c2 < CCOL - 1; c2++) {
+      var a = r * CCOL + c2, b = a + CCOL;
+      ci0.push(a, b, b + 1, a, b + 1, a + 1); ci1.push(a, b + 1, b, a, a + 1, b + 1);
+    }
+    cape = { vb: gl.createBuffer(), ib: null, ib0: gl.createBuffer(), ib1: gl.createBuffer(), n: ci0.length };
+    gl.bindBuffer(gl.ARRAY_BUFFER, cape.vb); gl.bufferData(gl.ARRAY_BUFFER, capeArr.byteLength, gl.DYNAMIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cape.ib0); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(ci0), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cape.ib1); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(ci1), gl.STATIC_DRAW);
+    cape.ib = cape.ib0;
+    capeEm = { vb: gl.createBuffer(), ib: null, ib0: gl.createBuffer(), ib1: gl.createBuffer(), n: 6 };
+    gl.bindBuffer(gl.ARRAY_BUFFER, capeEm.vb); gl.bufferData(gl.ARRAY_BUFFER, emArr.byteLength, gl.DYNAMIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, capeEm.ib0); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0, 1, 2, 0, 2, 3]), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, capeEm.ib1); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0, 2, 1, 0, 3, 2]), gl.STATIC_DRAW);
+    capeEm.ib = capeEm.ib0;
+    curMesh = null;
+  }
+
+  function build() {
+    aniso = gl.getExtension('EXT_texture_filter_anisotropic') || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
+    if (aniso) anisoMax = Math.min(8, gl.getParameter(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 1);
+    var hp = gl.getShaderPrecisionFormat ? gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT) : null;
+    hiF = !!(hp && hp.precision > 0);
+    var P = 'precision ' + (hiF ? 'highp' : 'mediump') + ' float;';
+    PS = compile(VS_STD(P), FS_STD(P), ['aPos', 'aNor', 'aUV']);
+    PK = compile(VS_SKY(P), FS_SKY(P), ['aPos']);
+    PP = compile(VS_SPR(P), FS_SPR(P), ['aP', 'aQ', 'aC']);
+    PH = compile(VS_SHD(P), FS_SHD(P), ['aPos']);
+    buildMeshes();
+    buildTextures();
+    buildMaterials();
+    buildTargets();
+    gen++;
+    gl.useProgram(PS.p);
+    gl.uniform1i(U(PS, 'uTex'), 0); gl.uniform1i(U(PS, 'uTex2'), 1); gl.uniform1i(U(PS, 'uShadow'), 2);
+    gl.useProgram(PK.p); gl.uniform1i(U(PK, 'uTex'), 0);
+    gl.enableVertexAttribArray(0); gl.enableVertexAttribArray(1); gl.enableVertexAttribArray(2);
+    gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
+    gl.enable(gl.CULL_FACE); gl.frontFace(gl.CW); gl.cullFace(gl.BACK);
+    curMesh = null; curMat = null;
+  }
+
+  function init() {
+    try {
+      var o = { antialias: true, alpha: false, depth: true, stencil: false, premultipliedAlpha: true, preserveDrawingBuffer: false, powerPreference: 'high-performance' };
+      gl = cv.getContext('webgl', o) || cv.getContext('experimental-webgl', o);
+      if (!gl) { api.err = 'WebGL ไม่พร้อมใช้งาน'; return false; }
+      cv.addEventListener('webglcontextlost', function (e) { e.preventDefault(); api.ok = false; api.lost = true; needRender = true; }, false);
+      cv.addEventListener('webglcontextrestored', function () {
+        try { build(); api.ok = true; api.lost = false; } catch (er) { api.err = String(er && er.message || er); }
+        resize();
+      }, false);
+      build();
+      api.ok = true;
+    } catch (e) { api.err = String(e && e.message || e); api.ok = false; }
+    return api.ok;
+  }
+
+  /* ---------- matrices ---------- */
+  function toM4(m) {
+    m4[0] = m[0]; m4[1] = m[4]; m4[2] = m[8]; m4[3] = 0; m4[4] = m[1]; m4[5] = m[5]; m4[6] = m[9]; m4[7] = 0;
+    m4[8] = m[2]; m4[9] = m[6]; m4[10] = m[10]; m4[11] = 0; m4[12] = m[3]; m4[13] = m[7]; m4[14] = m[11]; m4[15] = 1;
+  }
+  function toN3(m) {
+    var a = m[0], b = m[1], c = m[2], d = m[4], e = m[5], f = m[6], g2 = m[8], h = m[9], i = m[10];
+    var A = e * i - f * h, B = -(d * i - f * g2), Cc = d * h - e * g2, Dd = -(b * i - c * h), E = a * i - c * g2, F = -(a * h - b * g2);
+    var G = b * f - c * e, Hh = -(a * f - c * d), I = a * e - b * d;
+    var det = a * A + b * B + c * Cc; if (Math.abs(det) < 1e-12) det = 1e-12; var k = 1 / det;
+    n3[0] = A * k; n3[1] = Dd * k; n3[2] = G * k; n3[3] = B * k; n3[4] = E * k; n3[5] = Hh * k; n3[6] = Cc * k; n3[7] = F * k; n3[8] = I * k;
+  }
+  function mS(m, sx, sy, sz) { return [m[0] * sx, m[1] * sy, m[2] * sz, m[3], m[4] * sx, m[5] * sy, m[6] * sz, m[7], m[8] * sx, m[9] * sy, m[10] * sz, m[11]]; }
+  function mTS(x, y, z, sx, sy, sz) { return [sx, 0, 0, x, 0, sy, 0, y, 0, 0, sz, z]; }
+  function buildVP() {
+    var W2 = cv.width, H2 = cv.height, n = 0.1, f = 420;
+    var a = 2 * cam.F / W2, b = 2 * cam.cx / W2 - 1, c = 2 * cam.F / H2, d = (H2 - 2 * cam.cy) / H2;
+    var A = (f + n) / (f - n), B = -2 * f * n / (f - n), cp = cam.cp, sp = cam.sp;
+    var ty = -(cp * cam.y + sp * cam.z), tz = sp * cam.y - cp * cam.z;
+    vp[0] = a; vp[1] = 0; vp[2] = 0; vp[3] = 0;
+    vp[4] = -b * sp; vp[5] = c * cp - d * sp; vp[6] = -A * sp; vp[7] = -sp;
+    vp[8] = b * cp; vp[9] = c * sp + d * cp; vp[10] = A * cp; vp[11] = cp;
+    vp[12] = -a * cam.x + b * tz; vp[13] = c * ty + d * tz; vp[14] = A * tz + B; vp[15] = tz;
+  }
+  function buildLVP(L) {
+    var fx = -L[0], fy = -L[1], fz = -L[2], ux = 0, uy = 1, uz = 0;
+    if (Math.abs(fy) > 0.97) { uy = 0; uz = 1; }
+    var rx = fy * uz - fz * uy, ry = fz * ux - fx * uz, rz = fx * uy - fy * ux, rl = Math.sqrt(rx * rx + ry * ry + rz * rz) || 1;
+    rx /= rl; ry /= rl; rz /= rl;
+    var qx = ry * fz - rz * fy, qy = rz * fx - rx * fz, qz = rx * fy - ry * fx;
+    var bx = 24 + Math.abs(curve) * 1.3, x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9, z0 = 1e9, z1 = -1e9;
+    for (var k = 0; k < 8; k++) {
+      var px = k & 1 ? bx : -bx, py = k & 2 ? 40 : 0, pz = k & 4 ? 110 : cam.z - 4;
+      var lx = px * rx + py * ry + pz * rz, ly = px * qx + py * qy + pz * qz, lz = px * fx + py * fy + pz * fz;
+      if (lx < x0) x0 = lx; if (lx > x1) x1 = lx; if (ly < y0) y0 = ly; if (ly > y1) y1 = ly; if (lz < z0) z0 = lz; if (lz > z1) z1 = lz;
+    }
+    var wX = Math.ceil((x1 - x0) / 4) * 4, wY = Math.ceil((y1 - y0) / 4) * 4, tX = wX / SH, tY = wY / SH;
+    var kx = dist * rz, ky = dist * qz;                // จัดเงาให้ตรงกริดในพิกัดโลก ลดการสั่นไหว
+    x0 = Math.floor((x0 + kx) / tX) * tX - kx; y0 = Math.floor((y0 + ky) / tY) * tY - ky;
+    z0 -= 260; z1 += 10;
+    var sx = 2 / wX, sy = 2 / wY, sz = 2 / (z1 - z0);
+    lvp[0] = rx * sx; lvp[1] = qx * sy; lvp[2] = fx * sz; lvp[3] = 0;
+    lvp[4] = ry * sx; lvp[5] = qy * sy; lvp[6] = fy * sz; lvp[7] = 0;
+    lvp[8] = rz * sx; lvp[9] = qz * sy; lvp[10] = fz * sz; lvp[11] = 0;
+    lvp[12] = -x0 * sx - 1; lvp[13] = -y0 * sy - 1; lvp[14] = -z0 * sz - 1; lvp[15] = 1;
+  }
+
+  /* ---------- draw list ---------- */
+  function add(mesh, m, mat) {
+    var it = items[nItems];
+    if (!it) it = items[nItems] = { mesh: null, m: null, mat: null, z: 0 };
+    it.mesh = mesh; it.m = m; it.mat = mat; it.z = m[11]; nItems++;
+  }
+  var CXS = [-1, 1, 1, -1], CYS = [-1, -1, 1, 1];
+  function spr(additive, x, y, z, w, h, r, g2, b, a, ground) {
+    var arr = additive ? sprA : sprB, n = additive ? nA : nB;
+    if (n >= (additive ? SPR_MAX : SPR_B_MAX) || a <= 0.003) return;
+    var o = n * 48;
+    for (var k = 0; k < 4; k++) {
+      arr[o++] = x; arr[o++] = y; arr[o++] = z; arr[o++] = ground ? 1 : 0;
+      arr[o++] = CXS[k]; arr[o++] = CYS[k]; arr[o++] = w; arr[o++] = h;
+      arr[o++] = r; arr[o++] = g2; arr[o++] = b; arr[o++] = a;
+    }
+    if (additive) nA++; else nB++;
+  }
+  function glow(x, y, z, size, r, g2, b, a) {     // แสงฟุ้ง (แทน bloom) ขยับเข้าหากล้องเล็กน้อยกันโดนบัง
+    var dx = cam.x - x, dy = cam.y - y, dz = cam.z - z, d = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+    var fade = clamp(1 - (d - 70) / 130, 0, 1), k = Math.min(0.6, d * 0.5) / d;
+    spr(true, x + dx * k, y + dy * k, z + dz * k, size, size, r, g2, b, a * fade);
+  }
+
+  function heroGL() {
+    var p = pose, i, m, sd;
+    var root = mT(MI, hero.x, hero.y + p[BOB], 0); root = mRY(root, hero.yaw); root = mRZ(root, p[ROLL]);
+    var hip = mRX(mT(root, 0, p[HIPY], 0), p[BODYP]);
+    add(RB(0.36, 0.18, 0.26, 0.08), mT(hip, 0, -0.065, 0), MT.trunk);
+    add(RB(0.375, 0.07, 0.27, 0.03), mT(hip, 0, 0.035, 0), MT.gold);
+    for (i = 0; i < 2; i++) {
+      sd = i ? 1 : -1;
+      m = mT(hip, sd * 0.105, -0.08, 0); m = mRZ(m, sd * p[LEGO + i]); m = mRX(m, -p[THIGH + i]);
+      add(MS.thigh, m, MT.suit);
+      var kn = mRX(mT(m, 0, -0.46, 0), p[KNEE + i]);
+      add(MS.shin, kn, MT.suit);
+      add(MS.boot, mT(kn, 0, -0.2, 0), MT.boot);
+      add(RB(0.17, 0.1, 0.3, 0.045), mT(kn, 0, -0.39, 0.06), MT.boot);
+    }
+    var tor = mRY(mRX(mT(hip, 0, 0.07, 0), p[TLEAN]), p[TWIST]);
+    add(MS.torso, mT(tor, 0, 0.29, 0), MT.suit);
+    add(MS.disc, mS(mRY(mT(tor, 0, 0.36, 0.146), Math.PI), 0.24, 0.24, 1), MT.emblem);
+    add(MS.neck, mT(tor, 0, 0.63, 0), MT.suit);
+    var hd = mRX(mT(tor, 0, 0.56, 0), p[HEADP]);
+    add(MS.sphere, mS(mT(hd, 0, 0.18, 0.005), 0.135, 0.16, 0.148), MT.head);
+    add(RB(0.05, 0.08, 0.26, 0.022), mT(hd, 0, 0.33, -0.005), MT.gold);
+    for (i = 0; i < 2; i++) {
+      sd = i ? 1 : -1;
+      add(MS.sphere, mS(mT(tor, sd * 0.27, 0.48, 0), 0.095, 0.09, 0.1), MT.suit);
+      var a = mT(tor, sd * 0.3, 0.48, 0); a = mRZ(a, sd * p[ARMO + i]); a = mRX(a, -p[ARM + i]);
+      add(MS.uarm, a, MT.suit);
+      a = mT(a, 0, -0.29, 0); a = mRZ(a, -sd * p[ELZ + i]); a = mRX(a, -p[EL + i]);
+      add(MS.farm, a, MT.suit);
+      add(RB(0.15, 0.08, 0.15, 0.035), mT(a, 0, -0.17, 0), MT.gold);
+      add(MS.sphere, mS(mT(a, 0, -0.27, 0), 0.078, 0.088, 0.082), MT.gold);
+    }
+    capeGL(tor);
+    var shs = 1 - Math.min(hero.y, 2.2) / 3;
+    spr(false, hero.x, 0.03, 0.05, 0.5 * shs, 0.42 * shs, 0, 0, 0, 0.42, true);
+  }
+  function capeGL(tor) {
+    var lift = hero.capeLift, r, c, o, P3 = [], yv = 0.53, zv = -0.15;
+    for (r = 0; r < CR; r++) {
+      var kk = r / (CR - 1);
+      if (r > 0) {
+        var phi = lift + kk * 0.35 + Math.sin(T * 10 + r * 0.9) * (0.04 + 0.12 * kk) * (0.4 + lift), sl = 0.95 / (CR - 1);
+        yv -= sl * Math.cos(phi); zv -= sl * Math.sin(phi);
+      }
+      var w = 0.21 + 0.13 * kk;
+      for (c = 0; c < CCOL; c++) {
+        var u = c / (CCOL - 1), wave = Math.sin(T * 9 + c * 1.1 + r * 0.8) * 0.035 * kk;
+        P3.push([(u * 2 - 1) * w, yv + wave * 0.3, zv + wave - Math.cos((u - 0.5) * Math.PI) * 0.045]);
+      }
+    }
+    function at(rr2, cc2) { return P3[clamp(rr2, 0, CR - 1) * CCOL + clamp(cc2, 0, CCOL - 1)]; }
+    var nrm = [], sgn = 0;
+    for (r = 0; r < CR; r++) for (c = 0; c < CCOL; c++) {
+      var A = at(r + 1, c), B = at(r - 1, c), Cq = at(r, c + 1), Dq = at(r, c - 1);
+      var ax = A[0] - B[0], ay = A[1] - B[1], az = A[2] - B[2], bx = Cq[0] - Dq[0], by = Cq[1] - Dq[1], bz = Cq[2] - Dq[2];
+      var nx = by * az - bz * ay, ny = bz * ax - bx * az, nz = bx * ay - by * ax, l = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1;
+      nrm.push([nx / l, ny / l, nz / l]); sgn += ny / l * 0.35 - nz / l;
+    }
+    var flip = sgn < 0 ? -1 : 1;
+    for (r = 0; r < CR; r++) for (c = 0; c < CCOL; c++) {
+      var id = r * CCOL + c, q = P3[id], nn = nrm[id];
+      o = id * 8;
+      lp(tor, q[0], q[1], q[2], 0);
+      capeArr[o] = P[0]; capeArr[o + 1] = P[1]; capeArr[o + 2] = P[2];
+      var wx = tor[0] * nn[0] + tor[1] * nn[1] + tor[2] * nn[2], wy = tor[4] * nn[0] + tor[5] * nn[1] + tor[6] * nn[2], wz = tor[8] * nn[0] + tor[9] * nn[1] + tor[10] * nn[2];
+      capeArr[o + 3] = wx * flip; capeArr[o + 4] = wy * flip; capeArr[o + 5] = wz * flip;
+      capeArr[o + 6] = c / (CCOL - 1); capeArr[o + 7] = r / (CR - 1);
+    }
+    // ให้ด้านหน้าของสามเหลี่ยม = ด้านนอกผ้าคลุม
+    var a0 = 0, b0 = CCOL * 8, c0 = (CCOL + 1) * 8;
+    var e1x = capeArr[b0] - capeArr[a0], e1y = capeArr[b0 + 1] - capeArr[a0 + 1], e1z = capeArr[b0 + 2] - capeArr[a0 + 2];
+    var e2x = capeArr[c0] - capeArr[a0], e2y = capeArr[c0 + 1] - capeArr[a0 + 1], e2z = capeArr[c0 + 2] - capeArr[a0 + 2];
+    var cx2 = e1y * e2z - e1z * e2y, cy2 = e1z * e2x - e1x * e2z, cz2 = e1x * e2y - e1y * e2x;
+    cape.ib = (cx2 * capeArr[3] + cy2 * capeArr[4] + cz2 * capeArr[5]) >= 0 ? cape.ib0 : cape.ib1;
+    gl.bindBuffer(gl.ARRAY_BUFFER, cape.vb); gl.bufferSubData(gl.ARRAY_BUFFER, 0, capeArr);
+    curMesh = null;
+    add(cape, MI, MT.cape);
+    // ฝาขวดเล็กบนผ้าคลุมด้านหลัง
+    function grid(rf, cf) {
+      var r0 = Math.floor(rf), c0 = Math.floor(cf), tr = rf - r0, tc = cf - c0, a = at(r0, c0), b = at(r0, c0 + 1), cc = at(r0 + 1, c0), d = at(r0 + 1, c0 + 1);
+      var res = [0, 0, 0];
+      for (var k = 0; k < 3; k++) res[k] = lerp(lerp(a[k], b[k], tc), lerp(cc[k], d[k], tc), tr);
+      return res;
+    }
+    var mid = nrm[2 * CCOL + 2], off = 0.014 * flip, corners = [[1.9, 1.3], [1.9, 2.7], [3.5, 2.7], [3.5, 1.3]], UV = [[0, 0], [1, 0], [1, 1], [0, 1]];
+    for (var k = 0; k < 4; k++) {
+      var g3 = grid(corners[k][0], corners[k][1]);
+      lp(tor, g3[0] + mid[0] * off, g3[1] + mid[1] * off, g3[2] + mid[2] * off, 0);
+      o = k * 8; emArr[o] = P[0]; emArr[o + 1] = P[1]; emArr[o + 2] = P[2];
+      emArr[o + 3] = capeArr[(2 * CCOL + 2) * 8 + 3]; emArr[o + 4] = capeArr[(2 * CCOL + 2) * 8 + 4]; emArr[o + 5] = capeArr[(2 * CCOL + 2) * 8 + 5];
+      emArr[o + 6] = UV[k][0]; emArr[o + 7] = UV[k][1];
+    }
+    var f1x = emArr[8] - emArr[0], f1y = emArr[9] - emArr[1], f1z = emArr[10] - emArr[2], f2x = emArr[16] - emArr[0], f2y = emArr[17] - emArr[1], f2z = emArr[18] - emArr[2];
+    var gx = f1y * f2z - f1z * f2y, gy = f1z * f2x - f1x * f2z, gz = f1x * f2y - f1y * f2x;
+    capeEm.ib = (gx * emArr[3] + gy * emArr[4] + gz * emArr[5]) >= 0 ? capeEm.ib0 : capeEm.ib1;
+    gl.bindBuffer(gl.ARRAY_BUFFER, capeEm.vb); gl.bufferSubData(gl.ARRAY_BUFFER, 0, emArr);
+    add(capeEm, MI, MT.emblem);
+  }
+  function wheel(x, z, side) {
+    add(MS.tire, mRZ(mT(MI, x, 0.365, z), Math.PI / 2), MT.tire);
+    add(MS.rim, mRZ(mT(MI, x + side * 0.01, 0.365, z), Math.PI / 2), MT.rim);
+  }
+  function obsGL(o, z0) {
+    var x = o.x, k, L2 = o.len, n = nightF;
+    if (o.t === 'barrier') {
+      add(RB(2.44, 0.42, 0.1, 0.03), mT(MI, x, 0.71, z0 + 0.07), MT.barrier);
+      for (k = -1; k <= 1; k += 2) {
+        var lx = x + k * 1.0;
+        add(MS.cyl, mS(mRX(mT(MI, lx, 0, z0 + 0.07 - 0.26), 0.28), 0.03, 0.95, 0.03), MT.steel);
+        add(MS.cyl, mS(mRX(mT(MI, lx, 0, z0 + 0.07 + 0.26), -0.28), 0.03, 0.95, 0.03), MT.steel);
+        add(RB(0.3, 0.06, 0.62, 0.02), mT(MI, lx, 0.03, z0 + 0.07), MT.dark);
+      }
+      var on = ((T * 2.2 + o.z * 0.13) % 1) < 0.5;
+      add(MS.sphere, mS(mT(MI, x, 0.99, z0 + 0.07), 0.075, 0.075, 0.075), on ? MT.blinkOn : MT.blinkOff);
+      if (on) glow(x, 0.99, z0 + 0.07, 0.7 + n * 0.5, 1.0, 0.6, 0.15, 0.55 + n * 0.4);
+    } else if (o.t === 'beam') {
+      var hw = o.full ? 4.25 : 1.22, wb = hw * 2 + 0.32;
+      if (o.full && (!o.glm || o.glmGen !== gen)) o.glmGen = gen, o.glm = mt({ mode: 1, tex: TX.hazard, uvs: [wb / 1.1, 1], s: 0.5, g: 30, r: 0.08, fill: 0.7 });
+      add(RB(0.2, 2.3, 0.2, 0.04), mT(MI, x - hw, 1.15, z0 + 0.11), MT.post);
+      add(RB(0.2, 2.3, 0.2, 0.04), mT(MI, x + hw, 1.15, z0 + 0.11), MT.post);
+      add(o.full ? RB(wb, 0.58, 0.24, 0.05) : RB(2.76, 0.58, 0.24, 0.05), mT(MI, x, 1.51, z0 + 0.11), o.full ? o.glm : MT.hazard);
+      add(MS.quad, mS(mT(MI, x, 2.03, z0 + 0.1), 1.5, 0.38, 1), MT.warn);
+    } else if (o.t === 'van') {
+      if (!o.glm || o.glmGen !== gen) { o.glmGen = gen; o.glm = mt({ c: Lc(o.col), s: 1.1, g: 110, r: 0.45, fill: 0.7 }); }
+      var zc = z0 + L2 / 2;
+      add(RB(2.0, 1.12, L2, 0.2), mT(MI, x, 0.86, zc), o.glm);
+      add(RB(1.92, 0.92, L2 - 0.5, 0.22), mT(MI, x, 1.86, zc + 0.15), MT.glass);
+      add(RB(1.97, 0.14, L2 - 0.42, 0.06), mT(MI, x, 2.33, zc + 0.15), o.glm);
+      add(RB(0.16, 0.9, 0.14, 0.04), mT(MI, x - 0.88, 1.86, z0 + 0.32), o.glm);
+      add(RB(0.16, 0.9, 0.14, 0.04), mT(MI, x + 0.88, 1.86, z0 + 0.32), o.glm);
+      add(RB(2.04, 0.22, 0.24, 0.07), mT(MI, x, 0.42, z0 + 0.06), MT.dark);
+      add(RB(0.2, 0.42, 0.08, 0.03), mT(MI, x - 0.84, 1.08, z0 - 0.0), MT.tail);
+      add(RB(0.2, 0.42, 0.08, 0.03), mT(MI, x + 0.84, 1.08, z0 - 0.0), MT.tail);
+      add(MS.quad, mS(mT(MI, x, 0.72, z0 - 0.01), 0.44, 0.22, 1), MT.plate);
+      wheel(x - 0.9, z0 + 0.85, -1); wheel(x + 0.9, z0 + 0.85, 1); wheel(x - 0.9, z0 + L2 - 0.95, -1); wheel(x + 0.9, z0 + L2 - 0.95, 1);
+      for (k = -1; k <= 1; k += 2) {
+        glow(x + k * 0.84, 1.08, z0 - 0.05, 0.5 + n * 0.4, 1, 0.12, 0.06, 0.45 + n * 0.5);
+        if (n > 0.1) spr(true, x + k * 0.84, 0.03, z0 - 3.2, 0.22, 3.0, 1, 0.1, 0.05, 0.3 * n * wetF, true);
+      }
+    } else if (o.t === 'truck') {
+      if (!o.glm || o.glmGen !== gen) { o.glmGen = gen; o.glm = mt({ c: Lc(o.col), s: 0.7, g: 60, r: 0.2, fill: 0.7 }); o.glm2 = mt({ c: Lc(o.col2), s: 1.1, g: 110, r: 0.45, fill: 0.7 }); }
+      var zc2 = z0 + 2.7;
+      add(RB(2.12, 2.5, 5.4, 0.08), mT(MI, x, 1.9, zc2), o.glm);
+      add(MS.quad, mS(mRY(mT(MI, x - 1.07, 1.95, zc2), Math.PI / 2), 5.0, 2.3, 1), MT.cargoDecal);
+      add(MS.quad, mS(mRY(mT(MI, x + 1.07, 1.95, zc2), -Math.PI / 2), 5.0, 2.3, 1), MT.cargoDecal);
+      add(MS.quad, mS(mT(MI, x, 1.95, z0 - 0.012), 2.0, 2.3, 1), MT.rearDecal);
+      add(RB(2.0, 1.95, 1.85, 0.22), mT(MI, x, 1.55, z0 + 6.4), o.glm2);
+      add(RB(2.02, 0.7, 1.4, 0.15), mT(MI, x, 2.0, z0 + 6.55), MT.glass);
+      add(RB(1.7, 0.28, 7.3, 0.05), mT(MI, x, 0.52, z0 + 3.65), MT.dark);
+      add(RB(1.9, 0.12, 0.12, 0.04), mT(MI, x, 0.42, z0 - 0.05), MT.steel);
+      add(RB(0.22, 0.24, 0.08, 0.03), mT(MI, x - 0.92, 0.8, z0 - 0.01), MT.tail);
+      add(RB(0.22, 0.24, 0.08, 0.03), mT(MI, x + 0.92, 0.8, z0 - 0.01), MT.tail);
+      wheel(x - 0.92, z0 + 0.9, -1); wheel(x + 0.92, z0 + 0.9, 1); wheel(x - 0.92, z0 + 1.85, -1); wheel(x + 0.92, z0 + 1.85, 1);
+      wheel(x - 0.92, z0 + 6.35, -1); wheel(x + 0.92, z0 + 6.35, 1);
+      for (k = -1; k <= 1; k += 2) {
+        glow(x + k * 0.92, 0.8, z0 - 0.05, 0.45 + n * 0.4, 1, 0.12, 0.06, 0.45 + n * 0.5);
+        if (n > 0.1) spr(true, x + k * 0.92, 0.03, z0 - 2.8, 0.2, 2.6, 1, 0.1, 0.05, 0.28 * n * wetF, true);
+      }
+    } else {
+      if (!o.rots) o.rots = [rand(-0.07, 0.07), rand(-0.07, 0.07), rand(-0.07, 0.07), rand(-0.07, 0.07), rand(-0.12, 0.12)];
+      var sz = 1.02, rows = o.tall ? 3 : 2, ri = 0;
+      for (var r = 0; r < rows; r++) {
+        var cols = r === 2 ? 1 : 2;
+        for (var cI = 0; cI < cols; cI++) {
+          var cxx = cols === 1 ? x : x - sz / 2 + cI * sz;
+          add(RB(1.0, 1.0, 1.0, 0.025), mRY(mT(MI, cxx, r * sz + 0.5, z0 + 0.51), o.rots[ri++ % 5]), MT.crate);
+        }
+      }
+    }
+  }
+  function buildingGL(b) {
+    var z0 = b.z0 - dist, z1 = b.z1 - dist, s = b.side, xa = s > 0 ? b.xIn : -b.xIn - b.dep, xb = xa + b.dep, n = nightF;
+    if (!b.glm || b.glmGen !== gen) {
+      b.glmGen = gen;
+      var tc = [Math.min(255, b.col[0] * 1.3), Math.min(255, b.col[1] * 1.3), Math.min(255, b.col[2] * 1.3)];
+      b.glm = mt({ c: Lc(tc), mode: 2, tex: TX.fac[b.style], tex2: TX.shop[b.shopT], s: 0.15, g: 12, r: 0.03, seed: b.seedF });
+      b.glm2 = mt({ c: Lc([200, 214, 230]), mode: 2, tex: TX.fac[1], tex2: TX.shop[b.shopT], s: 0.2, g: 16, r: 0.04, seed: b.seedF + 0.5 });
+    }
+    if (b.podium && b.h > 18) {
+      var hp = 9, inset = 2.6, xa2 = s > 0 ? xa + inset : xa, xb2 = s > 0 ? xb : xb - inset;
+      add(MS.box, mTS((xa + xb) / 2, hp / 2, (z0 + z1) / 2, b.dep, hp, z1 - z0), b.glm);
+      add(MS.box, mTS((xa2 + xb2) / 2, hp + (b.h - hp) / 2, (z0 + z1) / 2 + 1.2, xb2 - xa2, b.h - hp, Math.max(2, z1 - z0 - 2.4)), b.glm2);
+    } else add(MS.box, mTS((xa + xb) / 2, b.h / 2, (z0 + z1) / 2, b.dep, b.h, z1 - z0), b.glm);
+    if (b.sign >= 0 && b.h > 8) {
+      var sx = s * (b.xIn - 1.45), sz2 = Math.max(z0 + 1.5, Math.min(z1 - 1.5, z0 + (z1 - z0) * 0.4));
+      add(MS.quad, mS(mT(MI, sx, 5.7, sz2), 2.6, 1.3, 1), MT.signs[b.sign]);
+      add(RB(0.06, 0.06, 0.06, 0.02), mT(MI, s * (b.xIn - 0.1), 5.7, sz2), MT.dark);
+      add(RB(1.45, 0.05, 0.05, 0.02), mT(MI, s * (b.xIn - 0.72), 6.35, sz2 + 0.02), MT.dark);
+      if (n > 0.05) { var sc = SIGN_COL[b.sign]; glow(sx, 5.7, sz2, 3.0, sc[0], sc[1], sc[2], 0.22 * n); }
+    }
+    if (b.bill >= 0 && !b.podium) {
+      var bw = Math.min(b.dep - 1, 9), bh = bw * 0.5, bcx = (xa + xb) / 2;
+      add(MS.quad, mS(mT(MI, bcx, b.h + 0.9 + bh / 2, z0 + 0.6), bw, bh, 1), MT.bill[b.bill]);
+      add(RB(0.15, 1.0, 0.15, 0.03), mT(MI, bcx - bw * 0.3, b.h + 0.45, z0 + 0.7), MT.dark);
+      add(RB(0.15, 1.0, 0.15, 0.03), mT(MI, bcx + bw * 0.3, b.h + 0.45, z0 + 0.7), MT.dark);
+      if (n > 0.05) glow(bcx, b.h + 0.9 + bh / 2, z0 + 0.4, bw * 0.9, 1, 0.55, 0.3, 0.12 * n);
+    }
+  }
+  var SIGN_COL = [[1, 0.25, 0.68], [0.25, 0.94, 1], [1, 0.82, 0.23], [0.5, 1, 0.35], [1, 0.55, 0.16], [1, 0.3, 0.3]];
+
+  function gather() {
+    nItems = 0; nA = 0; nB = 0; frameNo++; lamps.length = 0;
+    add(MS.road, MI, MT.road); add(MS.walkL, MI, MT.walk); add(MS.walkR, MI, MT.walk);
+    add(MS.curbL, MI, MT.curb); add(MS.curbR, MI, MT.curb); add(MS.gndL, MI, MT.gnd); add(MS.gndR, MI, MT.gnd);
+    var i, o, z, n = nightF;
+    for (i = 0; i < scen.length; i++) {
+      o = scen[i];
+      if (o.kind === 'c') {
+        var b = o.b;
+        if (b._f === frameNo) continue;
+        b._f = frameNo;
+        if (b.z1 - dist < cam.z - 2 || b.z0 - dist > DRAW_DIST) continue;
+        buildingGL(b);
+        continue;
+      }
+      z = o.z - dist;
+      if (z > DRAW_DIST || z < cam.z - 3) continue;
+      if (o.kind === 'l') {
+        var s = o.side, px = s * 4.75, hx = s * 3.35;
+        add(MS.pole, mT(MI, px, 0, z), MT.pole);
+        add(RB(1.5, 0.08, 0.1, 0.03), mT(MI, (px + hx) / 2 + s * 0.05, 5.1, z), MT.pole);
+        add(RB(0.72, 0.13, 0.34, 0.05), mT(MI, hx, 5.02, z), MT.lampHead);
+        if (n > 0.05) {
+          glow(hx, 4.88, z, 1.2, 1, 0.78, 0.5, 0.75 * n);
+          glow(hx, 4.8, z, 3.2, 1, 0.7, 0.4, 0.1 * n);
+          if (z > cam.z + 12) spr(true, hx * 0.92, 0.03, z - 4.0, 0.16, 3.6, 1, 0.72, 0.42, 0.1 * n * (0.3 + wetF) * clamp((z - cam.z - 12) / 10, 0, 1), true);
+          if (z > cam.z - 2 && z < 95) lamps.push(o);
+        }
+      } else if (o.kind === 'p' || (o.kind === 't' && o.palm)) {
+        var mm = mRZ(mT(MI, o.x, 0, z), o.lean || 0);
+        add(MS.trunk, mS(mm, 1, o.h, 1), MT.bark);
+        add(MS.frond, mRY(mT(mm, 0, o.h, 0), o.rot || 0), MT.frond);
+        add(MS.sphere, mS(mT(mm, 0, o.h - 0.05, 0), 0.2, 0.2, 0.2), MT.bark);
+      } else if (o.kind === 't') {
+        add(MS.trunk, mS(mT(MI, o.x, 0, z), 1.2, 2.2, 1.2), MT.bark);
+        add(MS.blob, mS(mT(MI, o.x, 2.2 + o.h * 0.35, z), o.r * 1.15, o.h * 0.42, o.r * 1.15), o.c ? MT.leaf : MT.leafD);
+      }
+    }
+    for (i = 0; i < obs.length; i++) { o = obs[i]; z = o.z - dist; if (z > DRAW_DIST || z + o.len < cam.z) continue; obsGL(o, z); }
+    for (i = 0; i < coins.length; i++) {
+      o = coins[i]; if (o.taken) continue;
+      z = o.z - dist; if (z > DRAW_DIST || z < cam.z) continue;
+      var y = o.y + Math.sin(T * 4 + o.z * 0.7) * 0.07, sc = o.gold ? 1.15 : 1;
+      add(MS.can, mS(mRY(mT(MI, o.x, y, z), T * 3.2 + o.z * 0.37), sc, sc, sc), o.gold ? MT.canG : MT.can);
+      if (o.gold) glow(o.x, y + 0.38, z, 0.95, 1, 0.8, 0.25, 0.16 + 0.16 * n); else glow(o.x, y + 0.33, z, 0.7, 1, 0.5, 0.12, 0.05 + 0.12 * n);
+    }
+    heroGL();
+    for (i = 0; i < parts.length; i++) {
+      o = parts[i]; var a = 1 - o.t / o.life;
+      if (o.add) spr(true, o.x, o.y, o.z, o.s, o.s, o.rgb[0], o.rgb[1], o.rgb[2], a * 0.9);
+      else spr(false, o.x, o.y, o.z, o.s, o.s, o.rgb[0] * 0.8, o.rgb[1] * 0.8, o.rgb[2] * 0.8, a * 0.55);
+    }
+    // ไฟถนนที่ใกล้ที่สุด 6 ดวง = แสงจริงบนพื้น/ตัวละคร
+    lamps.sort(function (p1, p2) { return Math.abs(p1.z - dist - 14) - Math.abs(p2.z - dist - 14); });
+    for (i = 0; i < 6; i++) {
+      if (i < lamps.length) {
+        var l = lamps[i];
+        plPos[i * 4] = l.side * 3.35; plPos[i * 4 + 1] = 4.7; plPos[i * 4 + 2] = l.z - dist; plPos[i * 4 + 3] = 15;
+        plCol[i * 3] = 3.4 * n; plCol[i * 3 + 1] = 2.3 * n; plCol[i * 3 + 2] = 1.25 * n;
+      } else { plPos[i * 4 + 3] = 0; plCol[i * 3] = plCol[i * 3 + 1] = plCol[i * 3 + 2] = 0; }
+    }
+  }
+
+  /* ---------- drawing ---------- */
+  function bindMesh(m) {
+    if (curMesh === m) return;
+    gl.bindBuffer(gl.ARRAY_BUFFER, m.vb);
+    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 32, 0);
+    gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 32, 12);
+    gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 32, 24);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, m.ib);
+    curMesh = m;
+  }
+  var boundTex = [null, null, null];
+  function bindTex(unit, t) {
+    if (boundTex[unit] === t) return;
+    gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t); boundTex[unit] = t;
+  }
+  function applyMat(mt2) {
+    if (curMat === mt2) return;
+    curMat = mt2;
+    var u = PS.u;
+    gl.uniform3fv(u.uCol, mt2.c); gl.uniform3fv(u.uCol2, mt2.c2); gl.uniform3fv(u.uEmis, mt2.e);
+    gl.uniform4f(u.uMat, mt2.s, mt2.g, mt2.r, mt2.mode);
+    gl.uniform4f(u.uMat2, mt2.fill, mt2.rim, mt2.at, mt2.two ? 1 : 0);
+    gl.uniform4f(u.uMisc, mt2.seed, dist, winP, mt2.ei);
+    if (u.uUVS) gl.uniform2f(u.uUVS, mt2.uvs[0], mt2.uvs[1]);
+    bindTex(0, mt2.tex || whiteTex); bindTex(1, mt2.tex2 || whiteTex);
+    if (mt2.two) gl.disable(gl.CULL_FACE); else gl.enable(gl.CULL_FACE);
+    if (mt2.decal) { gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(-1, -2); } else gl.disable(gl.POLYGON_OFFSET_FILL);
+  }
+  function setEnv(pr, sky) {
+    var u = pr.u;
+    if (u.uSunDir) gl.uniform3f(u.uSunDir, sunV[0], sunV[1], sunV[2]);
+    if (u.uSunC) gl.uniform3fv(u.uSunC, pal.gSunC);
+    if (u.uZen) gl.uniform3fv(u.uZen, pal.gZen);
+    if (u.uHor) gl.uniform3fv(u.uHor, pal.gHor);
+    if (u.uSkyP) gl.uniform4f(u.uSkyP, pal.gGlow, pal.gCloud, pal.gStars, pal.gDisk);
+    if (u.uEnv) gl.uniform4f(u.uEnv, pal.gFog, pal.gExpo, nightF, wetF);
+    if (u.uRes) gl.uniform4f(u.uRes, cv.width, cv.height, 1 / SH, sky);
+    if (u.uSkyA) gl.uniform3fv(u.uSkyA, pal.gSkyA);
+  }
+  function render() {
+    if (!api.ok || !gl || gl.isContextLost()) return false;
+    var i, it;
+    nightF = pal.gNight; wetF = pal.gWet; winP = 0.06 + 0.62 * nightF;
+    var s = pal.gSun, sl = Math.sqrt(s[0] * s[0] + s[1] * s[1] + s[2] * s[2]) || 1;
+    sunV[0] = s[0] / sl; sunV[1] = s[1] / sl; sunV[2] = s[2] / sl;
+    MT.lampHead.e = [nightF * 4.0, nightF * 3.0, nightF * 1.8];
+    MT.tail.e = [0.9 + 1.8 * nightF, 0.04, 0.02];
+    var ei = 0.55 + 2.2 * nightF;
+    for (i = 0; i < MT.signs.length; i++) MT.signs[i].ei = ei;
+    for (i = 0; i < MT.bill.length; i++) MT.bill[i].ei = 0.75 + 1.6 * nightF;
+    buildVP();
+    gather();
+    curMat = null; curMesh = null; boundTex[0] = boundTex[1] = boundTex[2] = null;
+    order.length = nItems;
+    for (i = 0; i < nItems; i++) order[i] = items[i];
+    order.sort(function (a, b) { return a.z - b.z; });
+    // 1) shadow map จากดวงอาทิตย์
+    var shOn = shOK && api.shadows && sunV[1] > 0.04 && nightF < 0.75;
+    if (shOn) {
+      buildLVP(sunV);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, shFB); gl.viewport(0, 0, SH, SH);
+      gl.clearColor(1, 1, 1, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      gl.useProgram(PH.p); gl.disable(gl.CULL_FACE); gl.disable(gl.POLYGON_OFFSET_FILL);
+      gl.uniformMatrix4fv(PH.u.uLVP, false, lvp); gl.uniform1f(PH.u.uCurve, curve);
+      for (i = 0; i < nItems; i++) {
+        it = order[i];
+        if (!it.mat.cast || it.z > 190) continue;
+        bindMesh(it.mesh); toM4(it.m); gl.uniformMatrix4fv(PH.u.uModel, false, m4);
+        gl.drawElements(gl.TRIANGLES, it.mesh.n, gl.UNSIGNED_SHORT, 0);
+      }
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    }
+    gl.viewport(0, 0, cv.width, cv.height);
+    gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // 2) ท้องฟ้า
+    gl.useProgram(PK.p); setEnv(PK, 0);
+    gl.uniform4f(PK.u.uProj, cv.width / (2 * cam.F), cv.height / (2 * cam.F), 2 * cam.cx / cv.width - 1, (cv.height - 2 * cam.cy) / cv.height);
+    gl.uniform2f(PK.u.uPit, cam.cp, cam.sp);
+    if (PK.u.uTime) gl.uniform1f(PK.u.uTime, T);
+    bindTex(0, TX.clouds);
+    gl.disable(gl.DEPTH_TEST); gl.depthMask(false); gl.disable(gl.CULL_FACE);
+    bindMesh(MS.tri); gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_SHORT, 0);
+    gl.enable(gl.DEPTH_TEST); gl.depthMask(true);
+    // 3) วัตถุทึบ
+    gl.useProgram(PS.p); setEnv(PS, shOn ? 1 : 0);
+    var u = PS.u;
+    gl.uniformMatrix4fv(u.uVP, false, vp); gl.uniformMatrix4fv(u.uLVP, false, lvp);
+    gl.uniform1f(u.uCurve, curve); gl.uniform3f(u.uCam, cam.x, cam.y, cam.z);
+    gl.uniform3fv(u.uGndA, pal.gGndA);
+    var fc = pal.gFill; gl.uniform3f(u.uFillC, fc[0] * 0.6, fc[1] * 0.6, fc[2] * 0.6);
+    gl.uniform3f(u.uFillD, -0.33, 0.55, -0.77);
+    gl.uniform4fv(u.uPL, plPos); gl.uniform3fv(u.uPLC, plCol);
+    bindTex(2, shOn ? shTex : whiteTex);
+    curMat = null;
+    for (i = 0; i < nItems; i++) {
+      it = order[i];
+      applyMat(it.mat); bindMesh(it.mesh);
+      toM4(it.m); gl.uniformMatrix4fv(u.uModel, false, m4);
+      toN3(it.m); gl.uniformMatrix3fv(u.uNM, false, n3);
+      gl.drawElements(gl.TRIANGLES, it.mesh.n, gl.UNSIGNED_SHORT, 0);
+    }
+    gl.disable(gl.POLYGON_OFFSET_FILL); gl.enable(gl.CULL_FACE);
+    // 4) แสงฟุ้ง/อนุภาค
+    if (nA || nB) {
+      gl.useProgram(PP.p);
+      gl.uniformMatrix4fv(PP.u.uVP, false, vp); gl.uniform1f(PP.u.uCurve, curve); gl.uniform3f(PP.u.uUp, 0, cam.cp, cam.sp);
+      gl.bindBuffer(gl.ARRAY_BUFFER, sprVB); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sprIB); curMesh = null;
+      gl.enable(gl.BLEND); gl.depthMask(false); gl.disable(gl.CULL_FACE);
+      for (var pass = 0; pass < 2; pass++) {
+        var arr = pass ? sprA : sprB, cnt = pass ? nA : nB;
+        if (!cnt) continue;
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, arr.subarray(0, cnt * 48));
+        gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 48, 0);
+        gl.vertexAttribPointer(1, 4, gl.FLOAT, false, 48, 16);
+        gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 48, 32);
+        gl.blendFunc(gl.ONE, pass ? gl.ONE : gl.ONE_MINUS_SRC_ALPHA);
+        gl.drawElements(gl.TRIANGLES, cnt * 6, gl.UNSIGNED_SHORT, 0);
+      }
+      gl.disable(gl.BLEND); gl.depthMask(true); gl.enable(gl.CULL_FACE);
+    }
+    return true;
+  }
+  function size(w, h, d) {
+    var s = Math.min(d, 2) * api.scale, pw = w * s, ph = h * s, MAXP = 2.4e6;
+    if (pw * ph > MAXP) { var k = Math.sqrt(MAXP / (pw * ph)); pw *= k; ph *= k; }
+    cv.width = Math.max(64, Math.round(pw)); cv.height = Math.max(64, Math.round(ph));
+    api.w = cv.width; api.h = cv.height;
+  }
+  api.init = init; api.render = render; api.size = size; api.canvas = cv;
+  return api;
+})();
 
 /* ---------------- วงจรเกม ---------------- */
 var drawList = [], HERO_OBJ = { kind: 'h', _z: 0 };
 function byZ(a, b) { return b._z - a._z; }
 function render() {
+  var m = gfxMode();
+  if (m !== lastMode) resize();                      // WebGL หลุด/กลับมา → สลับแคนวาสให้ตรงโหมด
+  setupCamera();
+  if (m === 'real' && GL3.render()) return;
+  render2D();
+}
+function render2D() {
   setupCamera();
   baseTint[0] = pal.tint[0]; baseTint[1] = pal.tint[1]; baseTint[2] = pal.tint[2];
   TR = baseTint[0]; TG = baseTint[1]; TB = baseTint[2]; AMB = pal.amb;
@@ -1308,6 +2693,7 @@ function render() {
   var i, o, z;
   for (i = 0; i < scen.length; i++) {
     o = scen[i];
+    if (o.kind === 'p') continue;
     if (o.kind === 'c') { z = o.z0 - dist; if (o.z1 - dist < cam.z) continue; }
     else z = o.z - dist;
     if (z > DRAW_DIST || z < cam.z - 3) continue;
@@ -1369,7 +2755,7 @@ function update(dt) {
     for (var j = 0; j < NP; j++) pose[j] += (ptgt[j] - pose[j]) * kp;
   }
   var cl = 0.35;
-  if (state === 'play') cl = hero.ground ? (hero.slideT > 0 ? 0.1 : clamp(0.95 + speed * 0.012, 0, 1.35)) : 0.45;
+  if (state === 'play') cl = hero.ground ? (hero.slideT > 0 ? 0.1 : clamp(0.55 + speed * 0.009, 0, 0.9)) : 0.4;
   else if (state === 'dying' || state === 'over') cl = 0.2;
   else if (state === 'count') cl = hero.capeLift;
   hero.capeLift += (cl - hero.capeLift) * Math.min(1, dt * 5);
@@ -1383,7 +2769,7 @@ function update(dt) {
   updateHUD();
 }
 
-var lastT = 0;
+var lastT = 0, glPerfSum = 0, glPerfN = 0;
 var raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (cb) { return setTimeout(function () { cb(Date.now()); }, 16); };
 function loop(now) {
   raf(loop);
@@ -1395,8 +2781,17 @@ function loop(now) {
   if (state !== 'paused' || needRender) {
     var t0 = performance.now();
     render(); needRender = false;
-    // เครื่องช้า: ลดความละเอียดลงทีละขั้นอัตโนมัติ (เฉพาะโหมด HD ระหว่างเล่น)
-    if (save.gfx !== 'ps1' && state === 'play' && dt > 0) {
+    // เครื่องช้า: ลดความละเอียดลงทีละขั้นอัตโนมัติระหว่างเล่น
+    if (gfxMode() === 'real' && state === 'play' && dt > 0) {
+      glPerfSum += dt; glPerfN++;
+      if (glPerfN >= 120) {
+        if (glPerfSum / glPerfN > 1 / 46) {
+          if (GL3.scale > 0.5) { GL3.scale = Math.max(0.5, GL3.scale * 0.85); resize(); }
+          else if (GL3.shadows) GL3.shadows = false;   // ยังช้า: ปิดเงาเพื่อความลื่น
+        }
+        glPerfSum = 0; glPerfN = 0;
+      }
+    } else if (gfxMode() === 'hd' && state === 'play' && dt > 0) {
       perfSum += performance.now() - t0; perfN++;
       if (perfN >= 90) {
         if (perfSum / perfN > 14 && resScale > 0.45) { resScale = Math.max(0.45, resScale * 0.8); resize(); }
@@ -1432,8 +2827,18 @@ function blurActive() { try { if (D.activeElement && D.activeElement.blur) D.act
 function resetHero() {
   hero.lane = 1; hero.x = 0; hero.y = 0; hero.vy = 0; hero.ground = true; hero.slideT = 0; hero.jumpBuf = 0; hero.qSlide = false;
 }
+function rebaseWorld() {                          // เลื่อนพิกัดโลกกลับใกล้ 0 (คงลายถนน/ระยะห่างเดิม)
+  var sh = Math.floor(dist / 64) * 64, i;
+  if (sh <= 0) return;
+  for (i = 0; i < scen.length; i++) { var o = scen[i]; if (o.kind === 'c') { o.z0 -= sh; o.z1 -= sh; if (o.idx === 0) { o.b.z0 -= sh; o.b.z1 -= sh; } } else o.z -= sh; }
+  for (i = 0; i < obs.length; i++) obs[i].z -= sh;
+  for (i = 0; i < coins.length; i++) coins[i].z -= sh;
+  nextB[0] -= sh; nextB[1] -= sh; nextLamp -= sh; nextPalm[0] -= sh; nextPalm[1] -= sh; nextRow -= sh; nextCurve -= sh;
+  dist -= sh; runStart -= sh;
+}
 function startGame() {
   AU.unlock(); AU.start();
+  rebaseWorld();
   obs.length = 0; coins.length = 0; parts.length = 0;
   runStart = dist; runDist = 0; score = 0; cans = 0; speed = 0; introT = 0; nextMile = 500;
   nextRow = dist + 95; curveTarget = 0; nextCurve = dist + 250;
@@ -1445,6 +2850,7 @@ function startGame() {
 }
 function goTitle() {
   obs.length = 0; coins.length = 0; parts.length = 0;
+  rebaseWorld();
   runStart = dist; runDist = 0; score = 0; speed = 0; curveTarget = 0;
   resetHero();
   $('tBest').textContent = save.bestScore; $('tBestD').textContent = save.bestDist;
@@ -1512,7 +2918,11 @@ bindBtn($('btnRetry'), function () { if (overT > 0.3) startGame(); });
 bindBtn($('btnHomeO'), function () { if (overT > 0.3) goTitle(); });
 bindBtn(btnPause, pause);
 bindBtn(btnMute, toggleMute);
-function toggleGfx() { setGfx(save.gfx === 'ps1' ? 'hd' : 'ps1'); }
+function toggleGfx() {
+  var m = gfxMode(), nx = m === 'real' ? 'hd' : (m === 'hd' ? 'ps1' : 'real');
+  if (nx === 'real' && !GL3.ok) nx = 'hd';
+  setGfx(nx);
+}
 bindBtn($('btnGfx'), toggleGfx);
 bindBtn($('btnGfxP'), toggleGfx);
 
@@ -1600,6 +3010,7 @@ window.addEventListener('orientationchange', function () { resize(); setTimeout(
 if (window.visualViewport) window.visualViewport.addEventListener('resize', resize);
 
 /* ---------------- เริ่มต้น ---------------- */
+GL3.init();
 resize();
 updateMuteIcon();
 updateGfxLabels();
@@ -1607,7 +3018,7 @@ genScenery();
 goTitle();
 if (/debug/.test(location.hash)) {                // ตัวช่วยทดสอบ (เปิดด้วย #debug เท่านั้น)
   window.__saman = { get state() { return state; }, get dist() { return runDist; }, get abs() { return dist; }, get score() { return score; },
-    hero: hero, obs: obs, coins: coins, act: act, mkObs: mkObs, au: AU, gfx: function () { return { mode: save.gfx, W: W, H: H, vw: view.width, vh: view.height, resScale: resScale }; }, setGfx: setGfx, warp: function (m) { runStart -= m; runDist += m; },
+    hero: hero, obs: obs, coins: coins, act: act, mkObs: mkObs, au: AU, gfx: function () { return { mode: gfxMode(), W: W, H: H, vw: view.width, vh: view.height, resScale: resScale, glOk: GL3.ok, glErr: GL3.err, glScale: GL3.scale }; }, setGfx: setGfx, warp: function (m) { runStart -= m; runDist += m; },
     freeze: function (on) { STEP_FREEZE = !!on; } };
 }
 raf(loop);
